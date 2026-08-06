@@ -11,7 +11,7 @@ Two hard constraints shape everything here:
 - **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
-The codebase is currently a fresh package scaffold (the placeholder `Calculator` in `lib/flow_ui.dart` and its test are `flutter create` boilerplate to be replaced) — the component work described below is the roadmap, not yet implemented.
+The theme layer is implemented; the components in the roadmap below are not yet.
 
 ## Layout
 
@@ -48,8 +48,8 @@ Status legend: ⬜ Todo · ✅ Done
 
 | # | Component | Notes | Status |
 |---|-----------|-------|--------|
-| 1 | Design tokens | colors, typography, spacing, radii | ⬜ |
-| 2 | Light/dark themes | | ⬜ |
+| 1 | Design tokens | colors, typography, spacing, radii | ✅ |
+| 2 | Light/dark themes | | ✅ |
 
 ### Basic elements
 
