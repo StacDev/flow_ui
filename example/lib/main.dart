@@ -2,6 +2,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/loading_indicator_page.dart';
+import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
 import 'pages/streaming_text_page.dart';
 import 'pages/tokens_page.dart';
@@ -86,6 +87,11 @@ class GalleryHomePage extends StatelessWidget {
             title: 'Message & Thread',
             subtitle: 'FlowMessage & FlowThread — conversation rendering',
             builder: (_) => MessageThreadPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Message actions',
+            subtitle: 'FlowMessageActions — copy, regenerate, feedback',
+            builder: (_) => MessageActionsPage(onToggleTheme: onToggleTheme),
           ),
           _DemoTile(
             title: 'Streaming text',

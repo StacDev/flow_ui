@@ -67,7 +67,7 @@ Status legend: ⬜ Todo · ✅ Done
 |---|-----------|------------------|--------|
 | 8 | Message & Thread | | ✅ |
 | 9 | Thread List | | ⬜ |
-| 10 | Message actions | | ⬜ |
+| 10 | Message actions | | ✅ |
 | 11 | Streaming text | | ✅ |
 | 12 | Message composer | | ⬜ |
 | 13 | Model selector | | ⬜ |

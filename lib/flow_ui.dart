@@ -13,5 +13,6 @@ export 'src/theme/flow_theme.dart';
 export 'src/theme/flow_typography.dart';
 export 'src/widgets/flow_loading_indicator.dart';
 export 'src/widgets/flow_message.dart';
+export 'src/widgets/flow_message_actions.dart';
 export 'src/widgets/flow_streaming_text.dart';
 export 'src/widgets/flow_thread.dart';
