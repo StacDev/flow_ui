@@ -1,6 +1,7 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
+import 'pages/loading_indicator_page.dart';
 import 'pages/streaming_text_page.dart';
 import 'pages/tokens_page.dart';
 
@@ -84,6 +85,11 @@ class GalleryHomePage extends StatelessWidget {
             title: 'Streaming text',
             subtitle: 'FlowStreamingText — animated streaming reveal',
             builder: (_) => StreamingTextPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Loading indicator',
+            subtitle: 'FlowLoadingIndicator — staggered three-dot pulse',
+            builder: (_) => LoadingIndicatorPage(onToggleTheme: onToggleTheme),
           ),
         ],
       ),

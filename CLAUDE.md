@@ -11,7 +11,7 @@ Two hard constraints shape everything here:
 - **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
-The theme layer is implemented; the components in the roadmap below are not yet.
+Theme, streaming text, and loading indicator are implemented; remaining roadmap items are not yet.
 
 ## Layout
 
@@ -79,14 +79,13 @@ Status legend: ⬜ Todo · ✅ Done
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
 | 21 | Code block | | ⬜ |
-| 22 | Loader | | ⬜ |
-| 23 | Typing indicator | | ⬜ |
-| 24 | Shimmer | text only | ⬜ |
+| 22 | Loading indicator | staggered three-dot pulse | ✅ |
+| 23 | Shimmer | text only | ⬜ |
 
 ### Surfaces
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 25 | Chat Screen | | ⬜ |
-| 26 | SidePanel | | ⬜ |
-| 27 | Modal | | ⬜ |
+| 24 | Chat Screen | | ⬜ |
+| 25 | SidePanel | | ⬜ |
+| 26 | Modal | | ⬜ |
