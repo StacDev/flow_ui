@@ -9,3 +9,4 @@ export 'src/theme/flow_radii.dart';
 export 'src/theme/flow_spacing.dart';
 export 'src/theme/flow_theme.dart';
 export 'src/theme/flow_typography.dart';
+export 'src/widgets/flow_streaming_text.dart';

@@ -1,6 +1,7 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
+import 'pages/streaming_text_page.dart';
 import 'pages/tokens_page.dart';
 
 void main() => runApp(const GalleryApp());
@@ -78,6 +79,11 @@ class GalleryHomePage extends StatelessWidget {
             title: 'Design tokens',
             subtitle: 'Colors, typography, spacing, radii',
             builder: (_) => TokensPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Streaming text',
+            subtitle: 'FlowStreamingText — animated streaming reveal',
+            builder: (_) => StreamingTextPage(onToggleTheme: onToggleTheme),
           ),
         ],
       ),
