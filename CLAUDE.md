@@ -11,7 +11,7 @@ Two hard constraints shape everything here:
 - **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
-Theme, streaming text, and loading indicator are implemented; remaining roadmap items are not yet.
+Theme, streaming text, loading indicator, and message & thread are implemented; remaining roadmap items are not yet. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.
 
 ## Layout
 
@@ -65,7 +65,7 @@ Status legend: ⬜ Todo · ✅ Done
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 8 | Message & Thread | | ⬜ |
+| 8 | Message & Thread | | ✅ |
 | 9 | Thread List | | ⬜ |
 | 10 | Message actions | | ⬜ |
 | 11 | Streaming text | | ✅ |
