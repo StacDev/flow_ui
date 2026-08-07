@@ -70,15 +70,9 @@ class MessageActionsPage extends StatelessWidget {
         padding: EdgeInsets.all(spacing.lg),
         children: const [
           SectionHeader('Action row'),
-          DemoPreview(
-            preview: _ActionsRowDemo(),
-            code: _rowSnippet,
-          ),
+          DemoPreview(preview: _ActionsRowDemo(), code: _rowSnippet),
           SectionHeader('Under a message'),
-          DemoPreview(
-            preview: _MessageFooterDemo(),
-            code: _footerSnippet,
-          ),
+          DemoPreview(preview: _MessageFooterDemo(), code: _footerSnippet),
         ],
       ),
     );
@@ -151,7 +145,8 @@ class _MessageFooterDemo extends StatelessWidget {
       FlowMessageData.text(
         id: 'a1',
         role: FlowMessageRole.assistant,
-        text: 'Here is the summary you asked for — three sections, each with '
+        text:
+            'Here is the summary you asked for — three sections, each with '
             'the key numbers pulled from the report.',
       ),
       footer: FlowMessageActions(

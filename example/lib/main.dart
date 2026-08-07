@@ -1,9 +1,12 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
+import 'pages/add_menu_page.dart';
+import 'pages/composer_page.dart';
 import 'pages/loading_indicator_page.dart';
 import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
+import 'pages/model_selector_page.dart';
 import 'pages/streaming_text_page.dart';
 import 'pages/tokens_page.dart';
 
@@ -92,6 +95,21 @@ class GalleryHomePage extends StatelessWidget {
             title: 'Message actions',
             subtitle: 'FlowMessageActions — copy, regenerate, feedback',
             builder: (_) => MessageActionsPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Message composer',
+            subtitle: 'FlowComposer — input, send/stop, action slots',
+            builder: (_) => ComposerPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Model selector',
+            subtitle: 'FlowModelSelector — model picker menu',
+            builder: (_) => ModelSelectorPage(onToggleTheme: onToggleTheme),
+          ),
+          _DemoTile(
+            title: 'Add menu',
+            subtitle: 'FlowAddMenu — the "+" menu: attachments, tools',
+            builder: (_) => AddMenuPage(onToggleTheme: onToggleTheme),
           ),
           _DemoTile(
             title: 'Streaming text',
