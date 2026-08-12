@@ -25,17 +25,51 @@ class FlowModelOption {
   final bool enabled;
 }
 
+/// One effort choice in a [FlowModelSelector].
+@immutable
+class FlowEffortOption {
+  const FlowEffortOption({
+    required this.id,
+    required this.label,
+    this.enabled = true,
+  });
+
+  /// Reported through `onEffortSelected`.
+  final String id;
+
+  /// Host-supplied display name, e.g. 'Medium'.
+  final String label;
+
+  final bool enabled;
+}
+
 /// Compact model picker: a pill trigger showing the selected model, opening
 /// a token-styled menu. Designed for a composer's `trailingActions` slot.
+///
+/// Passing [efforts] adds an Effort submenu row under the models and the
+/// selected effort's label, muted, to the trigger — `Sonnet 5  Medium`.
+/// Picking a model or an effort applies immediately and closes the menu.
 class FlowModelSelector extends StatefulWidget {
   const FlowModelSelector({
     super.key,
     required this.models,
     this.selectedId,
     this.onSelected,
+    this.efforts = const <FlowEffortOption>[],
+    this.selectedEffortId,
+    this.onEffortSelected,
+    this.effortLabel = 'Effort',
+    this.effortHint,
     this.enabled = true,
     this.tooltip,
-  });
+  }) : assert(
+         efforts.length == 0 || selectedEffortId != null,
+         'selectedEffortId is required when efforts are provided.',
+       ),
+       assert(
+         efforts.length == 0 || onEffortSelected != null,
+         'onEffortSelected is required when efforts are provided.',
+       );
 
   /// Menu entries, in order.
   final List<FlowModelOption> models;
@@ -47,6 +81,25 @@ class FlowModelSelector extends StatefulWidget {
   /// Called with the chosen option's id. Null disables the selector.
   final ValueChanged<String>? onSelected;
 
+  /// Effort levels, in order. Empty hides the effort section and the
+  /// trigger's effort label.
+  final List<FlowEffortOption> efforts;
+
+  /// Highlighted in the effort section; its label shows muted on the
+  /// trigger. Required when [efforts] is non-empty.
+  final String? selectedEffortId;
+
+  /// Called with the chosen effort's id. Required when [efforts] is
+  /// non-empty.
+  final ValueChanged<String>? onEffortSelected;
+
+  /// Host-localized label on the submenu row.
+  final String effortLabel;
+
+  /// Optional muted paragraph at the top of the effort submenu, e.g. what
+  /// higher effort trades away.
+  final String? effortHint;
+
   final bool enabled;
 
   /// Host-localized trigger tooltip.
@@ -57,6 +110,7 @@ class FlowModelSelector extends StatefulWidget {
 }
 
 class _FlowModelSelectorState extends State<FlowModelSelector> {
+  final MenuController _menuController = MenuController();
   bool _hovered = false;
 
   FlowModelOption? get _selected {
@@ -64,6 +118,13 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
       if (model.id == widget.selectedId) return model;
     }
     return widget.models.isEmpty ? null : widget.models.first;
+  }
+
+  FlowEffortOption? get _selectedEffort {
+    for (final effort in widget.efforts) {
+      if (effort.id == widget.selectedEffortId) return effort;
+    }
+    return null;
   }
 
   @override
@@ -81,8 +142,13 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
     } else {
       foreground = colors.onSurfaceVariant;
     }
+    final effortForeground = enabled
+        ? colors.onSurfaceVariant
+        : flowDisabledColor(colors.onSurfaceVariant);
+    final effort = _selectedEffort;
 
     return MenuAnchor(
+      controller: _menuController,
       style: flowMenuStyle(context),
       menuChildren: [
         for (final model in widget.models)
@@ -93,15 +159,78 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
             enabled: model.enabled,
             onTap: () => widget.onSelected?.call(model.id),
           ),
+        if (widget.efforts.isNotEmpty) ...[
+          const FlowMenuDivider(),
+          SubmenuButton(
+            menuStyle: flowMenuStyle(context),
+            style: flowSubmenuRowStyle(context),
+            // The chevron goes in the submenu-indicator slot; putting it in
+            // trailingIcon would double up with the button's built-in arrow.
+            submenuIcon: WidgetStatePropertyAll(
+              Icon(
+                Icons.chevron_right,
+                size: 16,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            trailingIcon: effort == null
+                ? null
+                : Text(
+                    effort.label,
+                    style: context.flowTypography.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+            menuChildren: [
+              if (widget.effortHint != null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    spacing.md,
+                    spacing.sm,
+                    spacing.md,
+                    spacing.sm,
+                  ),
+                  child: SizedBox(
+                    width: 260,
+                    child: Text(
+                      widget.effortHint!,
+                      style: context.flowTypography.bodySmall.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+              for (final option in widget.efforts)
+                FlowMenuRow(
+                  label: option.label,
+                  selected: option.id == widget.selectedEffortId,
+                  enabled: option.enabled,
+                  // The row's own closeOnTap would only dismiss the submenu
+                  // it sits in; picking an effort should close the whole
+                  // menu, so the root controller does it.
+                  closeOnTap: false,
+                  onTap: () {
+                    _menuController.close();
+                    widget.onEffortSelected?.call(option.id);
+                  },
+                ),
+            ],
+            child: Text(
+              widget.effortLabel,
+              style: context.flowTypography.bodyMedium.copyWith(
+                color: colors.onSurface,
+              ),
+            ),
+          ),
+        ],
       ],
       builder: (context, controller, _) {
         Widget trigger = Material(
           type: MaterialType.transparency,
           child: InkWell(
             onTap: enabled
-                ? () => controller.isOpen
-                      ? controller.close()
-                      : controller.open()
+                ? () =>
+                      controller.isOpen ? controller.close() : controller.open()
                 : null,
             onHover: enabled
                 ? (value) => setState(() => _hovered = value)
@@ -122,6 +251,15 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                       color: foreground,
                     ),
                   ),
+                  if (effort != null) ...[
+                    SizedBox(width: spacing.sm),
+                    Text(
+                      effort.label,
+                      style: context.flowTypography.labelLarge.copyWith(
+                        color: effortForeground,
+                      ),
+                    ),
+                  ],
                   SizedBox(width: spacing.xs),
                   Icon(Icons.expand_more, size: 16, color: foreground),
                 ],

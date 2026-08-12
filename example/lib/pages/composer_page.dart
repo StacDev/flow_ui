@@ -32,6 +32,12 @@ FlowComposer(
       ],
       selectedId: modelId,
       onSelected: (id) => setModel(id),
+      efforts: [
+        FlowEffortOption(id: 'medium', label: 'Medium'),
+        FlowEffortOption(id: 'high', label: 'High'),
+      ],
+      selectedEffortId: effortId,
+      onEffortSelected: (id) => setEffort(id),
     ),
   ],
 )''';
@@ -70,6 +76,7 @@ class _ComposerDemo extends StatefulWidget {
 class _ComposerDemoState extends State<_ComposerDemo> {
   final List<String> _sent = [];
   String _modelId = 'sonnet';
+  String _effortId = 'medium';
   bool _generating = false;
   Timer? _timer;
 
@@ -162,6 +169,13 @@ class _ComposerDemoState extends State<_ComposerDemo> {
               ],
               selectedId: _modelId,
               onSelected: (id) => setState(() => _modelId = id),
+              efforts: const [
+                FlowEffortOption(id: 'low', label: 'Low'),
+                FlowEffortOption(id: 'medium', label: 'Medium'),
+                FlowEffortOption(id: 'high', label: 'High'),
+              ],
+              selectedEffortId: _effortId,
+              onEffortSelected: (id) => setState(() => _effortId = id),
             ),
           ],
         ),

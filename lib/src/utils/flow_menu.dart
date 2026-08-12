@@ -28,6 +28,42 @@ MenuStyle flowMenuStyle(BuildContext context) {
   );
 }
 
+/// A hairline rule between menu sections.
+class FlowMenuDivider extends StatelessWidget {
+  const FlowMenuDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 1,
+      margin: EdgeInsets.symmetric(vertical: context.flowSpacing.xs),
+      color: context.flowColors.outlineVariant,
+    );
+  }
+}
+
+/// Token-styled [ButtonStyle] for a [SubmenuButton] row, matching
+/// [FlowMenuRow]'s metrics and hover treatment.
+ButtonStyle flowSubmenuRowStyle(BuildContext context) {
+  final colors = context.flowColors;
+  final spacing = context.flowSpacing;
+  return ButtonStyle(
+    backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+    overlayColor: WidgetStateProperty.resolveWith(
+      (states) =>
+          states.contains(WidgetState.hovered) ||
+              states.contains(WidgetState.focused)
+          ? colors.surfaceContainerHigh
+          : Colors.transparent,
+    ),
+    padding: WidgetStatePropertyAll(
+      EdgeInsets.symmetric(horizontal: spacing.md, vertical: spacing.sm),
+    ),
+    minimumSize: const WidgetStatePropertyAll(Size(220, 0)),
+    shape: const WidgetStatePropertyAll(RoundedRectangleBorder()),
+  );
+}
+
 /// One row inside a selector menu: optional leading icon, label, optional
 /// muted description, and a check when [selected].
 class FlowMenuRow extends StatelessWidget {
