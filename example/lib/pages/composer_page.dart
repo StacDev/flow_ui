@@ -4,7 +4,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
-import '../widgets/section_header.dart';
+import '../widgets/gallery_page.dart';
 
 const String _composerSnippet = '''
 FlowComposer(
@@ -38,47 +38,24 @@ FlowComposer(
 
 /// Demo for [FlowComposer], composed with both selectors.
 class ComposerPage extends StatelessWidget {
-  const ComposerPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const ComposerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Message composer',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
+    return const GalleryPage(
+      title: 'Message composer',
+      className: 'FlowComposer',
+      description:
+          'The message input with a send/stop swap and action slots — shown '
+          'here composed with FlowAddMenu and FlowModelSelector. Send a '
+          'message to see the stop state.',
+      children: [
+        DemoPreview(
+          minHeight: 220,
+          preview: _ComposerDemo(),
+          code: _composerSnippet,
         ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          SectionHeader('Composer'),
-          DemoPreview(
-            minHeight: 220,
-            preview: _ComposerDemo(),
-            code: _composerSnippet,
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

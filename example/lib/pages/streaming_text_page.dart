@@ -5,6 +5,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
+import '../widgets/gallery_page.dart';
 import '../widgets/section_header.dart';
 
 const String _sampleText =
@@ -34,9 +35,7 @@ FlowStreamingText(
 /// Demo for [FlowStreamingText]: a Timer-based fake stream feeds chunks of
 /// words into the widget. The simulator lives in the example only.
 class StreamingTextPage extends StatefulWidget {
-  const StreamingTextPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const StreamingTextPage({super.key});
 
   @override
   State<StreamingTextPage> createState() => _StreamingTextPageState();
@@ -86,72 +85,56 @@ class _StreamingTextPageState extends State<StreamingTextPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
     final spacing = context.flowSpacing;
 
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Streaming text',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
+    return GalleryPage(
+      title: 'Streaming text',
+      className: 'FlowStreamingText',
+      description:
+          'Characters reveal at an adaptive speed as chunks arrive, and '
+          'fast-forward the moment streaming completes. Replay it at '
+          'different chunk rates.',
+      children: [
+        Wrap(
+          spacing: spacing.md,
+          runSpacing: spacing.md,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: _replay,
+              icon: const Icon(Icons.replay),
+              label: const Text('Replay'),
+            ),
+            SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 200, label: Text('Slow')),
+                ButtonSegment(value: 80, label: Text('Normal')),
+                ButtonSegment(value: 25, label: Text('Fast')),
+              ],
+              selected: {_intervalMs},
+              onSelectionChanged: (selection) {
+                _intervalMs = selection.first;
+                _replay();
+              },
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: widget.onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
+        const SectionHeader('Streaming'),
+        DemoPreview(
+          alignment: Alignment.centerLeft,
+          preview: FlowStreamingText(
+            text: _streamed,
+            isStreaming: _isStreaming,
           ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: [
-          Wrap(
-            spacing: spacing.md,
-            runSpacing: spacing.md,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              FilledButton.icon(
-                onPressed: _replay,
-                icon: const Icon(Icons.replay),
-                label: const Text('Replay'),
-              ),
-              SegmentedButton<int>(
-                segments: const [
-                  ButtonSegment(value: 200, label: Text('Slow')),
-                  ButtonSegment(value: 80, label: Text('Normal')),
-                  ButtonSegment(value: 25, label: Text('Fast')),
-                ],
-                selected: {_intervalMs},
-                onSelectionChanged: (selection) {
-                  _intervalMs = selection.first;
-                  _replay();
-                },
-              ),
-            ],
-          ),
-          const SectionHeader('Streaming'),
-          DemoPreview(
-            preview: FlowStreamingText(
-              text: _streamed,
-              isStreaming: _isStreaming,
-            ),
-            code: _streamingSnippet,
-          ),
-          const SectionHeader('Static (history message)'),
-          const DemoPreview(
-            preview: FlowStreamingText(text: _sampleText, isStreaming: false),
-            code: _staticSnippet,
-          ),
-        ],
-      ),
+          code: _streamingSnippet,
+        ),
+        const SectionHeader('Static (history message)'),
+        const DemoPreview(
+          alignment: Alignment.centerLeft,
+          preview: FlowStreamingText(text: _sampleText, isStreaming: false),
+          code: _staticSnippet,
+        ),
+      ],
     );
   }
 }

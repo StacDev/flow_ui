@@ -2,7 +2,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
-import '../widgets/section_header.dart';
+import '../widgets/gallery_page.dart';
 
 const String _selectorSnippet = '''
 FlowModelSelector(
@@ -31,46 +31,17 @@ FlowModelSelector(
 
 /// Demo for [FlowModelSelector].
 class ModelSelectorPage extends StatelessWidget {
-  const ModelSelectorPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const ModelSelectorPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Model selector',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
-        ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          SectionHeader('Model selector'),
-          DemoPreview(
-            preview: _SelectorDemo(),
-            code: _selectorSnippet,
-          ),
-        ],
-      ),
+    return const GalleryPage(
+      title: 'Model selector',
+      className: 'FlowModelSelector',
+      description:
+          'A compact model picker for the composer\'s trailing slot. Pick a '
+          'model — the menu closes on selection and the trigger updates.',
+      children: [DemoPreview(preview: _SelectorDemo(), code: _selectorSnippet)],
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
-import '../widgets/section_header.dart';
+import '../widgets/gallery_page.dart';
 
 const String _addMenuSnippet = '''
 FlowAddMenu(
@@ -35,46 +35,17 @@ FlowAddMenu(
 
 /// Demo for [FlowAddMenu].
 class AddMenuPage extends StatelessWidget {
-  const AddMenuPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const AddMenuPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Add menu',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
-        ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          SectionHeader('Add menu'),
-          DemoPreview(
-            preview: _AddMenuDemo(),
-            code: _addMenuSnippet,
-          ),
-        ],
-      ),
+    return const GalleryPage(
+      title: 'Add menu',
+      className: 'FlowAddMenu',
+      description:
+          'Attachments and tools behind a single "+" trigger. Tap it — the '
+          'menu closes on selection, and disabled options render muted.',
+      children: [DemoPreview(preview: _AddMenuDemo(), code: _addMenuSnippet)],
     );
   }
 }

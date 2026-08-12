@@ -2,6 +2,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
+import '../widgets/gallery_page.dart';
 import '../widgets/section_header.dart';
 
 const String _rowSnippet = '''
@@ -36,45 +37,23 @@ FlowMessage(
 
 /// Demo for [FlowMessageActions].
 class MessageActionsPage extends StatelessWidget {
-  const MessageActionsPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const MessageActionsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Message actions',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
-        ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          SectionHeader('Action row'),
-          DemoPreview(preview: _ActionsRowDemo(), code: _rowSnippet),
-          SectionHeader('Under a message'),
-          DemoPreview(preview: _MessageFooterDemo(), code: _footerSnippet),
-        ],
-      ),
+    return const GalleryPage(
+      title: 'Message actions',
+      className: 'FlowMessageActions',
+      description:
+          'The action row under a message — copy, regenerate, edit, and '
+          'feedback. The thumbs toggle and exclude each other; disabled '
+          'actions render muted.',
+      children: [
+        SectionHeader('Action row'),
+        DemoPreview(preview: _ActionsRowDemo(), code: _rowSnippet),
+        SectionHeader('Under a message'),
+        DemoPreview(preview: _MessageFooterDemo(), code: _footerSnippet),
+      ],
     );
   }
 }

@@ -1,6 +1,34 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:syntax_highlight/syntax_highlight.dart';
+
+/// The gallery's Dart highlighters, initialized once at startup.
+///
+/// `syntax_highlight` loads its TextMate grammar and themes from bundled
+/// assets, so setup is async; `main` awaits [init] before running the app
+/// and every [CodeBlock] then highlights synchronously.
+class CodeHighlighting {
+  CodeHighlighting._();
+
+  static Highlighter? _light;
+  static Highlighter? _dark;
+
+  static Future<void> init() async {
+    await Highlighter.initialize(['dart']);
+    _light = Highlighter(
+      language: 'dart',
+      theme: await HighlighterTheme.loadLightTheme(),
+    );
+    _dark = Highlighter(
+      language: 'dart',
+      theme: await HighlighterTheme.loadDarkTheme(),
+    );
+  }
+
+  static Highlighter? of(Brightness brightness) =>
+      brightness == Brightness.dark ? _dark : _light;
+}
 
 /// Example-only code snippet display with copy-to-clipboard.
 ///
@@ -25,6 +53,14 @@ class CodeBlock extends StatelessWidget {
       height: 1.6,
     );
 
+    // VS Code's Dart grammar, in the theme matching the ambient brightness;
+    // the base style keeps the mono font and line height, the spans carry
+    // per-token color. Plain text is the fallback if init hasn't run.
+    final highlighter = CodeHighlighting.of(Theme.of(context).brightness);
+    final content = highlighter == null
+        ? TextSpan(text: code, style: codeStyle)
+        : TextSpan(style: codeStyle, children: [highlighter.highlight(code)]);
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -37,7 +73,7 @@ class CodeBlock extends StatelessWidget {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.all(spacing.lg),
-            child: SelectableText(code, style: codeStyle),
+            child: SelectableText.rich(content),
           ),
           Positioned(
             top: spacing.xs,

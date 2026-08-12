@@ -2,48 +2,26 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/section_header.dart';
+import '../widgets/gallery_page.dart';
 
 /// Renders every design token — the visual check for the theme layer.
 class TokensPage extends StatelessWidget {
-  const TokensPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const TokensPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Design tokens',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
-        ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          _ColorsSection(),
-          _TypographySection(),
-          _SpacingSection(),
-          _RadiiSection(),
-        ],
-      ),
+    return const GalleryPage(
+      title: 'Design tokens',
+      className: 'FlowTheme',
+      description:
+          'Every token the theme extension carries — colors, the type '
+          'scale, spacing steps, and radii — in the current brightness.',
+      children: [
+        _ColorsSection(),
+        _TypographySection(),
+        _SpacingSection(),
+        _RadiiSection(),
+      ],
     );
   }
 }

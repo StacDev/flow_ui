@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'code_block.dart';
 
 /// Example-only demo card with Preview / Code tabs, like component doc sites.
+///
+/// The demo renders centered on a clean [FlowColors.surface] stage inside the
+/// card, so a small trigger reads as an object on a surface; widgets that
+/// expand (a composer, a thread) naturally fill the stage width.
 class DemoPreview extends StatefulWidget {
   const DemoPreview({
     super.key,
     required this.preview,
     required this.code,
     this.minHeight = 140,
+    this.alignment = Alignment.center,
   });
 
   /// The live widget shown on the Preview tab.
@@ -19,6 +24,12 @@ class DemoPreview extends StatefulWidget {
   final String code;
 
   final double minHeight;
+
+  /// Where the demo sits on the stage. Centered by default, which presents
+  /// small widgets well; text demos pass [Alignment.centerLeft] so a
+  /// growing paragraph reads left to right instead of expanding from the
+  /// middle.
+  final Alignment alignment;
 
   @override
   State<DemoPreview> createState() => _DemoPreviewState();
@@ -42,22 +53,17 @@ class _DemoPreviewState extends State<DemoPreview> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: spacing.sm),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: colors.outlineVariant)),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: spacing.sm,
+              vertical: spacing.xs,
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                _TabButton(
-                  label: 'Preview',
-                  selected: !_showCode,
-                  onTap: () => setState(() => _showCode = false),
-                ),
-                _TabButton(
-                  label: 'Code',
-                  selected: _showCode,
-                  onTap: () => setState(() => _showCode = true),
+                _TabSwitch(
+                  showCode: _showCode,
+                  onChanged: (value) => setState(() => _showCode = value),
                 ),
               ],
             ),
@@ -66,7 +72,8 @@ class _DemoPreviewState extends State<DemoPreview> {
             Container(
               constraints: BoxConstraints(minHeight: widget.minHeight),
               padding: EdgeInsets.all(spacing.lg),
-              alignment: Alignment.centerLeft,
+              alignment: widget.alignment,
+              color: colors.surface,
               child: widget.preview,
             )
           else
@@ -80,8 +87,44 @@ class _DemoPreviewState extends State<DemoPreview> {
   }
 }
 
-class _TabButton extends StatelessWidget {
-  const _TabButton({
+/// The compact Preview | Code segmented switch in the card header.
+class _TabSwitch extends StatelessWidget {
+  const _TabSwitch({required this.showCode, required this.onChanged});
+
+  final bool showCode;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.flowColors;
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHigh,
+        borderRadius: context.flowRadii.sm,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _Segment(
+            label: 'Preview',
+            selected: !showCode,
+            onTap: () => onChanged(false),
+          ),
+          _Segment(
+            label: 'Code',
+            selected: showCode,
+            onTap: () => onChanged(true),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Segment extends StatelessWidget {
+  const _Segment({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -96,28 +139,22 @@ class _TabButton extends StatelessWidget {
     final colors = context.flowColors;
     final spacing = context.flowSpacing;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
+    return Material(
+      color: selected ? colors.surface : Colors.transparent,
+      borderRadius: context.flowRadii.sm,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: selected ? null : onTap,
+        child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: spacing.md,
-            vertical: spacing.md,
-          ),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: selected ? colors.primary : Colors.transparent,
-                width: 2,
-              ),
-            ),
+            vertical: spacing.xs,
           ),
           child: Text(
             label,
-            style: context.flowTypography.labelLarge.copyWith(
-              color: selected ? colors.primary : colors.onSurfaceVariant,
+            style: context.flowTypography.labelMedium.copyWith(
+              color: selected ? colors.onSurface : colors.onSurfaceVariant,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),

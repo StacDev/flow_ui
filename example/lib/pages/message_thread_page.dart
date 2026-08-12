@@ -5,6 +5,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_preview.dart';
+import '../widgets/gallery_page.dart';
 import '../widgets/section_header.dart';
 
 const String _conversationSnippet = '''
@@ -65,50 +66,28 @@ FlowMessage(
 
 /// Demo for [FlowMessage] and [FlowThread].
 class MessageThreadPage extends StatelessWidget {
-  const MessageThreadPage({super.key, required this.onToggleTheme});
-
-  final VoidCallback onToggleTheme;
+  const MessageThreadPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
-
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLow,
-        title: Text(
-          'Message & Thread',
-          style: typography.titleLarge.copyWith(color: colors.onSurface),
+    return const GalleryPage(
+      title: 'Message & Thread',
+      className: 'FlowMessage · FlowThread',
+      description:
+          'Conversation rendering from plain message data — user, assistant, '
+          'and system roles, live streaming, and the pending and error '
+          'states.',
+      children: [
+        SectionHeader('Conversation'),
+        DemoPreview(
+          preview: SizedBox(height: 300, child: _ConversationDemo()),
+          code: _conversationSnippet,
         ),
-        actions: [
-          IconButton(
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(spacing.lg),
-        children: const [
-          SectionHeader('Conversation'),
-          DemoPreview(
-            preview: SizedBox(height: 300, child: _ConversationDemo()),
-            code: _conversationSnippet,
-          ),
-          SectionHeader('Live thread'),
-          DemoPreview(preview: _LiveThreadDemo(), code: _liveSnippet),
-          SectionHeader('States'),
-          DemoPreview(preview: _StatesDemo(), code: _statesSnippet),
-        ],
-      ),
+        SectionHeader('Live thread'),
+        DemoPreview(preview: _LiveThreadDemo(), code: _liveSnippet),
+        SectionHeader('States'),
+        DemoPreview(preview: _StatesDemo(), code: _statesSnippet),
+      ],
     );
   }
 }
