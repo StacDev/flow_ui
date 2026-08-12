@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
+import 'flow_state_colors.dart';
 
 // Internal menu infrastructure shared by the selector widgets.
 // Not exported from the package barrel.
-
-const double _disabledOpacity = 0.38;
-
-Color flowDisabledColor(Color color) =>
-    color.withValues(alpha: color.a * _disabledOpacity);
 
 /// Token-styled [MenuStyle] for selector menus.
 MenuStyle flowMenuStyle(BuildContext context) {

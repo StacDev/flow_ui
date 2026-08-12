@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
+import '../utils/flow_state_colors.dart';
 
 /// One action in a [FlowMessageActions] row.
 ///
@@ -123,8 +124,6 @@ class _ActionButton extends StatefulWidget {
 }
 
 class _ActionButtonState extends State<_ActionButton> {
-  static const double _disabledOpacity = 0.38;
-
   bool _hovered = false;
 
   @override
@@ -135,9 +134,7 @@ class _ActionButtonState extends State<_ActionButton> {
 
     final Color foreground;
     if (!enabled) {
-      foreground = colors.onSurfaceVariant.withValues(
-        alpha: colors.onSurfaceVariant.a * _disabledOpacity,
-      );
+      foreground = flowDisabledColor(colors.onSurfaceVariant);
     } else if (action.selected) {
       foreground = colors.primary;
     } else if (_hovered) {
@@ -152,9 +149,7 @@ class _ActionButtonState extends State<_ActionButton> {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: action.onPressed,
-        onHover: enabled
-            ? (value) => setState(() => _hovered = value)
-            : null,
+        onHover: enabled ? (value) => setState(() => _hovered = value) : null,
         borderRadius: context.flowRadii.sm,
         hoverColor: colors.surfaceContainerHigh,
         child: Padding(

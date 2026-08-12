@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu.dart';
+import '../utils/flow_state_colors.dart';
 
 /// One entry in a [FlowAddMenu].
 @immutable
@@ -91,9 +92,8 @@ class _FlowAddMenuState extends State<FlowAddMenu> {
           type: MaterialType.transparency,
           child: InkWell(
             onTap: enabled
-                ? () => controller.isOpen
-                      ? controller.close()
-                      : controller.open()
+                ? () =>
+                      controller.isOpen ? controller.close() : controller.open()
                 : null,
             onHover: enabled
                 ? (value) => setState(() => _hovered = value)

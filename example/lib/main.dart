@@ -8,6 +8,7 @@ import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
 import 'pages/model_selector_page.dart';
 import 'pages/streaming_text_page.dart';
+import 'pages/suggestion_page.dart';
 import 'pages/tokens_page.dart';
 import 'widgets/code_block.dart';
 import 'widgets/gallery_app_bar.dart';
@@ -87,6 +88,12 @@ final List<GalleryGroup> galleryGroups = [
         subtitle: 'FlowAddMenu — the "+" menu: attachments, tools',
         icon: Icons.add_circle_outline,
         builder: (_) => const AddMenuPage(),
+      ),
+      GalleryEntry(
+        title: 'Suggestions',
+        subtitle: 'FlowSuggestion & FlowSuggestionGroup — prompt starters',
+        icon: Icons.lightbulb_outline,
+        builder: (_) => const SuggestionPage(),
       ),
     ],
   ),

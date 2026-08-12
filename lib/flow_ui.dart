@@ -18,4 +18,5 @@ export 'src/widgets/flow_message.dart';
 export 'src/widgets/flow_model_selector.dart';
 export 'src/widgets/flow_message_actions.dart';
 export 'src/widgets/flow_streaming_text.dart';
+export 'src/widgets/flow_suggestion.dart';
 export 'src/widgets/flow_thread.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/flow_theme.dart';
-import '../utils/flow_menu.dart';
+import '../utils/flow_state_colors.dart';
 
 /// The message input area: an auto-growing text field with an action bar
 /// and a send button that morphs into stop while [isStreaming].
@@ -182,7 +182,12 @@ class _FlowComposerState extends State<FlowComposer> {
           color: _focused ? colors.primary : colors.outlineVariant,
         ),
       ),
-      padding: EdgeInsets.fromLTRB(spacing.lg, spacing.sm, spacing.sm, spacing.sm),
+      padding: EdgeInsets.fromLTRB(
+        spacing.lg,
+        spacing.sm,
+        spacing.sm,
+        spacing.sm,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

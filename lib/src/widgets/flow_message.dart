@@ -160,7 +160,10 @@ class FlowMessage extends StatelessWidget {
       children: [
         content,
         if (footer != null)
-          Padding(padding: EdgeInsets.only(top: spacing.xs), child: footer),
+          Padding(
+            padding: EdgeInsets.only(top: spacing.xs),
+            child: footer,
+          ),
       ],
     );
 

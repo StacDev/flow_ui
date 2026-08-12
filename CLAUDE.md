@@ -75,7 +75,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 15 | Attachments | images, videos, files | ⬜ |
 | 16 | Preview | | ⬜ |
 | 17 | Tool | TBD | ⬜ |
-| 18 | Suggestion & Suggestion Group | | ⬜ |
+| 18 | Suggestion & Suggestion Group | scrolling row, wrap, column | ✅ |
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
 | 21 | Code block | | ⬜ |
