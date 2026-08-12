@@ -39,6 +39,7 @@ class FlowMenuRow extends StatelessWidget {
     this.selected = false,
     this.enabled = true,
     this.onTap,
+    this.closeOnTap = true,
     this.minWidth = 220,
   });
 
@@ -48,6 +49,12 @@ class FlowMenuRow extends StatelessWidget {
   final bool selected;
   final bool enabled;
   final VoidCallback? onTap;
+
+  /// Whether tapping dismisses the enclosing menu. Picking an option is the
+  /// decision a selector menu exists for, so it defaults to true; a row that
+  /// toggles state in place can opt out.
+  final bool closeOnTap;
+
   final double minWidth;
 
   @override
@@ -63,10 +70,20 @@ class FlowMenuRow extends StatelessWidget {
         ? colors.onSurfaceVariant
         : flowDisabledColor(colors.onSurfaceVariant);
 
+    // This context sits inside the menu overlay, so the enclosing
+    // MenuAnchor's controller is in scope here — the row can dismiss the
+    // menu itself, and every selector built on it closes on pick.
+    final VoidCallback? handleTap = !enabled || onTap == null
+        ? null
+        : () {
+            if (closeOnTap) MenuController.maybeOf(context)?.close();
+            onTap!();
+          };
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: enabled ? onTap : null,
+        onTap: handleTap,
         hoverColor: colors.surfaceContainerHigh,
         child: ConstrainedBox(
           constraints: BoxConstraints(minWidth: minWidth),
