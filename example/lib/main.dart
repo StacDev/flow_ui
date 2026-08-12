@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/add_menu_page.dart';
 import 'pages/attachment_page.dart';
+import 'pages/chat_screen_page.dart';
 import 'pages/composer_page.dart';
 import 'pages/loading_indicator_page.dart';
 import 'pages/message_actions_page.dart';
@@ -101,6 +102,17 @@ final List<GalleryGroup> galleryGroups = [
         subtitle: 'FlowSuggestion & FlowSuggestionGroup — prompt starters',
         icon: Icons.lightbulb_outline,
         builder: (_) => const SuggestionPage(),
+      ),
+    ],
+  ),
+  GalleryGroup(
+    label: 'Surfaces',
+    entries: [
+      GalleryEntry(
+        title: 'Chat screen',
+        subtitle: 'FlowChatScreen — thread and composer assembled',
+        icon: Icons.chat_outlined,
+        builder: (_) => const ChatScreenPage(),
       ),
     ],
   ),
