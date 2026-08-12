@@ -4,6 +4,7 @@
 /// nothing model-facing and depends only on the Flutter SDK.
 library;
 
+export 'src/models/flow_attachment.dart';
 export 'src/models/flow_message_data.dart';
 export 'src/models/flow_message_part.dart';
 export 'src/theme/flow_colors.dart';
@@ -12,6 +13,8 @@ export 'src/theme/flow_spacing.dart';
 export 'src/theme/flow_theme.dart';
 export 'src/theme/flow_typography.dart';
 export 'src/widgets/flow_add_menu.dart';
+export 'src/widgets/flow_attachment_group.dart';
+export 'src/widgets/flow_attachment_preview.dart';
 export 'src/widgets/flow_composer.dart';
 export 'src/widgets/flow_loading_indicator.dart';
 export 'src/widgets/flow_message.dart';

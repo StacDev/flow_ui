@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import '../theme/flow_theme.dart';
+import 'flow_attachment_group.dart';
 import 'flow_loading_indicator.dart';
 import 'flow_streaming_text.dart';
 
@@ -32,6 +33,8 @@ class FlowMessage extends StatelessWidget {
     this.message, {
     super.key,
     this.customPartBuilder,
+    this.onAttachmentTap,
+    this.previewCloseTooltip,
     this.leading,
     this.footer,
     this.maxBubbleWidthFraction = 0.75,
@@ -47,6 +50,16 @@ class FlowMessage extends StatelessWidget {
 
   /// Hook for [FlowCustomPart] content.
   final FlowCustomPartBuilder? customPartBuilder;
+
+  /// Called with the tapped attachment's id, *instead of* opening the
+  /// built-in full-screen preview. Sent attachments are never removable, so
+  /// this is the only intent they report — and a host that just wants to
+  /// observe the tap should call `showFlowAttachmentPreview` from the
+  /// handler, or the images stop opening.
+  final ValueChanged<String>? onAttachmentTap;
+
+  /// Host-localized label for the built-in preview's close button.
+  final String? previewCloseTooltip;
 
   /// Slot beside the content, e.g. an avatar.
   final Widget? leading;
@@ -195,6 +208,9 @@ class FlowMessage extends StatelessWidget {
                 style: style,
                 textAlign: TextAlign.center,
               ),
+              // System messages are centered notices; attachments belong to
+              // user and assistant turns.
+              FlowAttachmentPart() => const SizedBox.shrink(),
               FlowCustomPart() =>
                 customPartBuilder?.call(context, message, part) ??
                     const SizedBox.shrink(),
@@ -228,6 +244,19 @@ class FlowMessage extends StatelessWidget {
           style: style,
           charactersPerSecond: charactersPerSecond,
         ),
+        // Wraps rather than scrolls: a bubble is capped well below the width
+        // of a long strip, and content already sent must not be hidden
+        // behind a scroll with no scrollbar. Null, not an empty box, so an
+        // empty list doesn't leave a gap before the next part.
+        FlowAttachmentPart(:final attachments) =>
+          attachments.isEmpty
+              ? null
+              : FlowAttachmentGroup(
+                  attachments: attachments,
+                  layout: FlowAttachmentLayout.wrap,
+                  onTap: onAttachmentTap,
+                  previewCloseTooltip: previewCloseTooltip,
+                ),
         FlowCustomPart() => customPartBuilder?.call(context, message, part),
       };
       if (child == null) continue;

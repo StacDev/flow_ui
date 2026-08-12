@@ -15,6 +15,8 @@ class FlowThread extends StatelessWidget {
     super.key,
     required this.messages,
     this.customPartBuilder,
+    this.onAttachmentTap,
+    this.previewCloseTooltip,
     this.controller,
     this.padding,
     this.itemSpacing,
@@ -27,6 +29,18 @@ class FlowThread extends StatelessWidget {
 
   /// Forwarded to each [FlowMessage].
   final FlowCustomPartBuilder? customPartBuilder;
+
+  /// Called with the message the attachment belongs to and its id —
+  /// attachment ids only need to be unique within their own message.
+  ///
+  /// Supplying this *replaces* the built-in full-screen preview for every
+  /// attachment in the thread; call `showFlowAttachmentPreview` from the
+  /// handler to keep it.
+  final void Function(FlowMessageData message, String attachmentId)?
+  onAttachmentTap;
+
+  /// Host-localized label for the built-in preview's close button.
+  final String? previewCloseTooltip;
 
   /// Optional external scroll controller.
   final ScrollController? controller;
@@ -48,6 +62,7 @@ class FlowThread extends StatelessWidget {
   Widget build(BuildContext context) {
     final spacing = context.flowSpacing;
     final gap = itemSpacing ?? spacing.lg;
+    final onAttachmentTap = this.onAttachmentTap;
 
     return ListView.builder(
       controller: controller,
@@ -66,6 +81,10 @@ class FlowThread extends StatelessWidget {
               FlowMessage(
                 message,
                 customPartBuilder: customPartBuilder,
+                onAttachmentTap: onAttachmentTap == null
+                    ? null
+                    : (attachmentId) => onAttachmentTap(message, attachmentId),
+                previewCloseTooltip: previewCloseTooltip,
                 charactersPerSecond: charactersPerSecond,
               ),
         );

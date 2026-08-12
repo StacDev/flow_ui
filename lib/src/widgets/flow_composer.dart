@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/flow_attachment.dart';
 import '../theme/flow_theme.dart';
+import '../utils/flow_circle_button.dart';
 import '../utils/flow_state_colors.dart';
+import 'flow_attachment_group.dart';
 
 /// The message input area: an auto-growing text field with an action bar
 /// and a send button that morphs into stop while [isStreaming].
@@ -34,6 +37,11 @@ class FlowComposer extends StatefulWidget {
     this.clearOnSend = true,
     this.submitOnEnter = true,
     this.maxLines = 6,
+    this.attachments = const [],
+    this.onRemoveAttachment,
+    this.onAttachmentTap,
+    this.removeAttachmentTooltip,
+    this.previewCloseTooltip,
     this.leadingActions = const [],
     this.trailingActions = const [],
   }) : assert(maxLines > 0, 'maxLines must be positive');
@@ -66,6 +74,23 @@ class FlowComposer extends StatefulWidget {
 
   /// Auto-grow cap; the field scrolls beyond it.
   final int maxLines;
+
+  /// Pending attachments, shown above the input. Empty renders nothing.
+  final List<FlowAttachment> attachments;
+
+  /// Called with the id of the attachment whose remove button was tapped.
+  final ValueChanged<String>? onRemoveAttachment;
+
+  /// Called with the tapped attachment's id, *instead of* opening the
+  /// built-in full-screen preview. Call `showFlowAttachmentPreview` from the
+  /// handler to keep it alongside your own handling.
+  final ValueChanged<String>? onAttachmentTap;
+
+  /// Host-localized label for the remove button on each attachment.
+  final String? removeAttachmentTooltip;
+
+  /// Host-localized label for the built-in preview's close button.
+  final String? previewCloseTooltip;
 
   /// Bottom-left slot, e.g. a `FlowAddMenu`.
   final List<Widget> leadingActions;
@@ -145,7 +170,7 @@ class _FlowComposerState extends State<FlowComposer> {
   Widget _buildSendStopButton(BuildContext context) {
     final colors = context.flowColors;
     if (widget.isStreaming) {
-      return _CircleButton(
+      return FlowCircleButton(
         icon: Icons.stop_rounded,
         background: colors.primary,
         foreground: colors.onPrimary,
@@ -156,7 +181,7 @@ class _FlowComposerState extends State<FlowComposer> {
       valueListenable: _controller,
       builder: (context, value, _) {
         final canSend = widget.enabled && value.text.trim().isNotEmpty;
-        return _CircleButton(
+        return FlowCircleButton(
           icon: Icons.arrow_upward,
           background: canSend ? colors.primary : colors.surfaceContainerHigh,
           foreground: canSend
@@ -192,6 +217,19 @@ class _FlowComposerState extends State<FlowComposer> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.attachments.isNotEmpty) ...[
+            FlowAttachmentGroup(
+              attachments: widget.attachments,
+              onTap: widget.onAttachmentTap,
+              // Editing is what `enabled` gates; viewing an attachment that
+              // is already pending stays available, as does the send button
+              // while streaming.
+              onRemove: widget.enabled ? widget.onRemoveAttachment : null,
+              removeTooltip: widget.removeAttachmentTooltip,
+              previewCloseTooltip: widget.previewCloseTooltip,
+            ),
+            SizedBox(height: spacing.sm),
+          ],
           Focus(
             onKeyEvent: _handleKeyEvent,
             child: TextField(
@@ -228,37 +266,6 @@ class _FlowComposerState extends State<FlowComposer> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.icon,
-    required this.background,
-    required this.foreground,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final Color background;
-  final Color foreground;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Padding(
-          padding: EdgeInsets.all(context.flowSpacing.sm),
-          child: Icon(icon, size: 18, color: foreground),
-        ),
       ),
     );
   }

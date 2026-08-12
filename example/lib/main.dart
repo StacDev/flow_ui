@@ -2,6 +2,7 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/add_menu_page.dart';
+import 'pages/attachment_page.dart';
 import 'pages/composer_page.dart';
 import 'pages/loading_indicator_page.dart';
 import 'pages/message_actions_page.dart';
@@ -88,6 +89,12 @@ final List<GalleryGroup> galleryGroups = [
         subtitle: 'FlowAddMenu — the "+" menu: attachments, tools',
         icon: Icons.add_circle_outline,
         builder: (_) => const AddMenuPage(),
+      ),
+      GalleryEntry(
+        title: 'Attachments',
+        subtitle: 'FlowAttachment & FlowAttachmentGroup — image thumbnails',
+        icon: Icons.image_outlined,
+        builder: (_) => const AttachmentPage(),
       ),
       GalleryEntry(
         title: 'Suggestions',
