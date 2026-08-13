@@ -114,7 +114,8 @@ class FlowColors {
 
   // Outline — borders and separators.
 
-  /// Hairline around a raised card.
+  /// Hairline around a raised card — 14% ink in light, 20% in dark; dark
+  /// hairlines need the extra step to hold the edge.
   final Color outline;
 
   /// Fainter hairline: separators, a chip at rest.
@@ -186,7 +187,7 @@ class FlowColors {
     surfaceContainer: Color(0xFF202020),
     surfaceContainerHigh: Color(0xFF2A2A2A),
     surfaceContainerHighest: Color(0xFF333333),
-    outline: Color(0x24FFFFFF),
+    outline: Color(0x33FFFFFF),
     outlineVariant: Color(0x0FFFFFFF),
     inverseSurface: Color(0xFFF9F9F7),
     onInverseSurface: Color(0xFF1A1A19),

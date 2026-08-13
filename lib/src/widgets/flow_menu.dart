@@ -115,8 +115,9 @@ class FlowMenu extends StatefulWidget {
 }
 
 class _FlowMenuState extends State<FlowMenu> {
-  /// The design's trigger inset.
-  static const double _triggerPadding = 4;
+  /// The design's trigger: an 18px glyph centered on a 32px disc.
+  static const double _triggerIconSize = 18;
+  static const double _triggerPadding = 7;
 
   bool _hovered = false;
 
@@ -252,7 +253,11 @@ class _FlowMenuState extends State<FlowMenu> {
             hoverColor: colors.surfaceContainerHigh,
             child: Padding(
               padding: const EdgeInsets.all(_triggerPadding),
-              child: Icon(widget.icon, size: 20, color: foreground),
+              child: Icon(
+                widget.icon,
+                size: _triggerIconSize,
+                color: foreground,
+              ),
             ),
           ),
         );

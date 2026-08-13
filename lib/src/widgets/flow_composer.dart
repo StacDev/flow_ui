@@ -112,25 +112,35 @@ class FlowComposer extends StatefulWidget {
 }
 
 class _FlowComposerState extends State<FlowComposer> {
-  /// The design's card: 24px corners, padded 16/8/8/8, with 8px around the
-  /// attachment strip and field, 4px around the action row.
-  ///
-  /// Directional on purpose — the wide 16 follows the *start* side, where
-  /// the text and leading actions sit, so RTL mirrors correctly. This is a
-  /// deliberate change from the physical left-hand padding of earlier
-  /// builds.
+  /// The design's card: 24px corners padded 18 above and 10 below, its
+  /// content — attachment strip and field — inset 18 from the sides while
+  /// the action row tucks in at 10, under a soft ambient shadow.
   static const BorderRadius _cardRadius = BorderRadius.all(Radius.circular(24));
   static const EdgeInsetsGeometry _cardPadding = EdgeInsetsDirectional.fromSTEB(
-    16,
-    8,
-    8,
-    8,
+    0,
+    18,
+    0,
+    10,
   );
-  static const double _attachmentGap = 8;
-  static const double _fieldPadding = 8;
-  static const double _actionRowGap = 4;
+  static const double _contentInset = 18;
+  static const double _actionInset = 10;
+  static const double _attachmentGap = 12;
+  static const double _fieldGap = 16;
   static const double _leadingGap = 4;
   static const double _trailingGap = 8;
+
+  /// Send and stop are the design's ringed button: a 26px disc inside a
+  /// surface-colored gap and a 1px ring, on a 32px frame.
+  static const double _buttonFrame = 32;
+  static const double _buttonDisc = 26;
+
+  /// Centers the stop glyph on the disc (26 = 18 + 2 × 4).
+  static const double _stopPadding = 4;
+
+  /// The card's lift, as an alpha over the ink — the attachment tiles'
+  /// idiom at the composer's tighter blur.
+  static const double _shadowOpacity = 0.02;
+  static const double _shadowBlur = 12;
 
   TextEditingController? _internalController;
   FocusNode? _internalFocusNode;
@@ -196,27 +206,69 @@ class _FlowComposerState extends State<FlowComposer> {
     return KeyEventResult.ignored;
   }
 
+  /// The design's button anatomy: the disc floats inside a gap of the
+  /// card's own surface, enclosed by a hairline ring — the ring muted while
+  /// the button can't act, so the geometry never jumps on enable.
+  Widget _ringed(
+    BuildContext context, {
+    required bool active,
+    required Widget disc,
+  }) {
+    final colors = context.flowColors;
+    return Container(
+      width: _buttonFrame,
+      height: _buttonFrame,
+      alignment: Alignment.center,
+      decoration: ShapeDecoration(
+        color: colors.surfaceContainerLowest,
+        shape: CircleBorder(
+          side: BorderSide(color: active ? colors.primary : colors.outline),
+        ),
+      ),
+      child: SizedBox.square(dimension: _buttonDisc, child: disc),
+    );
+  }
+
   Widget _buildSendStopButton(BuildContext context) {
     final colors = context.flowColors;
     if (widget.isStreaming) {
-      return FlowCircleButton(
-        icon: Icons.stop_rounded,
-        background: colors.primary,
-        foreground: colors.onPrimary,
-        onTap: widget.onStop,
+      return _ringed(
+        context,
+        active: true,
+        disc: FlowCircleButton(
+          icon: Icons.stop_rounded,
+          background: colors.primary,
+          foreground: colors.onPrimary,
+          padding: _stopPadding,
+          onTap: widget.onStop,
+        ),
       );
     }
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: _controller,
       builder: (context, value, _) {
         final canSend = widget.enabled && value.text.trim().isNotEmpty;
-        return FlowCircleButton(
-          icon: Icons.arrow_upward,
-          background: canSend ? colors.primary : colors.surfaceContainerHigh,
-          foreground: canSend
-              ? colors.onPrimary
-              : flowDisabledColor(colors.onSurfaceVariant),
-          onTap: canSend ? _send : null,
+        return _ringed(
+          context,
+          active: canSend,
+          disc: Material(
+            color: canSend ? colors.primary : colors.surfaceContainerHigh,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: canSend ? _send : null,
+              customBorder: const CircleBorder(),
+              child: CustomPaint(
+                // The design's arrow is a thin stroke, not the chunky
+                // Material glyph.
+                painter: _ArrowUpPainter(
+                  color: canSend
+                      ? colors.onPrimary
+                      : flowDisabledColor(colors.onSurfaceVariant),
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
@@ -230,10 +282,17 @@ class _FlowComposerState extends State<FlowComposer> {
     return Container(
       decoration: BoxDecoration(
         // The composer is the design's raised card: it sits above the page
-        // rather than tinting it, in both themes.
+        // rather than tinting it, in both themes, under a barely-there
+        // ambient lift.
         color: colors.surfaceContainerLowest,
         borderRadius: widget.borderRadius ?? _cardRadius,
         border: Border.all(color: _focused ? colors.primary : colors.outline),
+        boxShadow: [
+          BoxShadow(
+            color: colors.onSurface.withValues(alpha: _shadowOpacity),
+            blurRadius: _shadowBlur,
+          ),
+        ],
       ),
       padding: widget.padding ?? _cardPadding,
       child: Column(
@@ -241,57 +300,102 @@ class _FlowComposerState extends State<FlowComposer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (widget.attachments.isNotEmpty) ...[
-            FlowAttachmentGroup(
-              attachments: widget.attachments,
-              onTap: widget.onAttachmentTap,
-              // Editing is what `enabled` gates; viewing an attachment that
-              // is already pending stays available, as does the send button
-              // while streaming.
-              onRemove: widget.enabled ? widget.onRemoveAttachment : null,
-              removeTooltip: widget.removeAttachmentTooltip,
-              previewCloseTooltip: widget.previewCloseTooltip,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _contentInset),
+              child: FlowAttachmentGroup(
+                attachments: widget.attachments,
+                onTap: widget.onAttachmentTap,
+                // Editing is what `enabled` gates; viewing an attachment
+                // that is already pending stays available, as does the send
+                // button while streaming.
+                onRemove: widget.enabled ? widget.onRemoveAttachment : null,
+                removeTooltip: widget.removeAttachmentTooltip,
+                previewCloseTooltip: widget.previewCloseTooltip,
+              ),
             ),
             const SizedBox(height: _attachmentGap),
           ],
-          Focus(
-            onKeyEvent: _handleKeyEvent,
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              enabled: widget.enabled,
-              minLines: 1,
-              maxLines: widget.maxLines,
-              style: typography.bodyLarge.copyWith(color: colors.onSurface),
-              decoration: InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                hintText: widget.placeholder,
-                hintStyle: typography.bodyLarge.copyWith(
-                  color: colors.onSurfaceMuted,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: _contentInset),
+            child: Focus(
+              onKeyEvent: _handleKeyEvent,
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                enabled: widget.enabled,
+                minLines: 1,
+                maxLines: widget.maxLines,
+                style: typography.bodyLarge.copyWith(
+                  height: 1.3,
+                  color: colors.onSurface,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: _fieldPadding,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  hintText: widget.placeholder,
+                  hintStyle: typography.bodyLarge.copyWith(
+                    height: 1.3,
+                    color: colors.onSurfaceMuted,
+                  ),
+                  contentPadding: EdgeInsets.zero,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: _actionRowGap),
-          Row(
-            children: [
-              for (final action in widget.leadingActions) ...[
-                action,
-                const SizedBox(width: _leadingGap),
+          const SizedBox(height: _fieldGap),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: _actionInset),
+            child: Row(
+              children: [
+                for (final action in widget.leadingActions) ...[
+                  action,
+                  const SizedBox(width: _leadingGap),
+                ],
+                const Spacer(),
+                for (final action in widget.trailingActions) ...[
+                  action,
+                  const SizedBox(width: _trailingGap),
+                ],
+                _buildSendStopButton(context),
               ],
-              const Spacer(),
-              for (final action in widget.trailingActions) ...[
-                action,
-                const SizedBox(width: _trailingGap),
-              ],
-              _buildSendStopButton(context),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+/// The send arrow: a thin rounded stroke, matching the design's 1.5-weight
+/// mark rather than the Material icon's filled glyph. Drawn to scale with
+/// the disc it sits on.
+class _ArrowUpPainter extends CustomPainter {
+  const _ArrowUpPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = size.shortestSide / 17
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    final center = size.center(Offset.zero);
+    // The design's proportions on its 26px disc: a 12-tall stem with a
+    // 10-wide head.
+    final stem = size.shortestSide * (12 / 26) / 2;
+    final head = size.shortestSide * (10 / 26) / 2;
+    final top = Offset(center.dx, center.dy - stem);
+    canvas.drawLine(top, Offset(center.dx, center.dy + stem), paint);
+    final path = Path()
+      ..moveTo(center.dx - head, top.dy + head)
+      ..lineTo(top.dx, top.dy)
+      ..lineTo(center.dx + head, top.dy + head);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_ArrowUpPainter oldDelegate) => oldDelegate.color != color;
 }
