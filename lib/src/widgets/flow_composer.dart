@@ -16,7 +16,7 @@ import 'flow_attachment_group.dart';
 ///   isStreaming: generating,
 ///   onSend: (text) => startGeneration(text),
 ///   onStop: cancelGeneration,
-///   leadingActions: [FlowAddMenu(...)],
+///   leadingActions: [FlowMenu(...)],
 ///   trailingActions: [FlowModelSelector(...)],
 /// )
 /// ```
@@ -92,7 +92,7 @@ class FlowComposer extends StatefulWidget {
   /// Host-localized label for the built-in preview's close button.
   final String? previewCloseTooltip;
 
-  /// Bottom-left slot, e.g. a `FlowAddMenu`.
+  /// Bottom-left slot, e.g. a `FlowMenu`.
   final List<Widget> leadingActions;
 
   /// Bottom-right slot before the send button, e.g. a `FlowModelSelector`.

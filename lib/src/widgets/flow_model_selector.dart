@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
-import '../utils/flow_menu.dart';
+import '../utils/flow_menu_core.dart';
+import '../utils/flow_menu_sheet.dart';
 import '../utils/flow_state_colors.dart';
+import 'flow_menu_style.dart';
 
 /// One model choice in a [FlowModelSelector].
 @immutable
@@ -32,6 +34,7 @@ class FlowEffortOption {
   const FlowEffortOption({
     required this.id,
     required this.label,
+    this.description,
     this.enabled = true,
   });
 
@@ -41,15 +44,25 @@ class FlowEffortOption {
   /// Host-supplied display name, e.g. 'Medium'.
   final String label;
 
+  /// Optional second line, e.g. what this effort trades away.
+  final String? description;
+
   final bool enabled;
 }
 
 /// Compact model picker: a pill trigger showing the selected model, opening
-/// a token-styled menu. Designed for a composer's `trailingActions` slot.
+/// a token-styled menu — or, on phones, a bottom sheet. Designed for a
+/// composer's `trailingActions` slot.
 ///
-/// Passing [efforts] adds an Effort submenu row under the models and the
-/// selected effort's label, muted, to the trigger — `Sonnet 5  Medium`.
-/// Picking a model or an effort applies immediately and closes the menu.
+/// Passing [efforts] adds an Effort row under the models, its chosen value
+/// accented, and the selected effort's label, muted, to the trigger —
+/// `Sonnet 5  Medium`. [moreModels] adds an overflow section for models
+/// that don't earn a top-level row. Picking anything applies immediately
+/// and closes the menu.
+///
+/// [presentation] decides between the anchored menu and the sheet —
+/// automatic by platform unless forced — and [menuStyle] overrides the
+/// token-derived look.
 class FlowModelSelector extends StatefulWidget {
   const FlowModelSelector({
     super.key,
@@ -60,7 +73,11 @@ class FlowModelSelector extends StatefulWidget {
     this.selectedEffortId,
     this.onEffortSelected,
     this.effortLabel = 'Effort',
-    this.effortHint,
+    this.moreModels = const <FlowModelOption>[],
+    this.moreModelsLabel = 'More models',
+    this.presentation = FlowMenuPresentation.auto,
+    this.menuStyle,
+    this.sheetTitle,
     this.enabled = true,
     this.tooltip,
   }) : assert(
@@ -79,7 +96,8 @@ class FlowModelSelector extends StatefulWidget {
   /// Falls back to the first model's label when null.
   final String? selectedId;
 
-  /// Called with the chosen option's id. Null disables the selector.
+  /// Called with the chosen option's id — from [models] or [moreModels]
+  /// alike. Null disables the selector.
   final ValueChanged<String>? onSelected;
 
   /// Effort levels, in order. Empty hides the effort section and the
@@ -87,19 +105,33 @@ class FlowModelSelector extends StatefulWidget {
   final List<FlowEffortOption> efforts;
 
   /// Highlighted in the effort section; its label shows muted on the
-  /// trigger. Required when [efforts] is non-empty.
+  /// trigger and accented on the Effort row. Required when [efforts] is
+  /// non-empty.
   final String? selectedEffortId;
 
   /// Called with the chosen effort's id. Required when [efforts] is
   /// non-empty.
   final ValueChanged<String>? onEffortSelected;
 
-  /// Host-localized label on the submenu row.
+  /// Host-localized label on the effort row; also titles the effort page
+  /// in the sheet.
   final String effortLabel;
 
-  /// Optional muted paragraph at the top of the effort submenu, e.g. what
-  /// higher effort trades away.
-  final String? effortHint;
+  /// Overflow models behind a "More models" row. Empty hides the row.
+  final List<FlowModelOption> moreModels;
+
+  /// Host-localized label on the overflow row; also titles its sheet page.
+  final String moreModelsLabel;
+
+  /// Anchored menu, bottom sheet, or automatic by platform.
+  final FlowMenuPresentation presentation;
+
+  /// Overrides the token-derived menu and sheet look.
+  final FlowMenuStyle? menuStyle;
+
+  /// Host-localized title in the sheet's nav bar, e.g. 'Select model'.
+  /// Null leaves only the close button.
+  final String? sheetTitle;
 
   final bool enabled;
 
@@ -111,11 +143,18 @@ class FlowModelSelector extends StatefulWidget {
 }
 
 class _FlowModelSelectorState extends State<FlowModelSelector> {
+  /// The trigger's fill while its menu or sheet is up, as an alpha over the
+  /// ink — the design's active state.
+  static const double _activeOpacity = 0.06;
+
   final MenuController _menuController = MenuController();
-  bool _hovered = false;
+  bool _sheetOpen = false;
 
   FlowModelOption? get _selected {
     for (final model in widget.models) {
+      if (model.id == widget.selectedId) return model;
+    }
+    for (final model in widget.moreModels) {
       if (model.id == widget.selectedId) return model;
     }
     return widget.models.isEmpty ? null : widget.models.first;
@@ -128,22 +167,164 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
     return null;
   }
 
+  FlowMenuRow _modelRow(FlowModelOption model, {required bool large}) {
+    return FlowMenuRow(
+      label: model.label,
+      description: model.description,
+      selected: model.id == widget.selectedId,
+      enabled: model.enabled,
+      large: large,
+      style: widget.menuStyle,
+      onTap: () => widget.onSelected?.call(model.id),
+    );
+  }
+
+  FlowMenuRow _effortRow(FlowEffortOption option, {required bool large}) {
+    return FlowMenuRow(
+      label: option.label,
+      description: option.description,
+      selected: option.id == widget.selectedEffortId,
+      enabled: option.enabled,
+      large: large,
+      style: widget.menuStyle,
+      // In the anchored menu the row's own closeOnTap would only dismiss
+      // the submenu it sits in; picking an effort should close the whole
+      // menu, so the root controller does it. The sheet closes through the
+      // row's scope as usual.
+      closeOnTap: large,
+      onTap: () {
+        _menuController.close();
+        widget.onEffortSelected?.call(option.id);
+      },
+    );
+  }
+
+  /// The anchored menu's children.
+  List<Widget> _menuChildren(BuildContext context) {
+    final style = widget.menuStyle;
+    final effort = _selectedEffort;
+    return [
+      for (final model in widget.models) _modelRow(model, large: false),
+      if (widget.efforts.isNotEmpty) ...[
+        FlowMenuRule(style: style),
+        SubmenuButton(
+          menuStyle: flowMenuStyle(context, style: style),
+          style: flowSubmenuRowStyle(context, style: style),
+          // The chevron goes in the submenu-indicator slot; putting it in
+          // trailingIcon would double up with the button's built-in arrow.
+          submenuIcon: flowSubmenuChevron(context),
+          trailingIcon: effort == null
+              ? null
+              : Text(
+                  effort.label,
+                  style: flowMenuLabelStyle(
+                    context,
+                    large: false,
+                    style: style,
+                  ).copyWith(color: flowMenuAccentColor(context, style)),
+                ),
+          menuChildren: [
+            for (final option in widget.efforts)
+              _effortRow(option, large: false),
+          ],
+          child: Text(
+            widget.effortLabel,
+            style: flowMenuLabelStyle(context, large: false, style: style),
+          ),
+        ),
+      ],
+      if (widget.moreModels.isNotEmpty) ...[
+        FlowMenuRule(style: style),
+        SubmenuButton(
+          menuStyle: flowMenuStyle(context, style: style),
+          style: flowSubmenuRowStyle(context, style: style),
+          submenuIcon: flowSubmenuChevron(context),
+          menuChildren: [
+            for (final model in widget.moreModels)
+              _modelRow(model, large: false),
+          ],
+          child: Text(
+            widget.moreModelsLabel,
+            style: flowMenuLabelStyle(context, large: false, style: style),
+          ),
+        ),
+      ],
+    ];
+  }
+
+  void _openSheet() {
+    final style = widget.menuStyle;
+    setState(() => _sheetOpen = true);
+    _showSheet(style).whenComplete(() {
+      if (mounted) setState(() => _sheetOpen = false);
+    });
+  }
+
+  Future<void> _showSheet(FlowMenuStyle? style) {
+    return showFlowMenuSheet(
+      context: context,
+      style: style,
+      root: FlowMenuSheetPage(
+        title: widget.sheetTitle,
+        children: (context) => [
+          for (final model in widget.models) _modelRow(model, large: true),
+          if (widget.efforts.isNotEmpty) ...[
+            FlowMenuRule(style: style),
+            FlowMenuRow(
+              label: widget.effortLabel,
+              trailingLabel: _selectedEffort?.label,
+              showChevron: true,
+              large: true,
+              style: style,
+              closeOnTap: false,
+              onTap: () => FlowMenuSheetScope.maybeOf(context)?.push(
+                FlowMenuSheetPage(
+                  title: widget.effortLabel,
+                  children: (context) => [
+                    for (final option in widget.efforts)
+                      _effortRow(option, large: true),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (widget.moreModels.isNotEmpty) ...[
+            FlowMenuRule(style: style),
+            FlowMenuRow(
+              label: widget.moreModelsLabel,
+              showChevron: true,
+              large: true,
+              style: style,
+              closeOnTap: false,
+              onTap: () => FlowMenuSheetScope.maybeOf(context)?.push(
+                FlowMenuSheetPage(
+                  title: widget.moreModelsLabel,
+                  children: (context) => [
+                    for (final model in widget.moreModels)
+                      _modelRow(model, large: true),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final spacing = context.flowSpacing;
     final enabled =
         widget.enabled && widget.onSelected != null && widget.models.isNotEmpty;
+    final asSheet = flowMenuPresentsAsSheet(context, widget.presentation);
 
-    final Color foreground;
-    if (!enabled) {
-      foreground = flowDisabledColor(colors.onSurfaceVariant);
-    } else if (_hovered) {
-      foreground = colors.onSurface;
-    } else {
-      foreground = colors.onSurfaceVariant;
-    }
-    // The effort sits a step below the model name, as in the design.
+    // The design's trigger inks: the model name at full strength, the
+    // effort a step below it, and the caret at the effort's level.
+    final labelColor = enabled
+        ? colors.onSurface
+        : flowDisabledColor(colors.onSurface);
     final effortForeground = enabled
         ? colors.onSurfaceMuted
         : flowDisabledColor(colors.onSurfaceMuted);
@@ -151,92 +332,25 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
 
     return MenuAnchor(
       controller: _menuController,
-      style: flowMenuStyle(context),
-      menuChildren: [
-        for (final model in widget.models)
-          FlowMenuRow(
-            label: model.label,
-            description: model.description,
-            selected: model.id == widget.selectedId,
-            enabled: model.enabled,
-            onTap: () => widget.onSelected?.call(model.id),
-          ),
-        if (widget.efforts.isNotEmpty) ...[
-          const FlowMenuDivider(),
-          SubmenuButton(
-            menuStyle: flowMenuStyle(context),
-            style: flowSubmenuRowStyle(context),
-            // The chevron goes in the submenu-indicator slot; putting it in
-            // trailingIcon would double up with the button's built-in arrow.
-            submenuIcon: WidgetStatePropertyAll(
-              Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-            trailingIcon: effort == null
-                ? null
-                : Text(
-                    effort.label,
-                    style: context.flowTypography.bodySmall.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-            menuChildren: [
-              if (widget.effortHint != null)
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    spacing.md,
-                    spacing.sm,
-                    spacing.md,
-                    spacing.sm,
-                  ),
-                  child: SizedBox(
-                    width: 260,
-                    child: Text(
-                      widget.effortHint!,
-                      style: context.flowTypography.bodySmall.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              for (final option in widget.efforts)
-                FlowMenuRow(
-                  label: option.label,
-                  selected: option.id == widget.selectedEffortId,
-                  enabled: option.enabled,
-                  // The row's own closeOnTap would only dismiss the submenu
-                  // it sits in; picking an effort should close the whole
-                  // menu, so the root controller does it.
-                  closeOnTap: false,
-                  onTap: () {
-                    _menuController.close();
-                    widget.onEffortSelected?.call(option.id);
-                  },
-                ),
-            ],
-            child: Text(
-              widget.effortLabel,
-              style: context.flowTypography.bodyMedium.copyWith(
-                color: colors.onSurface,
-              ),
-            ),
-          ),
-        ],
-      ],
+      style: flowMenuStyle(context, style: widget.menuStyle),
+      menuChildren: asSheet ? const [] : _menuChildren(context),
       builder: (context, controller, _) {
+        final active = controller.isOpen || _sheetOpen;
         Widget trigger = Material(
-          type: MaterialType.transparency,
+          // The active state is a wash of ink over whatever the trigger
+          // sits on, matching the open menu rather than the hover fill.
+          color: active
+              ? colors.onSurface.withValues(alpha: _activeOpacity)
+              : Colors.transparent,
+          borderRadius: context.flowRadii.sm,
           child: InkWell(
-            onTap: enabled
-                ? () =>
-                      controller.isOpen ? controller.close() : controller.open()
-                : null,
-            onHover: enabled
-                ? (value) => setState(() => _hovered = value)
-                : null,
+            onTap: !enabled
+                ? null
+                : asSheet
+                ? _openSheet
+                : () => controller.isOpen
+                      ? controller.close()
+                      : controller.open(),
             borderRadius: context.flowRadii.sm,
             hoverColor: colors.surfaceContainerHigh,
             child: Padding(
@@ -250,11 +364,11 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                   Text(
                     _selected?.label ?? '',
                     style: context.flowTypography.labelLarge.copyWith(
-                      color: foreground,
+                      color: labelColor,
                     ),
                   ),
                   if (effort != null) ...[
-                    SizedBox(width: spacing.sm),
+                    SizedBox(width: spacing.xs),
                     Text(
                       effort.label,
                       style: context.flowTypography.labelLarge.copyWith(
@@ -263,7 +377,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                     ),
                   ],
                   SizedBox(width: spacing.xs),
-                  Icon(Icons.expand_more, size: 16, color: foreground),
+                  Icon(Icons.expand_more, size: 12, color: effortForeground),
                 ],
               ),
             ),

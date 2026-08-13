@@ -9,37 +9,95 @@ FlowModelSelector(
   tooltip: 'Choose model',
   models: [
     FlowModelOption(
-      id: 'sonnet-5',
-      label: 'Sonnet 5',
-      description: 'Fast and balanced',
+      id: 'fable-5',
+      label: 'Fable 5',
+      description: 'Our flagship model',
     ),
     FlowModelOption(
-      id: 'opus-5',
-      label: 'Opus 5',
-      description: 'Most capable',
+      id: 'opus-5-1',
+      label: 'Opus 5.1',
+      description: 'For complex & thinking tasks',
     ),
     FlowModelOption(
       id: 'haiku-4-5',
       label: 'Haiku 4.5',
-      description: 'Fastest',
+      description: 'Fastest for quick answers',
     ),
-    FlowModelOption(id: 'legacy', label: 'Legacy', enabled: false),
   ],
   selectedId: selectedModelId,
   onSelected: (id) => setModel(id),
-  // Optional: an Effort submenu. Picking a model or an effort
+  // Optional: an Effort section. Picking a model or an effort
   // applies immediately and closes the menu.
   efforts: [
-    FlowEffortOption(id: 'low', label: 'Low'),
-    FlowEffortOption(id: 'medium', label: 'Medium'),
-    FlowEffortOption(id: 'high', label: 'High'),
-    FlowEffortOption(id: 'max', label: 'Max'),
+    FlowEffortOption(
+      id: 'low',
+      label: 'Low',
+      description: 'Quickest replies. Simple answers',
+    ),
+    FlowEffortOption(
+      id: 'max',
+      label: 'Max',
+      description: 'Complex, extensive tasks',
+    ),
   ],
   selectedEffortId: selectedEffortId,
   onEffortSelected: (id) => setEffort(id),
-  effortHint: 'Higher effort means more thorough responses, '
-      'but takes longer.',
+  // Optional: overflow models behind a 'More models' row.
+  moreModels: [
+    FlowModelOption(id: 'sonnet-4-5', label: 'Sonnet 4.5'),
+  ],
+  // Presentation is automatic: an anchored menu on desktop, a
+  // bottom sheet on iOS and Android. FlowMenuPresentation.menu /
+  // .sheet force either.
+  sheetTitle: 'Select model',
 )''';
+
+const List<FlowModelOption> _models = [
+  FlowModelOption(
+    id: 'fable-5',
+    label: 'Fable 5',
+    description: 'Our flagship model',
+  ),
+  FlowModelOption(
+    id: 'opus-5-1',
+    label: 'Opus 5.1',
+    description: 'For complex & thinking tasks',
+  ),
+  FlowModelOption(
+    id: 'haiku-4-5',
+    label: 'Haiku 4.5',
+    description: 'Fastest for quick answers',
+  ),
+];
+
+const List<FlowModelOption> _moreModels = [
+  FlowModelOption(id: 'sonnet-4-5', label: 'Sonnet 4.5'),
+  FlowModelOption(id: 'opus-4-1', label: 'Opus 4.1'),
+  FlowModelOption(id: 'legacy', label: 'Legacy', enabled: false),
+];
+
+const List<FlowEffortOption> _efforts = [
+  FlowEffortOption(
+    id: 'low',
+    label: 'Low',
+    description: 'Quickest replies. Simple answers',
+  ),
+  FlowEffortOption(
+    id: 'medium',
+    label: 'Medium',
+    description: 'Light & casual tasks',
+  ),
+  FlowEffortOption(
+    id: 'high',
+    label: 'High',
+    description: 'Balance between speed & complexity',
+  ),
+  FlowEffortOption(
+    id: 'max',
+    label: 'Max',
+    description: 'Complex, extensive tasks',
+  ),
+];
 
 /// Demo for [FlowModelSelector].
 class ModelSelectorPage extends StatelessWidget {
@@ -51,8 +109,11 @@ class ModelSelectorPage extends StatelessWidget {
       title: 'Model selector',
       className: 'FlowModelSelector',
       description:
-          'A compact model picker for the composer\'s trailing slot. Picking '
-          'a model or an effort applies immediately and closes the menu.',
+          'A compact model picker for the composer\'s trailing slot: models, '
+          'an Effort section, and an overflow behind More models. Picking '
+          'anything applies immediately and closes the menu. Presentation '
+          'follows the platform — an anchored menu here, a bottom sheet on '
+          'phones: toggle the gallery\'s mobile view to see it.',
       children: [DemoPreview(preview: _SelectorDemo(), code: _selectorSnippet)],
     );
   }
@@ -66,7 +127,7 @@ class _SelectorDemo extends StatefulWidget {
 }
 
 class _SelectorDemoState extends State<_SelectorDemo> {
-  String _selectedId = 'sonnet-5';
+  String _selectedId = 'fable-5';
   String _effortId = 'medium';
 
   @override
@@ -80,36 +141,17 @@ class _SelectorDemoState extends State<_SelectorDemo> {
       children: [
         FlowModelSelector(
           tooltip: 'Choose model',
-          models: const [
-            FlowModelOption(
-              id: 'sonnet-5',
-              label: 'Sonnet 5',
-              description: 'Fast and balanced',
-            ),
-            FlowModelOption(
-              id: 'opus-5',
-              label: 'Opus 5',
-              description: 'Most capable',
-            ),
-            FlowModelOption(
-              id: 'haiku-4-5',
-              label: 'Haiku 4.5',
-              description: 'Fastest',
-            ),
-          ],
+          // Left on the `auto` default: the gallery's phone frame reports
+          // a mobile platform, so the same widget anchors a menu out here
+          // and presents a sheet in there.
+          sheetTitle: 'Select model',
+          models: _models,
+          moreModels: _moreModels,
           selectedId: _selectedId,
           onSelected: (id) => setState(() => _selectedId = id),
-          efforts: const [
-            FlowEffortOption(id: 'low', label: 'Low'),
-            FlowEffortOption(id: 'medium', label: 'Medium'),
-            FlowEffortOption(id: 'high', label: 'High'),
-            FlowEffortOption(id: 'max', label: 'Max'),
-          ],
+          efforts: _efforts,
           selectedEffortId: _effortId,
           onEffortSelected: (id) => setState(() => _effortId = id),
-          effortHint:
-              'Higher effort means more thorough responses, but takes '
-              'longer.',
         ),
         SizedBox(height: spacing.lg),
         Text(

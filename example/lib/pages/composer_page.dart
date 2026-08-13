@@ -13,12 +13,13 @@ FlowComposer(
   onSend: (text) => startGeneration(text),
   onStop: cancelGeneration,
   leadingActions: [
-    FlowAddMenu(
+    FlowMenu(
+      icon: Icons.add,
       tooltip: 'Add to chat',
-      options: [
-        FlowAddOption(
+      entries: [
+        FlowMenuOption(
           id: 'photos', icon: Icons.image_outlined, label: 'Photos'),
-        FlowAddOption(
+        FlowMenuOption(
           id: 'files', icon: Icons.upload_file_outlined, label: 'Files'),
       ],
       onSelected: (id) => pickAttachment(id),
@@ -53,7 +54,7 @@ class ComposerPage extends StatelessWidget {
       className: 'FlowComposer',
       description:
           'The message input with a send/stop swap and action slots — shown '
-          'here composed with FlowAddMenu and FlowModelSelector. Send a '
+          'here composed with FlowMenu and FlowModelSelector. Send a '
           'message to see the stop state.',
       children: [
         DemoPreview(
@@ -130,20 +131,21 @@ class _ComposerDemoState extends State<_ComposerDemo> {
           onSend: _send,
           onStop: _stop,
           leadingActions: [
-            FlowAddMenu(
+            FlowMenu(
+              icon: Icons.add,
               tooltip: 'Add to chat',
-              options: const [
-                FlowAddOption(
+              entries: const [
+                FlowMenuOption(
                   id: 'photos',
                   icon: Icons.image_outlined,
                   label: 'Photos',
                 ),
-                FlowAddOption(
+                FlowMenuOption(
                   id: 'files',
                   icon: Icons.upload_file_outlined,
                   label: 'Files',
                 ),
-                FlowAddOption(
+                FlowMenuOption(
                   id: 'camera',
                   icon: Icons.camera_alt_outlined,
                   label: 'Camera',

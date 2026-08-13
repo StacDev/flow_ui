@@ -71,7 +71,8 @@ FlowComposer(
   removeAttachmentTooltip: 'Remove attachment',
   onSend: send,
   leadingActions: [
-    FlowAddMenu(options: addOptions, onSelected: pickAttachment),
+    FlowMenu(icon: Icons.add, entries: addOptions,
+        onSelected: pickAttachment),
   ],
 )''';
 
@@ -275,10 +276,11 @@ class _ComposerDemoState extends State<_ComposerDemo> {
           setState(() => _items = _items.where((a) => a.id != id).toList()),
       onSend: (text) => _notify(context, 'Sent with ${_items.length} images'),
       leadingActions: [
-        FlowAddMenu(
+        FlowMenu(
+          icon: Icons.add,
           tooltip: 'Add to chat',
-          options: const [
-            FlowAddOption(
+          entries: const [
+            FlowMenuOption(
               id: 'photos',
               icon: Icons.image_outlined,
               label: 'Add a photo',

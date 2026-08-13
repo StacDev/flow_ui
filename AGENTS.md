@@ -70,8 +70,8 @@ Status legend: ⬜ Todo · ✅ Done
 | 10 | Message actions | | ✅ |
 | 11 | Streaming text | | ✅ |
 | 12 | Message composer | | ✅ |
-| 13 | Model selector | | ✅ |
-| 14 | Add menu | the "+" menu: attachments, tools | ✅ |
+| 13 | Model selector | effort & overflow submenus; sheet on phones | ✅ |
+| 14 | Menu | icon-trigger menu: groups, submenus, toggles; sheet on phones | ✅ |
 | 15 | Attachments | images and files, type pill; videos pending | ✅ |
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |

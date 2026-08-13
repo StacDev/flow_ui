@@ -51,6 +51,9 @@ class _ChatDemoState extends State<_ChatDemo> {
   late List<FlowMessageData> _messages = _seed();
   bool _generating = false;
   Timer? _timer;
+  bool _researchOn = false;
+  String _modelId = 'fable-5';
+  String _effortId = 'medium';
   int _nextId = 0;
 
   /// Enough history that the jump-to-latest button is reachable.
@@ -178,6 +181,73 @@ class _ChatDemoState extends State<_ChatDemo> {
         isStreaming: _generating,
         onSend: _send,
         onStop: _stop,
+        // Presentation is left on `auto`: anchored menus out here, bottom
+        // sheets inside the phone frame, which reports a mobile platform.
+        leadingActions: [
+          FlowMenu(
+            icon: Icons.add,
+            tooltip: 'Add to chat',
+            sheetTitle: 'Add to Chat',
+            entries: [
+              const FlowMenuOption(
+                id: 'files',
+                icon: Icons.upload_file_outlined,
+                label: 'Add Files or Photos',
+              ),
+              const FlowMenuDivider(),
+              FlowMenuOption(
+                id: 'research',
+                icon: Icons.school_outlined,
+                label: 'Research',
+                selected: _researchOn,
+              ),
+              const FlowMenuOption(
+                id: 'web-search',
+                icon: Icons.language_outlined,
+                label: 'Web Search',
+              ),
+            ],
+            onSelected: (id) {
+              if (id == 'research') {
+                setState(() => _researchOn = !_researchOn);
+              }
+            },
+          ),
+        ],
+        trailingActions: [
+          FlowModelSelector(
+            tooltip: 'Choose model',
+            sheetTitle: 'Select model',
+            models: const [
+              FlowModelOption(
+                id: 'fable-5',
+                label: 'Fable 5',
+                description: 'Our flagship model',
+              ),
+              FlowModelOption(
+                id: 'haiku-4-5',
+                label: 'Haiku 4.5',
+                description: 'Fastest for quick answers',
+              ),
+            ],
+            selectedId: _modelId,
+            onSelected: (id) => setState(() => _modelId = id),
+            efforts: const [
+              FlowEffortOption(
+                id: 'medium',
+                label: 'Medium',
+                description: 'Light & casual tasks',
+              ),
+              FlowEffortOption(
+                id: 'high',
+                label: 'High',
+                description: 'Balance between speed & complexity',
+              ),
+            ],
+            selectedEffortId: _effortId,
+            onEffortSelected: (id) => setState(() => _effortId = id),
+          ),
+        ],
       ),
     );
   }

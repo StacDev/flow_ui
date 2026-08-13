@@ -12,7 +12,7 @@ class GalleryAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// The page title.
   final String title;
 
-  /// The widget class this page demos, e.g. `FlowAddMenu`. Shown muted under
+  /// The widget class this page demos, e.g. `FlowMenu`. Shown muted under
   /// the title — the metadata a reader scans for.
   final String? subtitle;
 

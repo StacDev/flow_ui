@@ -91,11 +91,26 @@ class PhoneFrame extends StatelessWidget {
                     viewPadding: EdgeInsets.zero,
                     viewInsets: EdgeInsets.zero,
                   ),
-                  child: Column(
-                    children: [
-                      const _StatusBar(),
-                      Expanded(child: child),
-                    ],
+                  // The frame reports a phone platform, so anything
+                  // platform-adaptive — FlowMenuPresentation.auto — takes
+                  // its mobile branch in here; its own Navigator keeps the
+                  // resulting sheets and full-screen routes inside the
+                  // screen instead of over the whole gallery window.
+                  child: Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(platform: TargetPlatform.iOS),
+                    child: Navigator(
+                      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                        settings: settings,
+                        builder: (_) => Column(
+                          children: [
+                            const _StatusBar(),
+                            Expanded(child: child),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
