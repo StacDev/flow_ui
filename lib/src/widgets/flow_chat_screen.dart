@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
+import 'flow_thread.dart';
 
 /// How far back through the history the thread must be before the
 /// jump-to-latest button is worth offering — roughly one message.
@@ -36,8 +37,8 @@ const Duration _jumpScroll = Duration(milliseconds: 240);
 class FlowChatScreen extends StatefulWidget {
   const FlowChatScreen({
     super.key,
-    required this.thread,
-    required this.composer,
+    this.thread,
+    this.composer,
     this.header,
     this.aboveComposer,
     this.threadController,
@@ -46,12 +47,20 @@ class FlowChatScreen extends StatefulWidget {
     this.padding,
   }) : assert(maxContentWidth > 0, 'maxContentWidth must be positive');
 
-  /// The conversation, usually a `FlowThread`. Given the bounded height it
+  /// The conversation, usually a [FlowThread]. Given the bounded height it
   /// needs, so it does not want a `SizedBox` of its own.
-  final Widget thread;
+  ///
+  /// Defaults to an empty [FlowThread] — a conversation nobody has spoken in
+  /// yet is a real state of a chat, so the surface stands up on its own.
+  final Widget? thread;
 
   /// The input, usually a `FlowComposer`.
-  final Widget composer;
+  ///
+  /// Null renders no input at all, leaving a read-only surface — an archived
+  /// thread, a shared transcript. There is deliberately no default: a
+  /// composer needs somewhere to send to, which is why `FlowComposer` makes
+  /// `onSend` required, and a stand-in would swallow what the user typed.
+  final Widget? composer;
 
   /// Optional bar above the thread, inside the content width.
   final Widget? header;
@@ -135,11 +144,15 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
         widget.padding ??
         EdgeInsets.fromLTRB(spacing.lg, 0, spacing.lg, spacing.lg);
 
-    Widget threadArea = widget.thread;
+    // An empty thread rather than an empty box: the surface behaves the same
+    // whether or not a host has wired one up yet.
+    final thread = widget.thread ?? const FlowThread(messages: []);
+
+    Widget threadArea = thread;
     if (widget.threadController != null) {
       threadArea = Stack(
         children: [
-          Positioned.fill(child: widget.thread),
+          Positioned.fill(child: thread),
           Positioned(
             bottom: spacing.md,
             left: 0,
@@ -178,20 +191,25 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
             children: [
               if (widget.header != null) widget.header!,
               Expanded(child: threadArea),
-              Padding(
-                padding: padding,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.aboveComposer != null) ...[
-                      widget.aboveComposer!,
-                      SizedBox(height: spacing.sm),
+              // Skipped entirely when there is nothing to put below the
+              // thread, so a read-only surface doesn't carry a strip of
+              // padding where its composer would have been.
+              if (widget.composer != null || widget.aboveComposer != null)
+                Padding(
+                  padding: padding,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (widget.aboveComposer != null) widget.aboveComposer!,
+                      if (widget.composer != null) ...[
+                        if (widget.aboveComposer != null)
+                          SizedBox(height: spacing.sm),
+                        widget.composer!,
+                      ],
                     ],
-                    widget.composer,
-                  ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),

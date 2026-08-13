@@ -4,74 +4,21 @@ import 'dart:math';
 import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/demo_preview.dart';
 import '../widgets/gallery_page.dart';
-import '../widgets/section_header.dart';
-
-const String _assembledSnippet = '''
-// The screen supplies the bounded height FlowThread needs, so the
-// thread wants no SizedBox of its own.
-FlowChatScreen(
-  thread: FlowThread(messages: messages, controller: controller),
-  composer: FlowComposer(
-    placeholder: 'Message…',
-    isStreaming: generating,
-    onSend: send,
-    onStop: stop,
-  ),
-  // Pass the same controller to both: taking finished widgets means
-  // the screen can't reach in and attach one itself.
-  threadController: controller,
-  jumpToLatestTooltip: 'Jump to latest',
-)''';
-
-const String _emptySnippet = '''
-FlowChatScreen(
-  thread: FlowThread(messages: messages),
-  composer: FlowComposer(controller: input, onSend: send),
-  // Starters sit above the composer and go once the thread has
-  // something in it.
-  aboveComposer: messages.isEmpty
-      ? FlowSuggestionGroup(
-          suggestions: [
-            for (final prompt in starters)
-              FlowSuggestion(
-                label: prompt,
-                onTap: () => input.text = prompt,
-              ),
-          ],
-        )
-      : null,
-)''';
 
 /// Demo for [FlowChatScreen].
+///
+/// Fills the pane rather than sitting in a demo card: a surface boxed into a
+/// fixed-height `SizedBox` would be hiding the very thing it exists to do.
 class ChatScreenPage extends StatelessWidget {
   const ChatScreenPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const GalleryPage(
+    return const GalleryPage.filling(
       title: 'Chat screen',
       className: 'FlowChatScreen',
-      description:
-          'The assembled surface: a bounded thread above a composer, centred '
-          'at a readable width. It takes finished widgets rather than their '
-          'data, and builds no Scaffold — drop it in a scaffold body and the '
-          'host keeps the app bar and the keyboard inset.',
-      children: [
-        SectionHeader('Assembled'),
-        DemoPreview(
-          preview: SizedBox(height: 520, child: _ChatDemo()),
-          code: _assembledSnippet,
-          minHeight: 520,
-        ),
-        SectionHeader('Empty state'),
-        DemoPreview(
-          preview: SizedBox(height: 420, child: _EmptyStateDemo()),
-          code: _emptySnippet,
-          minHeight: 420,
-        ),
-      ],
+      child: _ChatDemo(),
     );
   }
 }
@@ -83,6 +30,13 @@ const String _reply =
     'scrolled back through the history. The pieces inside it are the same '
     'FlowThread and FlowComposer you would use on their own.';
 
+const List<String> _starters = [
+  'Plan a weekend trip',
+  'Explain this error',
+  'Draft a reply',
+  'Summarize a document',
+];
+
 class _ChatDemo extends StatefulWidget {
   const _ChatDemo();
 
@@ -92,6 +46,7 @@ class _ChatDemo extends StatefulWidget {
 
 class _ChatDemoState extends State<_ChatDemo> {
   final ScrollController _controller = ScrollController();
+  final TextEditingController _input = TextEditingController();
   final Random _random = Random();
   late List<FlowMessageData> _messages = _seed();
   bool _generating = false;
@@ -119,6 +74,7 @@ class _ChatDemoState extends State<_ChatDemo> {
   @override
   void dispose() {
     _timer?.cancel();
+    _input.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -186,50 +142,24 @@ class _ChatDemoState extends State<_ChatDemo> {
 
   @override
   Widget build(BuildContext context) {
+    final empty = _messages.isEmpty;
     return FlowChatScreen(
+      // The header slot: here it just switches the demo between a seeded
+      // thread and an empty one, so both states are reachable in the one
+      // surface rather than needing two cards.
+      header: _DemoHeader(
+        empty: empty,
+        onToggle: () {
+          _timer?.cancel();
+          setState(() {
+            _generating = false;
+            _messages = empty ? _seed() : const [];
+          });
+        },
+      ),
       thread: FlowThread(messages: _messages, controller: _controller),
       threadController: _controller,
       jumpToLatestTooltip: 'Jump to latest',
-      composer: FlowComposer(
-        placeholder: 'Message flow_ui…',
-        isStreaming: _generating,
-        onSend: _send,
-        onStop: _stop,
-      ),
-    );
-  }
-}
-
-class _EmptyStateDemo extends StatefulWidget {
-  const _EmptyStateDemo();
-
-  @override
-  State<_EmptyStateDemo> createState() => _EmptyStateDemoState();
-}
-
-class _EmptyStateDemoState extends State<_EmptyStateDemo> {
-  static const List<String> _starters = [
-    'Plan a weekend trip',
-    'Explain this error',
-    'Draft a reply',
-    'Summarize a document',
-  ];
-
-  final TextEditingController _input = TextEditingController();
-  List<FlowMessageData> _messages = const [];
-  int _nextId = 0;
-
-  @override
-  void dispose() {
-    _input.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final empty = _messages.isEmpty;
-    return FlowChatScreen(
-      thread: FlowThread(messages: _messages),
       // Starters go once the thread has a message in it.
       aboveComposer: empty
           ? FlowSuggestionGroup(
@@ -241,26 +171,46 @@ class _EmptyStateDemoState extends State<_EmptyStateDemo> {
                   ),
               ],
             )
-          : Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => setState(() => _messages = const []),
-                child: const Text('Show starters again'),
-              ),
-            ),
+          : null,
       composer: FlowComposer(
         controller: _input,
-        placeholder: 'Ask anything…',
-        onSend: (text) => setState(() {
-          _messages = [
-            ..._messages,
-            FlowMessageData.text(
-              id: 'm${_nextId++}',
-              role: FlowMessageRole.user,
-              text: text,
+        placeholder: 'Message flow_ui…',
+        isStreaming: _generating,
+        onSend: _send,
+        onStop: _stop,
+      ),
+    );
+  }
+}
+
+class _DemoHeader extends StatelessWidget {
+  const _DemoHeader({required this.empty, required this.onToggle});
+
+  final bool empty;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final spacing = context.flowSpacing;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(spacing.lg, spacing.sm, spacing.sm, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              empty
+                  ? 'Empty thread — starters sit above the composer.'
+                  : 'Scroll back for the jump-to-latest button.',
+              style: context.flowTypography.bodySmall.copyWith(
+                color: context.flowColors.onSurfaceVariant,
+              ),
             ),
-          ];
-        }),
+          ),
+          TextButton(
+            onPressed: onToggle,
+            child: Text(empty ? 'Load history' : 'Clear thread'),
+          ),
+        ],
       ),
     );
   }

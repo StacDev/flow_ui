@@ -17,7 +17,21 @@ class GalleryPage extends StatelessWidget {
     this.className,
     this.description,
     required this.children,
-  });
+  }) : child = null;
+
+  /// A page whose demo *is* the page: [child] gets the pane's full height,
+  /// with no scroll view and no reading-width cap.
+  ///
+  /// Surfaces need this. A `FlowChatScreen` in the scrolling body above has
+  /// to be given an arbitrary `SizedBox` height, which is exactly the
+  /// bounded-height workaround the component exists to remove.
+  const GalleryPage.filling({
+    super.key,
+    required this.title,
+    this.className,
+    required Widget this.child,
+  }) : description = null,
+       children = const [];
 
   /// The page title, matching the sidebar entry.
   final String title;
@@ -31,6 +45,9 @@ class GalleryPage extends StatelessWidget {
   /// The page content — demo cards and section headers.
   final List<Widget> children;
 
+  /// Set by [GalleryPage.filling]; replaces the scrolling body entirely.
+  final Widget? child;
+
   /// Reading width for demo content.
   static const double maxContentWidth = 860;
 
@@ -40,39 +57,47 @@ class GalleryPage extends StatelessWidget {
     final typography = context.flowTypography;
     final spacing = context.flowSpacing;
 
+    final child = this.child;
+
     return Scaffold(
       backgroundColor: colors.surface,
       appBar: GalleryAppBar(title: title, subtitle: className),
+      // The shell hands each page a bounded pane; only the scrolling body
+      // discards that height, so a filling page simply doesn't add one.
       body: ViewportBody(
-        child: ListView(
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.lg,
-            vertical: spacing.xl,
-          ),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: maxContentWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (description != null)
-                      Padding(
-                        padding: EdgeInsets.only(bottom: spacing.lg),
-                        child: Text(
-                          description!,
-                          style: typography.bodyMedium.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ...children,
-                  ],
-                ),
+        child:
+            child ??
+            ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: spacing.lg,
+                vertical: spacing.xl,
               ),
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: maxContentWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (description != null)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: spacing.lg),
+                            child: Text(
+                              description!,
+                              style: typography.bodyMedium.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ...children,
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       ),
     );
   }
