@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
 /// Corner radius tokens for flow_ui components.
+///
+/// The four steps of the Flow UI design file: rows at 8, bubbles at 12,
+/// cards at 24, and pills.
 @immutable
 class FlowRadii {
   const FlowRadii({
-    this.sm = const BorderRadius.all(Radius.circular(6)),
-    this.md = const BorderRadius.all(Radius.circular(10)),
-    this.lg = const BorderRadius.all(Radius.circular(16)),
+    this.sm = const BorderRadius.all(Radius.circular(8)),
+    this.md = const BorderRadius.all(Radius.circular(12)),
+    this.lg = const BorderRadius.all(Radius.circular(24)),
     this.full = const BorderRadius.all(Radius.circular(999)),
   });
 
-  /// Small controls: badges, inline code, checkboxes.
+  /// Rows and small controls: list items, badges, inline code, checkboxes.
   final BorderRadius sm;
 
-  /// Buttons, inputs, chips.
+  /// Bubbles, buttons, inputs, chips, attachment tiles.
   final BorderRadius md;
 
-  /// Bubbles, cards, panels, modals.
+  /// Raised cards: the composer, panels, sheets, modals.
   final BorderRadius lg;
 
   /// Fully rounded: pills, avatars, circular buttons.

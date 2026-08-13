@@ -54,6 +54,7 @@ class _ColorsSection extends StatelessWidget {
       'surface': colors.surface,
       'onSurface': colors.onSurface,
       'onSurfaceVariant': colors.onSurfaceVariant,
+      'onSurfaceMuted': colors.onSurfaceMuted,
       'surfaceContainerLowest': colors.surfaceContainerLowest,
       'surfaceContainerLow': colors.surfaceContainerLow,
       'surfaceContainer': colors.surfaceContainer,

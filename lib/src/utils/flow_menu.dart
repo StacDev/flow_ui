@@ -10,12 +10,13 @@ import 'flow_state_colors.dart';
 MenuStyle flowMenuStyle(BuildContext context) {
   final colors = context.flowColors;
   return MenuStyle(
-    backgroundColor: WidgetStatePropertyAll(colors.surfaceContainerLow),
+    // A menu is a raised card, the same one the composer is.
+    backgroundColor: WidgetStatePropertyAll(colors.surfaceContainerLowest),
     surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
     shape: WidgetStatePropertyAll(
       RoundedRectangleBorder(
         borderRadius: context.flowRadii.md,
-        side: BorderSide(color: colors.outlineVariant),
+        side: BorderSide(color: colors.outline),
       ),
     ),
     padding: WidgetStatePropertyAll(

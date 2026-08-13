@@ -143,9 +143,10 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
     } else {
       foreground = colors.onSurfaceVariant;
     }
+    // The effort sits a step below the model name, as in the design.
     final effortForeground = enabled
-        ? colors.onSurfaceVariant
-        : flowDisabledColor(colors.onSurfaceVariant);
+        ? colors.onSurfaceMuted
+        : flowDisabledColor(colors.onSurfaceMuted);
     final effort = _selectedEffort;
 
     return MenuAnchor(

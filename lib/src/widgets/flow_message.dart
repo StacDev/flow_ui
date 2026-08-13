@@ -98,7 +98,7 @@ class FlowMessage extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: _isError ? colors.errorContainer : colors.secondaryContainer,
-        borderRadius: context.flowRadii.lg,
+        borderRadius: context.flowRadii.md,
       ),
       child: _buildParts(
         context,
@@ -158,7 +158,7 @@ class FlowMessage extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: colors.errorContainer,
-            borderRadius: context.flowRadii.lg,
+            borderRadius: context.flowRadii.md,
           ),
           child: _buildParts(context, colors.onErrorContainer),
         ),

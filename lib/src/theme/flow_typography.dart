@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 
+/// The typeface the presets are drawn in, bundled with this package under
+/// `fonts/` (SIL Open Font License — see `fonts/OFL.txt`).
+///
+/// Declared with `package:` so the family resolves to `packages/flow_ui/…`
+/// and a host gets the design's typeface without adding a font of their own.
+const String _fontFamily = 'Figtree';
+const String _fontPackage = 'flow_ui';
+
 /// Text style tokens for flow_ui components.
 ///
 /// Follows the Material 3 type scale (display / headline / title / body /
-/// label, each in large / medium / small). Styles are colorless — components
-/// combine them with [FlowColors] tokens (e.g.
-/// `typography.bodyLarge.copyWith(color: colors.onSurface)`). Uses the
-/// platform default font, so no fonts need to be bundled.
+/// label, each in large / medium / small), so a host can map an existing M3
+/// text theme across. Styles are colorless — components combine them with
+/// [FlowColors] tokens (e.g.
+/// `typography.bodyLarge.copyWith(color: colors.onSurface)`).
+///
+/// Sizes, weights and line heights come from the Flow UI design file. Two
+/// habits of that design carry through the whole scale: no letter-spacing,
+/// and one of two line heights — 1.5 where text wraps into paragraphs, 1.3
+/// where it sits on a single line in a row or a control.
 @immutable
 class FlowTypography {
   const FlowTypography({
@@ -36,100 +49,162 @@ class FlowTypography {
   final TextStyle titleLarge;
   final TextStyle titleMedium;
   final TextStyle titleSmall;
+
+  /// Prose and composer input — the design's 16/1.5 body.
   final TextStyle bodyLarge;
   final TextStyle bodyMedium;
   final TextStyle bodySmall;
+
+  /// Controls — the design's 14/1.3 label.
   final TextStyle labelLarge;
   final TextStyle labelMedium;
   final TextStyle labelSmall;
 
-  /// The Material 3 default type scale.
+  /// The Flow type scale, in Figtree.
   static const FlowTypography standard = FlowTypography(
     displayLarge: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 57,
       fontWeight: FontWeight.w400,
-      height: 64 / 57,
-      letterSpacing: -0.25,
+      height: 1.15,
     ),
     displayMedium: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 45,
       fontWeight: FontWeight.w400,
-      height: 52 / 45,
+      height: 1.15,
     ),
     displaySmall: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 36,
       fontWeight: FontWeight.w400,
-      height: 44 / 36,
+      height: 1.2,
     ),
+    // The greeting: 32 regular at 1.3.
     headlineLarge: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 32,
       fontWeight: FontWeight.w400,
-      height: 40 / 32,
+      height: 1.3,
     ),
     headlineMedium: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 28,
       fontWeight: FontWeight.w400,
-      height: 36 / 28,
+      height: 1.3,
     ),
     headlineSmall: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 24,
       fontWeight: FontWeight.w400,
-      height: 32 / 24,
+      height: 1.3,
     ),
     titleLarge: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 22,
-      fontWeight: FontWeight.w400,
-      height: 28 / 22,
+      fontWeight: FontWeight.w600,
+      height: 1.3,
     ),
+    // A heading inside a message: 18 semibold at 1.5.
     titleMedium: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      height: 24 / 16,
-      letterSpacing: 0.15,
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      height: 1.5,
     ),
     titleSmall: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 20 / 14,
-      letterSpacing: 0.1,
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 1.4,
     ),
     bodyLarge: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 16,
       fontWeight: FontWeight.w400,
-      height: 24 / 16,
-      letterSpacing: 0.5,
+      height: 1.5,
     ),
     bodyMedium: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 14,
       fontWeight: FontWeight.w400,
-      height: 20 / 14,
-      letterSpacing: 0.25,
+      height: 1.5,
     ),
     bodySmall: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 12,
       fontWeight: FontWeight.w400,
-      height: 16 / 12,
-      letterSpacing: 0.4,
+      height: 1.5,
     ),
     labelLarge: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 20 / 14,
-      letterSpacing: 0.1,
+      fontWeight: FontWeight.w400,
+      height: 1.3,
     ),
     labelMedium: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 12,
       fontWeight: FontWeight.w500,
-      height: 16 / 12,
-      letterSpacing: 0.5,
+      height: 1.3,
     ),
     labelSmall: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
       fontSize: 11,
       fontWeight: FontWeight.w500,
-      height: 16 / 11,
-      letterSpacing: 0.5,
+      height: 1.3,
     ),
   );
+
+  /// The same scale set in [fontFamily] instead of the bundled Figtree.
+  ///
+  /// Pass [package] when the font ships inside a package rather than the app.
+  /// Each style is rebuilt from the four things the scale carries — size,
+  /// weight, line height and tracking — so anything else set on a customised
+  /// style is dropped rather than half-kept.
+  FlowTypography withFontFamily(String fontFamily, {String? package}) {
+    TextStyle reface(TextStyle style) => TextStyle(
+      fontFamily: fontFamily,
+      package: package,
+      fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      height: style.height,
+      letterSpacing: style.letterSpacing,
+    );
+
+    return FlowTypography(
+      displayLarge: reface(displayLarge),
+      displayMedium: reface(displayMedium),
+      displaySmall: reface(displaySmall),
+      headlineLarge: reface(headlineLarge),
+      headlineMedium: reface(headlineMedium),
+      headlineSmall: reface(headlineSmall),
+      titleLarge: reface(titleLarge),
+      titleMedium: reface(titleMedium),
+      titleSmall: reface(titleSmall),
+      bodyLarge: reface(bodyLarge),
+      bodyMedium: reface(bodyMedium),
+      bodySmall: reface(bodySmall),
+      labelLarge: reface(labelLarge),
+      labelMedium: reface(labelMedium),
+      labelSmall: reface(labelSmall),
+    );
+  }
 
   FlowTypography copyWith({
     TextStyle? displayLarge,

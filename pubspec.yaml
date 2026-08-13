@@ -22,6 +22,25 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # Figtree is the typeface of the Flow UI design file. It ships with the
+  # package (SIL Open Font License, see fonts/OFL.txt) so the default theme
+  # renders as designed without the host bundling a font — and without a
+  # dependency, which this package does not take.
+  #
+  # Static instances rather than the variable TTF: Flutter maps FontWeight to
+  # the nearest declared weight, so a weight axis would not be interpolated.
+  fonts:
+    - family: Figtree
+      fonts:
+        - asset: fonts/Figtree-Regular.ttf
+          weight: 400
+        - asset: fonts/Figtree-Medium.ttf
+          weight: 500
+        - asset: fonts/Figtree-SemiBold.ttf
+          weight: 600
+        - asset: fonts/Figtree-Bold.ttf
+          weight: 700
+
   # To add assets to your package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
