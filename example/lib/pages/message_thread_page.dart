@@ -45,13 +45,14 @@ FlowThread(
 )''';
 
 const String _statesSnippet = '''
-// Pending: loading dots until the first token arrives.
+// Pending: the thinking indicator until the first token arrives.
 FlowMessage(
   FlowMessageData(
     id: 'p',
     role: FlowMessageRole.assistant,
     status: FlowMessageStatus.pending,
   ),
+  thinkingLabel: 'Thinking…',
 )
 
 // Error: content in an error bubble.
@@ -127,7 +128,7 @@ class _ConversationDemo extends StatelessWidget {
           id: '5',
           role: FlowMessageRole.assistant,
           text:
-              'The theme tokens, streaming text, the loading indicator, '
+              'The theme tokens, streaming text, the thinking indicator, '
               'and now messages and threads.',
         ),
       ],
@@ -146,7 +147,7 @@ class _LiveThreadDemoState extends State<_LiveThreadDemo> {
   static const String _reply =
       'Sure. FlowThread is a bottom-anchored list of FlowMessageData view models, '
       'and each message renders its parts through FlowMessage — pending '
-      'replies show the loading dots, streaming text animates in through '
+      'replies show the thinking indicator, text animates in through '
       'FlowStreamingText, and settled history renders statically. Rebuild '
       'with new message data and the thread keeps itself pinned to the '
       'newest content.';
@@ -229,7 +230,11 @@ class _LiveThreadDemoState extends State<_LiveThreadDemo> {
         SizedBox(height: context.flowSpacing.md),
         SizedBox(
           height: 300,
-          child: FlowThread(padding: EdgeInsets.zero, messages: _messages),
+          child: FlowThread(
+            padding: EdgeInsets.zero,
+            messages: _messages,
+            thinkingLabel: 'Thinking…',
+          ),
         ),
       ],
     );
@@ -250,6 +255,7 @@ class _StatesDemo extends StatelessWidget {
             role: FlowMessageRole.assistant,
             status: FlowMessageStatus.pending,
           ),
+          thinkingLabel: 'Thinking…',
         ),
         SizedBox(height: context.flowSpacing.lg),
         FlowMessage(

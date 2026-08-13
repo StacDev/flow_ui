@@ -81,7 +81,7 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
 | 21 | Code block | | ⬜ |
-| 22 | Loading indicator | staggered three-dot pulse | ✅ |
+| 22 | Thinking indicator | turning, breathing asterisk + shimmer label; active & settled | ✅ |
 | 23 | Shimmer | text only; sweeping highlight, static when settled | ✅ |
 
 ### Surfaces

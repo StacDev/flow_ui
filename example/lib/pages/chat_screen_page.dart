@@ -160,7 +160,11 @@ class _ChatDemoState extends State<_ChatDemo> {
           });
         },
       ),
-      thread: FlowThread(messages: _messages, controller: _controller),
+      thread: FlowThread(
+        messages: _messages,
+        controller: _controller,
+        thinkingLabel: 'Thinking…',
+      ),
       threadController: _controller,
       jumpToLatestTooltip: 'Jump to latest',
       // Starters go once the thread has a message in it.

@@ -22,6 +22,7 @@ class FlowThread extends StatelessWidget {
     this.itemSpacing,
     this.messageBuilder,
     this.charactersPerSecond = 300,
+    this.thinkingLabel,
   });
 
   /// Oldest → newest; the thread anchors to the newest.
@@ -58,6 +59,10 @@ class FlowThread extends StatelessWidget {
   /// Forwarded to [FlowMessage] for streaming text parts.
   final double charactersPerSecond;
 
+  /// Forwarded to each [FlowMessage]: the label beside the thinking glyph
+  /// on a pending message.
+  final String? thinkingLabel;
+
   @override
   Widget build(BuildContext context) {
     final spacing = context.flowSpacing;
@@ -86,6 +91,7 @@ class FlowThread extends StatelessWidget {
                     : (attachmentId) => onAttachmentTap(message, attachmentId),
                 previewCloseTooltip: previewCloseTooltip,
                 charactersPerSecond: charactersPerSecond,
+                thinkingLabel: thinkingLabel,
               ),
         );
       },

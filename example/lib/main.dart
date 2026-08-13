@@ -5,7 +5,7 @@ import 'pages/menu_page.dart';
 import 'pages/attachment_page.dart';
 import 'pages/chat_screen_page.dart';
 import 'pages/composer_page.dart';
-import 'pages/loading_indicator_page.dart';
+import 'pages/thinking_indicator_page.dart';
 import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
 import 'pages/model_selector_page.dart';
@@ -70,10 +70,10 @@ final List<GalleryGroup> galleryGroups = [
         builder: (_) => const ShimmerTextPage(),
       ),
       GalleryEntry(
-        title: 'Loading indicator',
-        subtitle: 'FlowLoadingIndicator — staggered three-dot pulse',
-        icon: Icons.more_horiz_rounded,
-        builder: (_) => const LoadingIndicatorPage(),
+        title: 'Thinking indicator',
+        subtitle: 'FlowThinkingIndicator — turning, breathing asterisk',
+        icon: Icons.auto_awesome_outlined,
+        builder: (_) => const ThinkingIndicatorPage(),
       ),
     ],
   ),

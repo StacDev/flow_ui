@@ -4,7 +4,7 @@ import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import '../theme/flow_theme.dart';
 import 'flow_attachment_group.dart';
-import 'flow_loading_indicator.dart';
+import 'flow_thinking_indicator.dart';
 import 'flow_streaming_text.dart';
 
 /// Renders a [FlowCustomPart]; return null to skip it.
@@ -25,7 +25,7 @@ typedef FlowCustomPartBuilder =
 /// - **system** — centered muted text (notices, dividers).
 ///
 /// [FlowMessageStatus.pending] assistant messages show a
-/// [FlowLoadingIndicator]; [FlowMessageStatus.error] content renders in an
+/// [FlowThinkingIndicator]; [FlowMessageStatus.error] content renders in an
 /// `errorContainer` bubble; [FlowMessageStatus.streaming] animates the last
 /// text part via [FlowStreamingText].
 class FlowMessage extends StatelessWidget {
@@ -40,6 +40,7 @@ class FlowMessage extends StatelessWidget {
     this.maxBubbleWidthFraction = 0.75,
     this.textStyle,
     this.charactersPerSecond = 300,
+    this.thinkingLabel,
   }) : assert(
          maxBubbleWidthFraction > 0 && maxBubbleWidthFraction <= 1,
          'maxBubbleWidthFraction must be in (0, 1]',
@@ -75,6 +76,11 @@ class FlowMessage extends StatelessWidget {
 
   /// Forwarded to [FlowStreamingText] while streaming.
   final double charactersPerSecond;
+
+  /// Host-localized label beside the thinking glyph on a pending message,
+  /// e.g. 'Thinking…'. Null shows the glyph alone — the package ships no
+  /// strings.
+  final String? thinkingLabel;
 
   bool get _isError => message.status == FlowMessageStatus.error;
 
@@ -147,7 +153,7 @@ class FlowMessage extends StatelessWidget {
 
     Widget content;
     if (message.status == FlowMessageStatus.pending && message.parts.isEmpty) {
-      content = const FlowLoadingIndicator();
+      content = FlowThinkingIndicator(label: thinkingLabel);
     } else if (_isError) {
       content = Align(
         alignment: AlignmentDirectional.centerStart,
