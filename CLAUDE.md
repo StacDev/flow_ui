@@ -38,6 +38,13 @@ flutter pub get
 flutter run -d chrome    # or any device
 ```
 
+## Commits
+
+Commit messages are conventional commits with a brief summary line:
+`feat: <brief-commit-message>` — `fix:`, `refactor:`, `docs:`, `chore:` as
+appropriate. Add a body only when a decision genuinely needs recording, and
+never any AI attribution.
+
 ## Component roadmap
 
 Status legend: ⬜ Todo · ✅ Done
