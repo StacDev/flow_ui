@@ -14,14 +14,9 @@ class TokensPage extends StatelessWidget {
       title: 'Design tokens',
       className: 'FlowTheme',
       description:
-          'Every token the theme extension carries — colors, the type '
-          'scale, spacing steps, and radii — in the current brightness.',
-      children: [
-        _ColorsSection(),
-        _TypographySection(),
-        _SpacingSection(),
-        _RadiiSection(),
-      ],
+          'Every token the theme extension carries — colors and the type '
+          'scale — in the current brightness.',
+      children: [_ColorsSection(), _TypographySection()],
     );
   }
 }
@@ -32,7 +27,6 @@ class _ColorsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     final swatches = <String, Color>{
       'primary': colors.primary,
@@ -72,8 +66,8 @@ class _ColorsSection extends StatelessWidget {
       children: [
         const SectionHeader('Colors'),
         Wrap(
-          spacing: spacing.md,
-          runSpacing: spacing.md,
+          spacing: 12,
+          runSpacing: 12,
           children: [
             for (final entry in swatches.entries)
               _Swatch(name: entry.key, color: entry.value),
@@ -103,11 +97,11 @@ class _Swatch extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: color,
-              borderRadius: context.flowRadii.sm,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
               border: Border.all(color: colors.outlineVariant),
             ),
           ),
-          SizedBox(height: context.flowSpacing.xs),
+          SizedBox(height: 4),
           Text(
             name,
             style: context.flowTypography.labelMedium.copyWith(
@@ -152,7 +146,7 @@ class _TypographySection extends StatelessWidget {
         const SectionHeader('Typography'),
         for (final entry in styles.entries)
           Padding(
-            padding: EdgeInsets.only(bottom: context.flowSpacing.md),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
@@ -177,110 +171,6 @@ class _TypographySection extends StatelessWidget {
               ],
             ),
           ),
-      ],
-    );
-  }
-}
-
-class _SpacingSection extends StatelessWidget {
-  const _SpacingSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final spacing = context.flowSpacing;
-
-    final tokens = <String, double>{
-      'xs': spacing.xs,
-      'sm': spacing.sm,
-      'md': spacing.md,
-      'lg': spacing.lg,
-      'xl': spacing.xl,
-      'xxl': spacing.xxl,
-    };
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader('Spacing'),
-        for (final entry in tokens.entries)
-          Padding(
-            padding: EdgeInsets.only(bottom: spacing.sm),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 128,
-                  child: Text(
-                    '${entry.key} · ${entry.value.toStringAsFixed(0)}',
-                    style: context.flowTypography.bodySmall.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                Container(
-                  width: entry.value * 4,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: colors.primary,
-                    borderRadius: context.flowRadii.sm,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _RadiiSection extends StatelessWidget {
-  const _RadiiSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    final radii = context.flowRadii;
-
-    final tokens = <String, BorderRadius>{
-      'sm': radii.sm,
-      'md': radii.md,
-      'lg': radii.lg,
-      'xl': radii.xl,
-      'full': radii.full,
-    };
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader('Radii'),
-        Wrap(
-          spacing: context.flowSpacing.md,
-          runSpacing: context.flowSpacing.md,
-          children: [
-            for (final entry in tokens.entries)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 96,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: colors.surfaceContainerLow,
-                      borderRadius: entry.value,
-                      border: Border.all(color: colors.outline),
-                    ),
-                  ),
-                  SizedBox(height: context.flowSpacing.xs),
-                  Text(
-                    entry.key,
-                    style: context.flowTypography.labelMedium.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ),
       ],
     );
   }

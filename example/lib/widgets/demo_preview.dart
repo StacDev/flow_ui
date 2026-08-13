@@ -41,12 +41,11 @@ class _DemoPreviewState extends State<DemoPreview> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     return Container(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: context.flowRadii.xl,
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
         border: Border.all(color: colors.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
@@ -54,10 +53,7 @@ class _DemoPreviewState extends State<DemoPreview> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: spacing.sm,
-              vertical: spacing.xs,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -71,7 +67,7 @@ class _DemoPreviewState extends State<DemoPreview> {
           if (!_showCode)
             Container(
               constraints: BoxConstraints(minHeight: widget.minHeight),
-              padding: EdgeInsets.all(spacing.lg),
+              padding: const EdgeInsets.all(16),
               alignment: widget.alignment,
               color: colors.surface,
               child: widget.preview,
@@ -102,7 +98,7 @@ class _TabSwitch extends StatelessWidget {
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: colors.surfaceContainerHigh,
-        borderRadius: context.flowRadii.sm,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -137,19 +133,15 @@ class _Segment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     return Material(
       color: selected ? colors.surface : Colors.transparent,
-      borderRadius: context.flowRadii.sm,
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: selected ? null : onTap,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.md,
-            vertical: spacing.xs,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Text(
             label,
             style: context.flowTypography.labelMedium.copyWith(

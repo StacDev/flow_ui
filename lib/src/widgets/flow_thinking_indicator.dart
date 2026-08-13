@@ -65,6 +65,9 @@ class _FlowThinkingIndicatorState extends State<FlowThinkingIndicator>
   static const double _minScale = 0.8;
   static const double _minOpacity = 0.7;
 
+  /// The design's gap between the glyph and its label.
+  static const double _labelGap = 4;
+
   late final AnimationController _controller;
 
   /// One breath over the controller's full period — out and back with an
@@ -183,7 +186,7 @@ class _FlowThinkingIndicatorState extends State<FlowThinkingIndicator>
       mainAxisSize: MainAxisSize.min,
       children: [
         ExcludeSemantics(child: glyph),
-        SizedBox(width: context.flowSpacing.xs),
+        const SizedBox(width: _labelGap),
         FlowShimmerText(
           text: label,
           enabled: widget.active,

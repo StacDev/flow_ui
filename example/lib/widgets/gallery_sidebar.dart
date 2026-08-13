@@ -54,7 +54,6 @@ class GallerySidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     return Container(
       width: width,
@@ -66,22 +65,12 @@ class GallerySidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              spacing.lg,
-              spacing.lg,
-              spacing.lg,
-              spacing.sm,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: const _Lockup(),
           ),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.fromLTRB(
-                spacing.sm,
-                spacing.xs,
-                spacing.sm,
-                spacing.lg,
-              ),
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
               children: [
                 for (final group in groups) ...[
                   _GroupLabel(group.label),
@@ -111,7 +100,6 @@ class _Lockup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     return Row(
       children: [
@@ -120,11 +108,11 @@ class _Lockup extends StatelessWidget {
           height: 28,
           decoration: BoxDecoration(
             color: colors.primary,
-            borderRadius: context.flowRadii.sm,
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Icon(Icons.bolt_rounded, size: 18, color: colors.onPrimary),
         ),
-        SizedBox(width: spacing.sm),
+        SizedBox(width: 8),
         Flexible(
           child: Text(
             'flow_ui',
@@ -134,12 +122,12 @@ class _Lockup extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: spacing.sm),
+        SizedBox(width: 8),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: spacing.sm, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: colors.surfaceContainerHigh,
-            borderRadius: context.flowRadii.full,
+            borderRadius: const BorderRadius.all(Radius.circular(999)),
           ),
           child: Text(
             _version,
@@ -160,14 +148,8 @@ class _GroupLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        spacing.md,
-        spacing.lg,
-        spacing.md,
-        spacing.xs,
-      ),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 4),
       child: Text(
         label.toUpperCase(),
         style: context.flowTypography.labelSmall.copyWith(
@@ -193,22 +175,18 @@ class _SidebarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: spacing.xs / 2),
+      padding: const EdgeInsets.only(bottom: 2),
       child: Material(
         color: selected ? colors.primaryContainer : Colors.transparent,
-        borderRadius: context.flowRadii.sm,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: selected ? null : onTap,
           hoverColor: colors.surfaceContainerHigh,
           child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: spacing.md,
-              vertical: spacing.sm + 1,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             child: Row(
               children: [
                 Icon(
@@ -216,7 +194,7 @@ class _SidebarItem extends StatelessWidget {
                   size: 18,
                   color: selected ? colors.primary : colors.onSurfaceVariant,
                 ),
-                SizedBox(width: spacing.md),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     entry.title,

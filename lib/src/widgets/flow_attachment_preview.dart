@@ -15,6 +15,12 @@ const Duration _transition = Duration(milliseconds: 180);
 const double _backdropBlur = 16;
 const double _backdropOpacity = 0.72;
 
+/// The design's viewer metrics: the image inset from the screen edge, and
+/// the top bar's inset and internal gap.
+const EdgeInsets _pagePadding = EdgeInsets.all(24);
+const double _barInset = 12;
+const double _barGap = 12;
+
 /// One filter for the whole animation: a [BackdropFilter] repaints the entire
 /// viewport whenever its filter changes, so the fade animates the tint only.
 final ImageFilter _blurFilter = ImageFilter.blur(
@@ -170,7 +176,6 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final total = widget.attachments.length;
     final routeAnimation =
         ModalRoute.of(context)?.animation ?? kAlwaysCompleteAnimation;
@@ -234,16 +239,16 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
                         },
                         itemBuilder: (context, index) => _ZoomablePage(
                           attachment: widget.attachments[index],
-                          padding: EdgeInsets.all(spacing.xl),
+                          padding: _pagePadding,
                           onZoomChanged: _setZoomed,
                         ),
                       ),
                     ),
                   ),
                   Positioned(
-                    top: spacing.md,
-                    left: spacing.md,
-                    right: spacing.md,
+                    top: _barInset,
+                    left: _barInset,
+                    right: _barInset,
                     // This route has no Scaffold, and text with no Material
                     // ancestor inherits MaterialApp's yellow-underlined
                     // fallback style for the fields our typography tokens
@@ -373,7 +378,6 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final typography = context.flowTypography;
     final label = caption;
     final count = counter;
@@ -409,7 +413,7 @@ class _TopBar extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(width: spacing.md),
+        const SizedBox(width: _barGap),
         FlowCircleButton(
           icon: Icons.close,
           background: colors.surfaceContainerHigh,

@@ -36,7 +36,7 @@ final List<GalleryGroup> galleryGroups = [
     entries: [
       GalleryEntry(
         title: 'Design tokens',
-        subtitle: 'Colors, typography, spacing, radii',
+        subtitle: 'Colors, typography',
         icon: Icons.palette_outlined,
         builder: (_) => const TokensPage(),
       ),
@@ -219,23 +219,17 @@ class GalleryHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
 
     return Scaffold(
       backgroundColor: colors.surface,
       appBar: const GalleryAppBar(title: 'flow_ui gallery'),
       body: ViewportBody(
         child: ListView(
-          padding: EdgeInsets.all(spacing.lg),
+          padding: const EdgeInsets.all(16),
           children: [
             for (final group in galleryGroups) ...[
               Padding(
-                padding: EdgeInsets.fromLTRB(
-                  spacing.xs,
-                  spacing.lg,
-                  spacing.xs,
-                  spacing.sm,
-                ),
+                padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
                 child: Text(
                   group.label.toUpperCase(),
                   style: typography.labelSmall.copyWith(
@@ -264,11 +258,11 @@ class _DemoTile extends StatelessWidget {
     final typography = context.flowTypography;
 
     return Container(
-      margin: EdgeInsets.only(bottom: context.flowSpacing.sm),
+      margin: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: colors.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: context.flowRadii.md,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
           side: BorderSide(color: colors.outlineVariant),
         ),
         clipBehavior: Clip.antiAlias,

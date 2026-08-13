@@ -81,10 +81,10 @@ class FlowChatScreen extends StatefulWidget {
   /// column is centred and capped.
   final double maxContentWidth;
 
-  /// Around the composer and [aboveComposer]. Defaults to the `lg` token
-  /// horizontally — matching `FlowThread`'s own default padding, so their
-  /// edges line up — and `lg` below, with no top: the thread's bottom
-  /// padding already separates the two.
+  /// Around the composer and [aboveComposer]. Defaults to 16 horizontally —
+  /// matching `FlowThread`'s own default padding, so their edges line up —
+  /// and 16 below, with no top: the thread's bottom padding already
+  /// separates the two.
   final EdgeInsetsGeometry? padding;
 
   @override
@@ -92,6 +92,15 @@ class FlowChatScreen extends StatefulWidget {
 }
 
 class _FlowChatScreenState extends State<FlowChatScreen> {
+  /// The design's surface metrics: the composer block's edge padding, the
+  /// jump button's lift off the composer, and the starters-to-composer gap.
+  /// The horizontal 16 must match `FlowThread`'s own default padding — the
+  /// doc on [FlowChatScreen.padding] promises the edges line up.
+  static const EdgeInsetsGeometry _defaultPadding =
+      EdgeInsetsDirectional.fromSTEB(16, 0, 16, 16);
+  static const double _jumpInset = 12;
+  static const double _composerGap = 8;
+
   bool _showJump = false;
 
   @override
@@ -139,10 +148,7 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
-    final padding =
-        widget.padding ??
-        EdgeInsets.fromLTRB(spacing.lg, 0, spacing.lg, spacing.lg);
+    final padding = widget.padding ?? _defaultPadding;
 
     // An empty thread rather than an empty box: the surface behaves the same
     // whether or not a host has wired one up yet.
@@ -154,7 +160,7 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
         children: [
           Positioned.fill(child: thread),
           Positioned(
-            bottom: spacing.md,
+            bottom: _jumpInset,
             left: 0,
             right: 0,
             child: Center(
@@ -204,7 +210,7 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
                       if (widget.aboveComposer != null) widget.aboveComposer!,
                       if (widget.composer != null) ...[
                         if (widget.aboveComposer != null)
-                          SizedBox(height: spacing.sm),
+                          const SizedBox(height: _composerGap),
                         widget.composer!,
                       ],
                     ],

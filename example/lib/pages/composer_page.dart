@@ -120,7 +120,6 @@ class _ComposerDemoState extends State<_ComposerDemo> {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -182,17 +181,17 @@ class _ComposerDemoState extends State<_ComposerDemo> {
           ],
         ),
         if (_sent.isNotEmpty) ...[
-          SizedBox(height: spacing.lg),
+          SizedBox(height: 16),
           Text(
             'Sent ($_modelId):',
             style: typography.labelMedium.copyWith(
               color: colors.onSurfaceVariant,
             ),
           ),
-          SizedBox(height: spacing.xs),
+          SizedBox(height: 4),
           for (final text in _sent)
             Padding(
-              padding: EdgeInsets.only(bottom: spacing.xs),
+              padding: const EdgeInsets.only(bottom: 4),
               child: Text(
                 '• $text',
                 style: typography.bodyMedium.copyWith(

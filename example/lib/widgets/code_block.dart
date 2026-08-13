@@ -45,7 +45,6 @@ class CodeBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final codeStyle = context.flowTypography.bodyMedium.copyWith(
       color: colors.onSurface,
       fontFamily: 'monospace',
@@ -65,19 +64,19 @@ class CodeBlock extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: colors.surfaceContainerHigh,
-        borderRadius: bare ? null : context.flowRadii.md,
+        borderRadius: bare ? null : const BorderRadius.all(Radius.circular(12)),
         border: bare ? null : Border.all(color: colors.outlineVariant),
       ),
       child: Stack(
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.all(spacing.lg),
+            padding: const EdgeInsets.all(16),
             child: SelectableText.rich(content),
           ),
           Positioned(
-            top: spacing.xs,
-            right: spacing.xs,
+            top: 4,
+            right: 4,
             child: IconButton(
               tooltip: 'Copy',
               iconSize: 16,

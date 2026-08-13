@@ -9,9 +9,8 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
     return Padding(
-      padding: EdgeInsets.only(top: spacing.xl, bottom: spacing.md),
+      padding: const EdgeInsets.only(top: 24, bottom: 12),
       child: Text(
         title,
         style: context.flowTypography.headlineSmall.copyWith(

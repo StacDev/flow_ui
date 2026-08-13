@@ -44,13 +44,13 @@ Status legend: ⬜ Todo · ✅ Done
 
 ### Theme (build first)
 
-`ThemeExtension`-based design tokens. Every component consumes these tokens (no hardcoded values); build this layer before any component.
+`ThemeExtension`-based design tokens for **colors and typography**; every component consumes these two token sets (no hardcoded colors or text styles). Spacing and corner radii are deliberately *not* tokens: following Material's structure, each component bakes its own metrics from the Figma file as private spec constants and exposes per-widget overrides (`padding:`, `borderRadius:`) where hosts retheme.
 
 Values come from the Flow UI Figma file. Role names follow Material 3's `ColorScheme` so a host can map an existing scheme across, with one addition — the design draws content at three ink levels (`onSurface` / `onSurfaceVariant` 75% / `onSurfaceMuted` 50%) and M3 names only two. Two rules hold the palette together: the ink ramp and the outlines are **translucent** (the same label and hairline read correctly on the page and on a raised card), while every `surface*` token is **opaque** (they get scrimmed and drawn over host images). `surfaceContainerLowest` is the raised card — the composer, menus, sheets — and is the one surface that lifts off the page in *both* themes, which is why it sits outside the `Low → Highest` tint ladder.
 
 | # | Component | Notes | Status |
 |---|-----------|-------|--------|
-| 1 | Design tokens | colors, typography, spacing, radii | ✅ |
+| 1 | Design tokens | colors, typography; metrics are per-component spec values | ✅ |
 | 2 | Light/dark themes | | ✅ |
 
 ### Basic elements

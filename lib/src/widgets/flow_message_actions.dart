@@ -87,10 +87,14 @@ class FlowMessageActions extends StatelessWidget {
     this.padding,
   });
 
+  /// The design's strip packs the frames a hairline apart — a component
+  /// spec value, not a scale step.
+  static const double _gap = 2;
+
   /// Rendered in order.
   final List<FlowMessageAction> actions;
 
-  /// Compact by default.
+  /// Compact by default, per the design.
   final double iconSize;
 
   /// Around the whole row; defaults to none.
@@ -98,12 +102,13 @@ class FlowMessageActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
+    // The design's action strip: glyphs on 20px frames, packed a hairline
+    // step apart.
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < actions.length; i++) ...[
-          if (i > 0) SizedBox(width: spacing.xs),
+          if (i > 0) const SizedBox(width: _gap),
           _ActionButton(action: actions[i], iconSize: iconSize),
         ],
       ],
@@ -124,6 +129,12 @@ class _ActionButton extends StatefulWidget {
 }
 
 class _ActionButtonState extends State<_ActionButton> {
+  /// Breathing room around the glyph inside its 20px frame.
+  static const double _framePadding = 2;
+
+  /// The frame's corner, tighter than any shared step reads at this size.
+  static const BorderRadius _frameRadius = BorderRadius.all(Radius.circular(2));
+
   bool _hovered = false;
 
   @override
@@ -152,10 +163,10 @@ class _ActionButtonState extends State<_ActionButton> {
       child: InkWell(
         onTap: action.onPressed,
         onHover: enabled ? (value) => setState(() => _hovered = value) : null,
-        borderRadius: context.flowRadii.sm,
+        borderRadius: _frameRadius,
         hoverColor: colors.surfaceContainerHigh,
         child: Padding(
-          padding: EdgeInsets.all(context.flowSpacing.xs),
+          padding: const EdgeInsets.all(_framePadding),
           child: Icon(
             action.selected
                 ? (action.selectedIcon ?? action.icon)

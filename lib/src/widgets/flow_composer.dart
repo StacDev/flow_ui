@@ -44,6 +44,8 @@ class FlowComposer extends StatefulWidget {
     this.previewCloseTooltip,
     this.leadingActions = const [],
     this.trailingActions = const [],
+    this.padding,
+    this.borderRadius,
   }) : assert(maxLines > 0, 'maxLines must be positive');
 
   /// Called with the trimmed text; never with empty text.
@@ -98,11 +100,38 @@ class FlowComposer extends StatefulWidget {
   /// Bottom-right slot before the send button, e.g. a `FlowModelSelector`.
   final List<Widget> trailingActions;
 
+  /// Inside the card, around the field and action bar. Defaults to the
+  /// design's 16 at the start and 8 elsewhere.
+  final EdgeInsetsGeometry? padding;
+
+  /// The card's corner. Defaults to the design's 24.
+  final BorderRadius? borderRadius;
+
   @override
   State<FlowComposer> createState() => _FlowComposerState();
 }
 
 class _FlowComposerState extends State<FlowComposer> {
+  /// The design's card: 24px corners, padded 16/8/8/8, with 8px around the
+  /// attachment strip and field, 4px around the action row.
+  ///
+  /// Directional on purpose — the wide 16 follows the *start* side, where
+  /// the text and leading actions sit, so RTL mirrors correctly. This is a
+  /// deliberate change from the physical left-hand padding of earlier
+  /// builds.
+  static const BorderRadius _cardRadius = BorderRadius.all(Radius.circular(24));
+  static const EdgeInsetsGeometry _cardPadding = EdgeInsetsDirectional.fromSTEB(
+    16,
+    8,
+    8,
+    8,
+  );
+  static const double _attachmentGap = 8;
+  static const double _fieldPadding = 8;
+  static const double _actionRowGap = 4;
+  static const double _leadingGap = 4;
+  static const double _trailingGap = 8;
+
   TextEditingController? _internalController;
   FocusNode? _internalFocusNode;
   late FocusNode _attachedFocusNode;
@@ -197,22 +226,16 @@ class _FlowComposerState extends State<FlowComposer> {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
 
     return Container(
       decoration: BoxDecoration(
         // The composer is the design's raised card: it sits above the page
         // rather than tinting it, in both themes.
         color: colors.surfaceContainerLowest,
-        borderRadius: context.flowRadii.xl,
+        borderRadius: widget.borderRadius ?? _cardRadius,
         border: Border.all(color: _focused ? colors.primary : colors.outline),
       ),
-      padding: EdgeInsets.fromLTRB(
-        spacing.lg,
-        spacing.sm,
-        spacing.sm,
-        spacing.sm,
-      ),
+      padding: widget.padding ?? _cardPadding,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -228,7 +251,7 @@ class _FlowComposerState extends State<FlowComposer> {
               removeTooltip: widget.removeAttachmentTooltip,
               previewCloseTooltip: widget.previewCloseTooltip,
             ),
-            SizedBox(height: spacing.sm),
+            const SizedBox(height: _attachmentGap),
           ],
           Focus(
             onKeyEvent: _handleKeyEvent,
@@ -246,21 +269,23 @@ class _FlowComposerState extends State<FlowComposer> {
                 hintStyle: typography.bodyLarge.copyWith(
                   color: colors.onSurfaceMuted,
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: spacing.sm),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: _fieldPadding,
+                ),
               ),
             ),
           ),
-          SizedBox(height: spacing.xs),
+          const SizedBox(height: _actionRowGap),
           Row(
             children: [
               for (final action in widget.leadingActions) ...[
                 action,
-                SizedBox(width: spacing.xs),
+                const SizedBox(width: _leadingGap),
               ],
               const Spacer(),
               for (final action in widget.trailingActions) ...[
                 action,
-                SizedBox(width: spacing.sm),
+                const SizedBox(width: _trailingGap),
               ],
               _buildSendStopButton(context),
             ],

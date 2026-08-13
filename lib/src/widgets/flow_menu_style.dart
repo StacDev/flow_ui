@@ -43,6 +43,7 @@ class FlowMenuStyle {
     this.checkColor,
     this.accentColor,
     this.menuRadius,
+    this.sheetRadius,
     this.minWidth,
     this.barrierColor,
   });
@@ -77,9 +78,12 @@ class FlowMenuStyle {
   /// Defaults to `primary`.
   final Color? accentColor;
 
-  /// Corner radius of the anchored menu card. Defaults to the `md` radius
-  /// token. The sheet always takes the `xl` token on its top corners.
+  /// Corner radius of the anchored menu card. Defaults to the design's 12.
+  /// The bottom sheet's top corners come from [sheetRadius].
   final BorderRadius? menuRadius;
+
+  /// The bottom sheet's top corners. Defaults to the design's 24.
+  final Radius? sheetRadius;
 
   /// Minimum width of the anchored menu's rows. Defaults to 220.
   final double? minWidth;

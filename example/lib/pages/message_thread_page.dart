@@ -227,7 +227,7 @@ class _LiveThreadDemoState extends State<_LiveThreadDemo> {
           icon: const Icon(Icons.replay),
           label: const Text('Replay'),
         ),
-        SizedBox(height: context.flowSpacing.md),
+        SizedBox(height: 12),
         SizedBox(
           height: 300,
           child: FlowThread(
@@ -257,7 +257,7 @@ class _StatesDemo extends StatelessWidget {
           ),
           thinkingLabel: 'Thinking…',
         ),
-        SizedBox(height: context.flowSpacing.lg),
+        SizedBox(height: 16),
         FlowMessage(
           FlowMessageData.text(
             id: 'e',

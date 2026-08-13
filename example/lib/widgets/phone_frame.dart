@@ -47,12 +47,11 @@ class PhoneFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       // Room for the drop shadow, which reaches well past the bezel.
-      padding: EdgeInsets.all(spacing.xl),
+      padding: const EdgeInsets.all(24),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final screenW = math.min(

@@ -16,6 +16,27 @@ import 'flow_state_colors.dart';
 const double _borderOpacity = 0.2;
 const double _separatorOpacity = 0.1;
 
+/// The design's menu metrics: a 12px card, rows padded 16/8 with a 12px
+/// icon gap, and hairline rules inset like the rows.
+const BorderRadius _menuRadius = BorderRadius.all(Radius.circular(12));
+const double _menuVerticalPadding = 4;
+const EdgeInsetsGeometry _rowPadding = EdgeInsets.symmetric(
+  horizontal: 16,
+  vertical: 8,
+);
+const EdgeInsetsGeometry _dividerMargin = EdgeInsets.symmetric(
+  horizontal: 16,
+  vertical: 4,
+);
+
+/// The gap between a row's leading icon and its label — shared with the
+/// SubmenuButton rows built outside this file, so neighbouring rows in one
+/// menu can't drift out of column.
+const double flowMenuIconGap = 12;
+const double _valueGap = 8;
+const double _checkGap = 12;
+const double _chevronGap = 4;
+
 /// Whether [presentation] means a bottom sheet in this context.
 bool flowMenuPresentsAsSheet(
   BuildContext context,
@@ -60,12 +81,12 @@ MenuStyle flowMenuStyle(BuildContext context, {FlowMenuStyle? style}) {
     surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
     shape: WidgetStatePropertyAll(
       RoundedRectangleBorder(
-        borderRadius: style?.menuRadius ?? context.flowRadii.md,
+        borderRadius: style?.menuRadius ?? _menuRadius,
         side: BorderSide(color: flowMenuBorderColor(context, style)),
       ),
     ),
-    padding: WidgetStatePropertyAll(
-      EdgeInsets.symmetric(vertical: context.flowSpacing.xs),
+    padding: const WidgetStatePropertyAll(
+      EdgeInsets.symmetric(vertical: _menuVerticalPadding),
     ),
   );
 }
@@ -79,13 +100,9 @@ class FlowMenuRule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
     return Container(
       height: 1,
-      margin: EdgeInsets.symmetric(
-        horizontal: spacing.lg,
-        vertical: spacing.xs,
-      ),
+      margin: _dividerMargin,
       color: flowMenuSeparatorColor(context, style),
     );
   }
@@ -94,7 +111,6 @@ class FlowMenuRule extends StatelessWidget {
 /// Token-styled [ButtonStyle] for a [SubmenuButton] row, matching
 /// [FlowMenuRow]'s metrics and hover treatment.
 ButtonStyle flowSubmenuRowStyle(BuildContext context, {FlowMenuStyle? style}) {
-  final spacing = context.flowSpacing;
   final hover = flowMenuHoverColor(context, style);
   return ButtonStyle(
     backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -105,9 +121,7 @@ ButtonStyle flowSubmenuRowStyle(BuildContext context, {FlowMenuStyle? style}) {
           ? hover
           : Colors.transparent,
     ),
-    padding: WidgetStatePropertyAll(
-      EdgeInsets.symmetric(horizontal: spacing.lg, vertical: spacing.sm),
-    ),
+    padding: const WidgetStatePropertyAll(_rowPadding),
     minimumSize: WidgetStatePropertyAll(Size(style?.minWidth ?? 220, 0)),
     shape: const WidgetStatePropertyAll(RoundedRectangleBorder()),
     // Desktop's compact ambient density would shave the padding above,
@@ -205,7 +219,6 @@ class FlowMenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     final labelStyle = flowMenuLabelStyle(context, large: large, style: style);
     final descriptionStyle = flowMenuDescriptionStyle(context, style: style);
@@ -246,10 +259,7 @@ class FlowMenuRow extends StatelessWidget {
             minWidth: large ? 0 : (style?.minWidth ?? 220),
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: spacing.lg,
-              vertical: spacing.sm,
-            ),
+            padding: _rowPadding,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -259,7 +269,7 @@ class FlowMenuRow extends StatelessWidget {
                     size: iconSize,
                     color: enabled ? iconColor : flowDisabledColor(iconColor),
                   ),
-                  SizedBox(width: spacing.md),
+                  const SizedBox(width: flowMenuIconGap),
                 ],
                 Expanded(
                   child: Column(
@@ -290,7 +300,7 @@ class FlowMenuRow extends StatelessWidget {
                   ),
                 ),
                 if (trailingLabel != null) ...[
-                  SizedBox(width: spacing.sm),
+                  const SizedBox(width: _valueGap),
                   Text(
                     trailingLabel!,
                     style: labelStyle.copyWith(
@@ -299,7 +309,7 @@ class FlowMenuRow extends StatelessWidget {
                   ),
                 ],
                 if (selected) ...[
-                  SizedBox(width: spacing.md),
+                  const SizedBox(width: _checkGap),
                   Icon(
                     Icons.check,
                     size: checkSize,
@@ -307,7 +317,7 @@ class FlowMenuRow extends StatelessWidget {
                   ),
                 ],
                 if (showChevron) ...[
-                  SizedBox(width: spacing.xs),
+                  const SizedBox(width: _chevronGap),
                   Icon(
                     Icons.chevron_right,
                     size: chevronSize,

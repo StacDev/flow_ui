@@ -147,6 +147,17 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
   /// ink — the design's active state.
   static const double _activeOpacity = 0.06;
 
+  /// The design's trigger: an 8px-radius pill padded 8/4, its pieces 4
+  /// apart.
+  static const BorderRadius _triggerRadius = BorderRadius.all(
+    Radius.circular(8),
+  );
+  static const EdgeInsetsGeometry _triggerPadding = EdgeInsets.symmetric(
+    horizontal: 8,
+    vertical: 4,
+  );
+  static const double _gap = 4;
+
   final MenuController _menuController = MenuController();
   bool _sheetOpen = false;
 
@@ -315,7 +326,6 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final enabled =
         widget.enabled && widget.onSelected != null && widget.models.isNotEmpty;
     final asSheet = flowMenuPresentsAsSheet(context, widget.presentation);
@@ -342,7 +352,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
           color: active
               ? colors.onSurface.withValues(alpha: _activeOpacity)
               : Colors.transparent,
-          borderRadius: context.flowRadii.sm,
+          borderRadius: _triggerRadius,
           child: InkWell(
             onTap: !enabled
                 ? null
@@ -351,13 +361,10 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                 : () => controller.isOpen
                       ? controller.close()
                       : controller.open(),
-            borderRadius: context.flowRadii.sm,
+            borderRadius: _triggerRadius,
             hoverColor: colors.surfaceContainerHigh,
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: spacing.sm,
-                vertical: spacing.xs,
-              ),
+              padding: _triggerPadding,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -368,7 +375,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                     ),
                   ),
                   if (effort != null) ...[
-                    SizedBox(width: spacing.xs),
+                    const SizedBox(width: _gap),
                     Text(
                       effort.label,
                       style: context.flowTypography.labelLarge.copyWith(
@@ -376,7 +383,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                       ),
                     ),
                   ],
-                  SizedBox(width: spacing.xs),
+                  const SizedBox(width: _gap),
                   Icon(Icons.expand_more, size: 12, color: effortForeground),
                 ],
               ),

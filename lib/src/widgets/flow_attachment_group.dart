@@ -58,6 +58,7 @@ class FlowAttachmentGroup extends StatefulWidget {
     this.previewCloseTooltip,
     this.layout = FlowAttachmentLayout.scroll,
     this.size = 80,
+    this.tileRadius,
     this.spacing,
     this.padding,
   }) : assert(size > 0, 'size must be positive');
@@ -85,8 +86,11 @@ class FlowAttachmentGroup extends StatefulWidget {
   /// Edge length of each square tile.
   final double size;
 
+  /// Corner radius of each tile. Defaults to the design's 16.
+  final BorderRadius? tileRadius;
+
   /// Gap between tiles, and between lines when wrapping. Defaults to the
-  /// `sm` spacing token.
+  /// design's 8.
   final double? spacing;
 
   /// Around the whole group; defaults to none. In the scrolling layout it
@@ -170,6 +174,7 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
       key: ValueKey(attachment.id),
       attachment: attachment,
       size: widget.size,
+      radius: widget.tileRadius ?? _tileRadius,
       removeTooltip: widget.removeTooltip,
       alwaysShowRemove: !_hoverCapable,
       onTap: tappable ? () => _handleTap(index) : null,
@@ -181,7 +186,7 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
   Widget build(BuildContext context) {
     if (widget.attachments.isEmpty) return const SizedBox.shrink();
 
-    final gap = widget.spacing ?? context.flowSpacing.sm;
+    final gap = widget.spacing ?? _defaultGap;
     final padding = widget.padding;
     final tiles = [
       for (var i = 0; i < widget.attachments.length; i++) _tile(i),
@@ -223,6 +228,22 @@ bool _idsAreUnique(List<FlowAttachment> attachments) =>
 /// The reveal is short enough to feel like part of the hover itself.
 const Duration _revealDuration = Duration(milliseconds: 120);
 
+/// The design's tile: 16px corners, an 8px gap between tiles, the remove
+/// disc inset 4 from its corner, and the type pill inset 8 from its own.
+const BorderRadius _tileRadius = BorderRadius.all(Radius.circular(16));
+const double _defaultGap = 8;
+const double _removeInset = 4;
+
+/// Inside the remove disc — the same 4 as its inset today, but a separate
+/// decision: retuning the disc's position must not resize it.
+const double _removeDiscPadding = 4;
+const double _pillInset = 8;
+const BorderRadius _pillRadius = BorderRadius.all(Radius.circular(8));
+const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
+  horizontal: 4,
+  vertical: 1,
+);
+
 /// The tile's ground, as an alpha over the ink. Deeper behind a photo than
 /// behind a bare tile, which is what the design draws: the wash reads as the
 /// edge of the image while it decodes, and as the tile itself without one.
@@ -241,6 +262,7 @@ class _AttachmentTile extends StatefulWidget {
     super.key,
     required this.attachment,
     required this.size,
+    required this.radius,
     required this.alwaysShowRemove,
     this.removeTooltip,
     this.onTap,
@@ -249,6 +271,7 @@ class _AttachmentTile extends StatefulWidget {
 
   final FlowAttachment attachment;
   final double size;
+  final BorderRadius radius;
 
   /// Set on touch, where there is no hover to reveal the button.
   final bool alwaysShowRemove;
@@ -288,7 +311,6 @@ class _AttachmentTileState extends State<_AttachmentTile> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final attachment = widget.attachment;
     final tooltip = attachment.tooltip ?? attachment.label;
 
@@ -297,7 +319,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
     final onRemove = widget.onRemove;
 
     final shape = RoundedRectangleBorder(
-      borderRadius: context.flowRadii.lg,
+      borderRadius: widget.radius,
       side: BorderSide(color: colors.outline),
     );
 
@@ -351,7 +373,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
     Widget result = DecoratedBox(
       // Outside the Material, which clips its own contents away.
       decoration: BoxDecoration(
-        borderRadius: context.flowRadii.lg,
+        borderRadius: widget.radius,
         boxShadow: [
           BoxShadow(
             color: colors.onSurface.withValues(alpha: _shadowOpacity),
@@ -367,14 +389,14 @@ class _AttachmentTileState extends State<_AttachmentTile> {
             tile,
             if (kind != null)
               PositionedDirectional(
-                bottom: spacing.sm,
-                start: spacing.sm,
+                bottom: _pillInset,
+                start: _pillInset,
                 child: _TypePill(kind: kind),
               ),
             if (onRemove != null)
               PositionedDirectional(
-                top: spacing.xs,
-                end: spacing.xs,
+                top: _removeInset,
+                end: _removeInset,
                 // Opacity alone still hit-tests and still takes focus, so a
                 // faded-out button would quietly eat corner taps.
                 child: IgnorePointer(
@@ -394,7 +416,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
                       ),
                       foreground: colors.onSurface,
                       iconSize: 16,
-                      padding: spacing.xs,
+                      padding: _removeDiscPadding,
                       tooltip: widget.removeTooltip,
                       onTap: onRemove,
                       onFocusChange: _setRemoveFocused,
@@ -438,7 +460,7 @@ class _TypePill extends StatelessWidget {
       // The tile is already named after the file, which says the same thing:
       // announcing 'PDF' after 'contract.pdf' is noise.
       child: ClipRRect(
-        borderRadius: context.flowRadii.sm,
+        borderRadius: _pillRadius,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: _pillBlur, sigmaY: _pillBlur),
           child: ColoredBox(
@@ -446,10 +468,7 @@ class _TypePill extends StatelessWidget {
             // the package can't see.
             color: flowScrimColor(colors.surfaceContainerHighest),
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.flowSpacing.xs,
-                vertical: 1,
-              ),
+              padding: _pillPadding,
               child: Text(
                 kind,
                 style: context.flowTypography.labelMedium.copyWith(

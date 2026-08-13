@@ -115,6 +115,9 @@ class FlowMenu extends StatefulWidget {
 }
 
 class _FlowMenuState extends State<FlowMenu> {
+  /// The design's trigger inset.
+  static const double _triggerPadding = 4;
+
   bool _hovered = false;
 
   bool get _hasOptions => widget.entries.whereType<FlowMenuOption>().isNotEmpty;
@@ -160,7 +163,7 @@ class _FlowMenuState extends State<FlowMenu> {
                             style?.iconColor ?? context.flowColors.onSurface,
                           ),
                   ),
-                  SizedBox(width: context.flowSpacing.md),
+                  const SizedBox(width: flowMenuIconGap),
                 ],
                 Text(
                   entry.label,
@@ -248,7 +251,7 @@ class _FlowMenuState extends State<FlowMenu> {
             customBorder: const CircleBorder(),
             hoverColor: colors.surfaceContainerHigh,
             child: Padding(
-              padding: EdgeInsets.all(context.flowSpacing.xs),
+              padding: const EdgeInsets.all(_triggerPadding),
               child: Icon(widget.icon, size: 20, color: foreground),
             ),
           ),

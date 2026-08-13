@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/flow_theme.dart';
-
 // Internal chrome shared by the composer, the attachment tiles and the
 // attachment preview. Not exported from the package barrel.
 
@@ -10,6 +8,11 @@ import '../theme/flow_theme.dart';
 /// One definition so the send button, the attachment remove button and the
 /// preview's close button can't drift apart in ink, clip or hover treatment.
 class FlowCircleButton extends StatelessWidget {
+  /// The disc padding used when [padding] is null — public within the
+  /// package so layouts that mirror a default-sized disc (the menu sheet's
+  /// nav balance) can derive from it instead of copying the number.
+  static const double defaultPadding = 8;
+
   const FlowCircleButton({
     super.key,
     required this.icon,
@@ -40,7 +43,7 @@ class FlowCircleButton extends StatelessWidget {
 
   final double iconSize;
 
-  /// Around the icon; defaults to the `sm` spacing token.
+  /// Around the icon; defaults to the design's 8.
   final double? padding;
 
   /// Defaults to the ambient ink treatment, which tints rather than replaces
@@ -59,7 +62,7 @@ class FlowCircleButton extends StatelessWidget {
         customBorder: const CircleBorder(),
         hoverColor: hoverColor,
         child: Padding(
-          padding: EdgeInsets.all(padding ?? context.flowSpacing.sm),
+          padding: EdgeInsets.all(padding ?? defaultPadding),
           child: Icon(icon, size: iconSize, color: foreground),
         ),
       ),

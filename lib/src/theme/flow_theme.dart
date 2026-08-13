@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'flow_colors.dart';
-import 'flow_radii.dart';
-import 'flow_spacing.dart';
 import 'flow_typography.dart';
 
-/// The flow_ui design token system, installed as a [ThemeExtension]:
+/// The flow_ui design tokens — colors and typography — installed as a
+/// [ThemeExtension]:
 ///
 /// ```dart
 /// MaterialApp(
@@ -18,12 +17,14 @@ import 'flow_typography.dart';
 /// `context.flowColors`, …). When no [FlowTheme] is installed, a preset
 /// matching the ambient [ThemeData.brightness] is used, so flow_ui works
 /// with zero host setup.
+///
+/// Spacing and corner radii are not tokens: following Material's structure,
+/// each component bakes its own metrics from the design file and exposes
+/// per-widget overrides (`padding:`, `borderRadius:`) where hosts retheme.
 class FlowTheme extends ThemeExtension<FlowTheme> {
   const FlowTheme({
     required this.colors,
     this.typography = FlowTypography.standard,
-    this.spacing = const FlowSpacing(),
-    this.radii = const FlowRadii(),
   });
 
   /// Light preset.
@@ -34,21 +35,12 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
 
   final FlowColors colors;
   final FlowTypography typography;
-  final FlowSpacing spacing;
-  final FlowRadii radii;
 
   @override
-  FlowTheme copyWith({
-    FlowColors? colors,
-    FlowTypography? typography,
-    FlowSpacing? spacing,
-    FlowRadii? radii,
-  }) {
+  FlowTheme copyWith({FlowColors? colors, FlowTypography? typography}) {
     return FlowTheme(
       colors: colors ?? this.colors,
       typography: typography ?? this.typography,
-      spacing: spacing ?? this.spacing,
-      radii: radii ?? this.radii,
     );
   }
 
@@ -58,14 +50,12 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     return FlowTheme(
       colors: colors.lerp(other.colors, t),
       typography: typography.lerp(other.typography, t),
-      spacing: spacing.lerp(other.spacing, t),
-      radii: radii.lerp(other.radii, t),
     );
   }
 }
 
 /// Token access for widgets: `context.flowColors.accent`,
-/// `context.flowSpacing.md`, …
+/// `context.flowTypography.bodyLarge`, …
 extension FlowThemeContext on BuildContext {
   /// The installed [FlowTheme], or a brightness-matched preset if none is.
   FlowTheme get flowTheme {
@@ -78,6 +68,4 @@ extension FlowThemeContext on BuildContext {
 
   FlowColors get flowColors => flowTheme.colors;
   FlowTypography get flowTypography => flowTheme.typography;
-  FlowSpacing get flowSpacing => flowTheme.spacing;
-  FlowRadii get flowRadii => flowTheme.radii;
 }

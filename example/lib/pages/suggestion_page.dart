@@ -230,8 +230,6 @@ class _ComposerHandoffDemoState extends State<_ComposerHandoffDemo> {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -247,7 +245,7 @@ class _ComposerHandoffDemoState extends State<_ComposerHandoffDemo> {
                     ),
                 ],
         ),
-        SizedBox(height: spacing.sm),
+        SizedBox(height: 8),
         FlowComposer(
           controller: _controller,
           placeholder: 'Message…',

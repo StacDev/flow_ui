@@ -41,6 +41,8 @@ class FlowMessage extends StatelessWidget {
     this.textStyle,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
+    this.bubbleRadius,
+    this.bubblePadding,
   }) : assert(
          maxBubbleWidthFraction > 0 && maxBubbleWidthFraction <= 1,
          'maxBubbleWidthFraction must be in (0, 1]',
@@ -82,6 +84,14 @@ class FlowMessage extends StatelessWidget {
   /// strings.
   final String? thinkingLabel;
 
+  /// Corner radius of the user bubble and the error bubbles. Defaults to
+  /// the design's 12.
+  final BorderRadius? bubbleRadius;
+
+  /// Inside the user bubble. Defaults to the design's 16/10; the error
+  /// bubbles keep their own spec padding.
+  final EdgeInsetsGeometry? bubblePadding;
+
   /// The user bubble's ground, as an alpha over the ink — the same wash the
   /// design gives every tint that sits directly on the page, so it reads
   /// correctly in both themes.
@@ -94,6 +104,23 @@ class FlowMessage extends StatelessWidget {
   /// Bubble text sits on the tight line height; flowing assistant prose
   /// keeps the reading one.
   static const double _bubbleTextHeight = 1.3;
+
+  /// The design's bubble: 12px corners on 16px side padding.
+  static const BorderRadius _bubbleRadius = BorderRadius.all(
+    Radius.circular(12),
+  );
+  static const double _bubbleHorizontalPadding = 16;
+
+  /// The error bubble sits a step deeper than the user bubble's 10 — the
+  /// design's asymmetry, not a leftover.
+  static const double _errorBubbleVerticalPadding = 12;
+
+  /// Gaps: between a message's parts, under a user bubble, under assistant
+  /// content before its actions, and beside a leading slot.
+  static const double _partGap = 8;
+  static const double _userFooterGap = 4;
+  static const double _assistantFooterGap = 12;
+  static const double _leadingGap = 12;
 
   bool get _isError => message.status == FlowMessageStatus.error;
 
@@ -108,18 +135,19 @@ class FlowMessage extends StatelessWidget {
 
   Widget _buildUser(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     final bubble = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: spacing.lg,
-        vertical: _bubbleVerticalPadding,
-      ),
+      padding:
+          bubblePadding ??
+          const EdgeInsets.symmetric(
+            horizontal: _bubbleHorizontalPadding,
+            vertical: _bubbleVerticalPadding,
+          ),
       decoration: BoxDecoration(
         color: _isError
             ? colors.errorContainer
             : colors.onSurface.withValues(alpha: _bubbleOpacity),
-        borderRadius: context.flowRadii.md,
+        borderRadius: bubbleRadius ?? _bubbleRadius,
       ),
       child: _buildParts(
         context,
@@ -143,7 +171,7 @@ class FlowMessage extends StatelessWidget {
             ),
             if (footer != null)
               Padding(
-                padding: EdgeInsets.only(top: spacing.xs),
+                padding: const EdgeInsets.only(top: _userFooterGap),
                 child: footer,
               ),
           ],
@@ -157,7 +185,7 @@ class FlowMessage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Flexible(child: column),
-        SizedBox(width: spacing.md),
+        const SizedBox(width: _leadingGap),
         leading!,
       ],
     );
@@ -165,7 +193,6 @@ class FlowMessage extends StatelessWidget {
 
   Widget _buildAssistant(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
 
     Widget content;
     if (message.status == FlowMessageStatus.pending && message.parts.isEmpty) {
@@ -174,13 +201,13 @@ class FlowMessage extends StatelessWidget {
       content = Align(
         alignment: AlignmentDirectional.centerStart,
         child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.lg,
-            vertical: spacing.md,
+          padding: const EdgeInsets.symmetric(
+            horizontal: _bubbleHorizontalPadding,
+            vertical: _errorBubbleVerticalPadding,
           ),
           decoration: BoxDecoration(
             color: colors.errorContainer,
-            borderRadius: context.flowRadii.md,
+            borderRadius: bubbleRadius ?? _bubbleRadius,
           ),
           child: _buildParts(context, colors.onErrorContainer),
         ),
@@ -196,7 +223,7 @@ class FlowMessage extends StatelessWidget {
         content,
         if (footer != null)
           Padding(
-            padding: EdgeInsets.only(top: spacing.md),
+            padding: const EdgeInsets.only(top: _assistantFooterGap),
             child: footer,
           ),
       ],
@@ -207,7 +234,7 @@ class FlowMessage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         leading!,
-        SizedBox(width: spacing.md),
+        const SizedBox(width: _leadingGap),
         Expanded(child: column),
       ],
     );
@@ -246,7 +273,6 @@ class FlowMessage extends StatelessWidget {
   /// [height] is given, on that line height instead of the reading one.
   Widget _buildParts(BuildContext context, Color foreground, {double? height}) {
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
     final style = typography.bodyLarge
         .copyWith(color: foreground, height: height)
         .merge(textStyle);
@@ -287,7 +313,7 @@ class FlowMessage extends StatelessWidget {
         children.isEmpty
             ? child
             : Padding(
-                padding: EdgeInsets.only(top: spacing.sm),
+                padding: const EdgeInsets.only(top: _partGap),
                 child: child,
               ),
       );

@@ -265,9 +265,8 @@ class _DemoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
     return Padding(
-      padding: EdgeInsets.fromLTRB(spacing.lg, spacing.sm, spacing.sm, 0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
       child: Row(
         children: [
           Expanded(

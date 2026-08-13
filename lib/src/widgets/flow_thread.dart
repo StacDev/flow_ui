@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/flow_message_data.dart';
-import '../theme/flow_theme.dart';
 import 'flow_message.dart';
 
 /// The scrollable conversation: a bottom-anchored list of [FlowMessageData]s.
@@ -46,10 +45,10 @@ class FlowThread extends StatelessWidget {
   /// Optional external scroll controller.
   final ScrollController? controller;
 
-  /// Defaults to `EdgeInsets.all(spacing.lg)`.
+  /// Defaults to the design's 16 on every side.
   final EdgeInsetsGeometry? padding;
 
-  /// Gap between messages; defaults to the `xxl` spacing token.
+  /// Gap between messages; defaults to the design's 32.
   final double? itemSpacing;
 
   /// Per-message override; defaults to a [FlowMessage].
@@ -63,16 +62,21 @@ class FlowThread extends StatelessWidget {
   /// on a pending message.
   final String? thinkingLabel;
 
+  /// The design's thread metrics: edge padding and the gap between turns.
+  /// The edge 16 is mirrored by `FlowChatScreen`'s composer-block padding,
+  /// which promises its edges line up with the thread's.
+  static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.all(16);
+  static const double _defaultGap = 32;
+
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
-    final gap = itemSpacing ?? spacing.xxl;
+    final gap = itemSpacing ?? _defaultGap;
     final onAttachmentTap = this.onAttachmentTap;
 
     return ListView.builder(
       controller: controller,
       reverse: true,
-      padding: padding ?? EdgeInsets.all(spacing.lg),
+      padding: padding ?? _defaultPadding,
       itemCount: messages.length,
       itemBuilder: (context, index) {
         // Reversed list: index 0 is the newest (bottom) message.

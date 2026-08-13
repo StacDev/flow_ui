@@ -134,7 +134,6 @@ class _SelectorDemoState extends State<_SelectorDemo> {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +152,7 @@ class _SelectorDemoState extends State<_SelectorDemo> {
           selectedEffortId: _effortId,
           onEffortSelected: (id) => setState(() => _effortId = id),
         ),
-        SizedBox(height: spacing.lg),
+        SizedBox(height: 16),
         Text(
           'Selected: $_selectedId · $_effortId',
           style: typography.bodySmall.copyWith(color: colors.onSurfaceVariant),

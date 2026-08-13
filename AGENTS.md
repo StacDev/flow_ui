@@ -44,11 +44,11 @@ Status legend: ⬜ Todo · ✅ Done
 
 ### Theme (build first)
 
-`ThemeExtension`-based design tokens. Every component consumes these tokens (no hardcoded values); build this layer before any component.
+`ThemeExtension`-based design tokens for **colors and typography**; every component consumes these two token sets (no hardcoded colors or text styles). Spacing and corner radii are deliberately *not* tokens: following Material's structure, each component bakes its own metrics from the Figma file as private spec constants and exposes per-widget overrides (`padding:`, `borderRadius:`) where hosts retheme.
 
 | # | Component | Notes | Status |
 |---|-----------|-------|--------|
-| 1 | Design tokens | colors, typography, spacing, radii | ✅ |
+| 1 | Design tokens | colors, typography; metrics are per-component spec values | ✅ |
 | 2 | Light/dark themes | | ✅ |
 
 ### Basic elements

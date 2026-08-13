@@ -85,8 +85,6 @@ class _StreamingTextPageState extends State<StreamingTextPage> {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = context.flowSpacing;
-
     return GalleryPage(
       title: 'Streaming text',
       className: 'FlowStreamingText',
@@ -96,8 +94,8 @@ class _StreamingTextPageState extends State<StreamingTextPage> {
           'different chunk rates.',
       children: [
         Wrap(
-          spacing: spacing.md,
-          runSpacing: spacing.md,
+          spacing: 12,
+          runSpacing: 12,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             FilledButton.icon(

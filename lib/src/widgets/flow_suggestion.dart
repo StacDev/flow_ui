@@ -25,6 +25,8 @@ class FlowSuggestion extends StatefulWidget {
     this.onTap,
     this.enabled = true,
     this.tooltip,
+    this.padding,
+    this.borderRadius,
   });
 
   /// The suggestion text, on one line — it ellipsizes rather than wrapping.
@@ -41,17 +43,32 @@ class FlowSuggestion extends StatefulWidget {
   /// Host-localized tooltip, e.g. the full text of a long suggestion.
   final String? tooltip;
 
+  /// Inside the pill. Defaults to the design's 12/8.
+  final EdgeInsetsGeometry? padding;
+
+  /// The pill's corner. Defaults to fully rounded.
+  final BorderRadius? borderRadius;
+
   @override
   State<FlowSuggestion> createState() => _FlowSuggestionState();
 }
 
 class _FlowSuggestionState extends State<FlowSuggestion> {
+  /// The design's pill: fully rounded, 12/8 padding, an 8px icon gap.
+  static const BorderRadius _pillRadius = BorderRadius.all(
+    Radius.circular(999),
+  );
+  static const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 8,
+  );
+  static const double _iconGap = 8;
+
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final enabled = widget.enabled && widget.onTap != null;
 
     final Color foreground;
@@ -64,7 +81,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
     }
 
     final shape = RoundedRectangleBorder(
-      borderRadius: context.flowRadii.full,
+      borderRadius: widget.borderRadius ?? _pillRadius,
       side: BorderSide(color: colors.outlineVariant),
     );
 
@@ -78,10 +95,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
         customBorder: shape,
         hoverColor: colors.surfaceContainerHigh,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.md,
-            vertical: spacing.sm,
-          ),
+          padding: widget.padding ?? _pillPadding,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final Widget label = Text(
@@ -97,7 +111,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
                 children: [
                   if (widget.icon != null) ...[
                     Icon(widget.icon, size: 16, color: foreground),
-                    SizedBox(width: spacing.sm),
+                    const SizedBox(width: _iconGap),
                   ],
                   // A row lays non-flex children out unbounded, so the label
                   // only ellipsizes as a flex child — which in turn is only
@@ -165,7 +179,7 @@ class FlowSuggestionGroup extends StatelessWidget {
   final FlowSuggestionLayout layout;
 
   /// Gap between pills, and between lines when wrapping. Defaults to the
-  /// `sm` spacing token.
+  /// design's 8.
   final double? spacing;
 
   /// Around the whole group; defaults to none. In the scrolling layout it
@@ -176,7 +190,7 @@ class FlowSuggestionGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
-    final gap = spacing ?? context.flowSpacing.sm;
+    final gap = spacing ?? _defaultGap;
 
     switch (layout) {
       case FlowSuggestionLayout.scroll:
@@ -210,6 +224,9 @@ class FlowSuggestionGroup extends StatelessWidget {
         );
     }
   }
+
+  /// The design's gap between pills — the same 8 the attachment strip uses.
+  static const double _defaultGap = 8;
 
   Widget _padded(Widget child) {
     if (padding == null) return child;

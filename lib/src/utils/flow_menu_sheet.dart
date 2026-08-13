@@ -14,6 +14,17 @@ const Duration _pageTransition = Duration(milliseconds: 180);
 const double _navHeight = 56;
 const double _navIconSize = 20;
 
+/// The design's sheet metrics: 24px top corners, the nav bar inset 12,
+/// 24 under the last row.
+const Radius _sheetCornerRadius = Radius.circular(24);
+const double _navInset = 12;
+const double _bottomPadding = 24;
+
+/// The rendered width of the leading nav button — derived, not a spec
+/// value, so resizing the icon or the disc keeps the title centered.
+const double _navBalanceWidth =
+    _navIconSize + 2 * FlowCircleButton.defaultPadding;
+
 /// One screen of a menu sheet: the root list, or a pushed submenu page.
 ///
 /// [children] is a builder rather than a list so rows are created under the
@@ -34,7 +45,6 @@ Future<void> showFlowMenuSheet({
   required FlowMenuSheetPage root,
   FlowMenuStyle? style,
 }) {
-  final radius = context.flowRadii.xl;
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: flowMenuBackground(context, style),
@@ -42,9 +52,8 @@ Future<void> showFlowMenuSheet({
     // The sheet is the raised card again: top corners at the card radius,
     // the same firm hairline the anchored menu carries.
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-        topLeft: radius.topLeft,
-        topRight: radius.topRight,
+      borderRadius: BorderRadius.vertical(
+        top: style?.sheetRadius ?? _sheetCornerRadius,
       ),
       side: BorderSide(color: flowMenuBorderColor(context, style)),
     ),
@@ -101,7 +110,6 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = context.flowColors;
-    final spacing = context.flowSpacing;
     final page = _stack.last;
     final atRoot = _stack.length == 1;
     final duration = MediaQuery.disableAnimationsOf(context)
@@ -112,7 +120,10 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
     final navBar = SizedBox(
       height: _navHeight,
       child: Padding(
-        padding: EdgeInsetsDirectional.only(start: spacing.md, end: spacing.md),
+        padding: const EdgeInsetsDirectional.only(
+          start: _navInset,
+          end: _navInset,
+        ),
         child: Row(
           children: [
             FlowCircleButton(
@@ -140,7 +151,7 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
                     ),
             ),
             // Balances the leading button so the title stays centered.
-            SizedBox(width: _navIconSize + 2 * spacing.sm),
+            const SizedBox(width: _navBalanceWidth),
           ],
         ),
       ),
@@ -173,7 +184,7 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
                 children: [
                   navBar,
                   ...page.children(context),
-                  SizedBox(height: spacing.xl),
+                  const SizedBox(height: _bottomPadding),
                 ],
               ),
             ),

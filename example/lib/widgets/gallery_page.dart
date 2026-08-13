@@ -55,7 +55,6 @@ class GalleryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final spacing = context.flowSpacing;
 
     final child = this.child;
 
@@ -68,10 +67,7 @@ class GalleryPage extends StatelessWidget {
         child:
             child ??
             ListView(
-              padding: EdgeInsets.symmetric(
-                horizontal: spacing.lg,
-                vertical: spacing.xl,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               children: [
                 Center(
                   child: ConstrainedBox(
@@ -83,7 +79,7 @@ class GalleryPage extends StatelessWidget {
                       children: [
                         if (description != null)
                           Padding(
-                            padding: EdgeInsets.only(bottom: spacing.lg),
+                            padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
                               description!,
                               style: typography.bodyMedium.copyWith(
