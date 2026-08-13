@@ -20,7 +20,7 @@ typedef FlowCustomPartBuilder =
 
 /// Renders a single [FlowMessageData] with role-appropriate presentation:
 ///
-/// - **user** — right-aligned bubble (`secondaryContainer`).
+/// - **user** — right-aligned bubble, a wash of ink over the page.
 /// - **assistant** — plain full-width content, no bubble.
 /// - **system** — centered muted text (notices, dividers).
 ///
@@ -82,6 +82,19 @@ class FlowMessage extends StatelessWidget {
   /// strings.
   final String? thinkingLabel;
 
+  /// The user bubble's ground, as an alpha over the ink — the same wash the
+  /// design gives every tint that sits directly on the page, so it reads
+  /// correctly in both themes.
+  static const double _bubbleOpacity = 0.04;
+
+  /// The design draws the bubble at 16/10 — ten sits between the spacing
+  /// steps, like the attachment pill's one-pixel inset.
+  static const double _bubbleVerticalPadding = 10;
+
+  /// Bubble text sits on the tight line height; flowing assistant prose
+  /// keeps the reading one.
+  static const double _bubbleTextHeight = 1.3;
+
   bool get _isError => message.status == FlowMessageStatus.error;
 
   @override
@@ -100,15 +113,18 @@ class FlowMessage extends StatelessWidget {
     final bubble = Container(
       padding: EdgeInsets.symmetric(
         horizontal: spacing.lg,
-        vertical: spacing.md,
+        vertical: _bubbleVerticalPadding,
       ),
       decoration: BoxDecoration(
-        color: _isError ? colors.errorContainer : colors.secondaryContainer,
+        color: _isError
+            ? colors.errorContainer
+            : colors.onSurface.withValues(alpha: _bubbleOpacity),
         borderRadius: context.flowRadii.md,
       ),
       child: _buildParts(
         context,
-        _isError ? colors.onErrorContainer : colors.onSecondaryContainer,
+        _isError ? colors.onErrorContainer : colors.onSurface,
+        height: _bubbleTextHeight,
       ),
     );
 
@@ -180,7 +196,7 @@ class FlowMessage extends StatelessWidget {
         content,
         if (footer != null)
           Padding(
-            padding: EdgeInsets.only(top: spacing.xs),
+            padding: EdgeInsets.only(top: spacing.md),
             child: footer,
           ),
       ],
@@ -226,12 +242,13 @@ class FlowMessage extends StatelessWidget {
     );
   }
 
-  /// The message's parts as a column, text parts in [foreground].
-  Widget _buildParts(BuildContext context, Color foreground) {
+  /// The message's parts as a column, text parts in [foreground] and, when
+  /// [height] is given, on that line height instead of the reading one.
+  Widget _buildParts(BuildContext context, Color foreground, {double? height}) {
     final typography = context.flowTypography;
     final spacing = context.flowSpacing;
     final style = typography.bodyLarge
-        .copyWith(color: foreground)
+        .copyWith(color: foreground, height: height)
         .merge(textStyle);
 
     final lastTextIndex = message.parts.lastIndexWhere(

@@ -65,7 +65,7 @@ Status legend: ⬜ Todo · ✅ Done
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 8 | Message & Thread | | ✅ |
+| 8 | Message & Thread | ink-wash user bubble; plain assistant | ✅ |
 | 9 | Thread List | | ⬜ |
 | 10 | Message actions | | ✅ |
 | 11 | Streaming text | | ✅ |

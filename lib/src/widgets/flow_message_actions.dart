@@ -132,15 +132,17 @@ class _ActionButtonState extends State<_ActionButton> {
     final action = widget.action;
     final enabled = action.onPressed != null;
 
+    // Rest at the muted ink — the design's 50% for message-action glyphs —
+    // lifting to full ink on hover so the affordance stays.
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(colors.onSurfaceVariant);
+      foreground = flowDisabledColor(colors.onSurfaceMuted);
     } else if (action.selected) {
       foreground = colors.primary;
     } else if (_hovered) {
       foreground = colors.onSurface;
     } else {
-      foreground = colors.onSurfaceVariant;
+      foreground = colors.onSurfaceMuted;
     }
 
     // Transparent Material so ink and hover fills render anywhere,

@@ -49,7 +49,7 @@ class FlowThread extends StatelessWidget {
   /// Defaults to `EdgeInsets.all(spacing.lg)`.
   final EdgeInsetsGeometry? padding;
 
-  /// Gap between messages; defaults to `spacing.lg`.
+  /// Gap between messages; defaults to the `xxl` spacing token.
   final double? itemSpacing;
 
   /// Per-message override; defaults to a [FlowMessage].
@@ -66,7 +66,7 @@ class FlowThread extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spacing = context.flowSpacing;
-    final gap = itemSpacing ?? spacing.lg;
+    final gap = itemSpacing ?? spacing.xxl;
     final onAttachmentTap = this.onAttachmentTap;
 
     return ListView.builder(
