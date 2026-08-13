@@ -84,7 +84,7 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 | 15 | Attachments | images and files, type pill; videos pending | ✅ |
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |
-| 18 | Suggestion & Suggestion Group | scrolling row, wrap, column | ✅ |
+| 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
 | 21 | Code block | | ⬜ |

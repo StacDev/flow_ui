@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_state_colors.dart';
 
-/// A tappable prompt pill: the host's suggested message, optionally with a
+/// A tappable prompt row: the host's suggested message, optionally with a
 /// leading icon. Usable on its own, or in a [FlowSuggestionGroup]:
 ///
 /// ```dart
@@ -15,14 +15,20 @@ import '../utils/flow_state_colors.dart';
 /// )
 /// ```
 ///
+/// Two variants, per the design: a plain row resting in the secondary ink
+/// with no chrome of its own, and — with [outlined] — a row on the faint
+/// fill and hairline, in full ink. The outlined form is also the treatment
+/// for suggestions embedded inside an assistant message.
+///
 /// [label] is the whole content — the package ships no strings and does not
-/// derive prompt text. A null [onTap] renders the pill disabled.
+/// derive prompt text. A null [onTap] renders the row disabled.
 class FlowSuggestion extends StatefulWidget {
   const FlowSuggestion({
     super.key,
     required this.label,
     this.icon,
     this.onTap,
+    this.outlined = false,
     this.enabled = true,
     this.tooltip,
     this.padding,
@@ -35,18 +41,22 @@ class FlowSuggestion extends StatefulWidget {
   /// Optional leading glyph.
   final IconData? icon;
 
-  /// Null renders the pill disabled.
+  /// Null renders the row disabled.
   final VoidCallback? onTap;
+
+  /// Draws the row on the design's faint fill and hairline, in full ink.
+  /// Plain rows carry no chrome and rest in the secondary ink.
+  final bool outlined;
 
   final bool enabled;
 
   /// Host-localized tooltip, e.g. the full text of a long suggestion.
   final String? tooltip;
 
-  /// Inside the pill. Defaults to the design's 12/8.
+  /// Inside the row. Defaults to the design's 10 horizontally.
   final EdgeInsetsGeometry? padding;
 
-  /// The pill's corner. Defaults to fully rounded.
+  /// The row's corner. Defaults to the design's 8.
   final BorderRadius? borderRadius;
 
   @override
@@ -54,15 +64,19 @@ class FlowSuggestion extends StatefulWidget {
 }
 
 class _FlowSuggestionState extends State<FlowSuggestion> {
-  /// The design's pill: fully rounded, 12/8 padding, an 8px icon gap.
-  static const BorderRadius _pillRadius = BorderRadius.all(
-    Radius.circular(999),
+  /// The design's row: 36 tall on an 8px corner, padded 10, a 20px glyph a
+  /// 16px gap from the label.
+  static const double _rowHeight = 36;
+  static const BorderRadius _rowRadius = BorderRadius.all(Radius.circular(8));
+  static const EdgeInsetsGeometry _rowPadding = EdgeInsets.symmetric(
+    horizontal: 10,
   );
-  static const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
-    horizontal: 12,
-    vertical: 8,
-  );
-  static const double _iconGap = 8;
+  static const double _iconSize = 20;
+  static const double _iconGap = 16;
+
+  /// The outlined row's ground, as an alpha over the ink — a step fainter
+  /// than the attachment tile's wash, per the design.
+  static const double _outlinedFillOpacity = 0.02;
 
   bool _hovered = false;
 
@@ -71,22 +85,31 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
     final colors = context.flowColors;
     final enabled = widget.enabled && widget.onTap != null;
 
+    // Plain rows rest a step down; outlined rows carry full ink. Hover
+    // lifts both to full ink so the affordance stays.
+    final restForeground = widget.outlined
+        ? colors.onSurface
+        : colors.onSurfaceVariant;
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(colors.onSurfaceVariant);
+      foreground = flowDisabledColor(restForeground);
     } else if (_hovered) {
       foreground = colors.onSurface;
     } else {
-      foreground = colors.onSurfaceVariant;
+      foreground = restForeground;
     }
 
     final shape = RoundedRectangleBorder(
-      borderRadius: widget.borderRadius ?? _pillRadius,
-      side: BorderSide(color: colors.outlineVariant),
+      borderRadius: widget.borderRadius ?? _rowRadius,
+      side: widget.outlined
+          ? BorderSide(color: colors.outlineVariant)
+          : BorderSide.none,
     );
 
-    Widget pill = Material(
-      color: colors.surfaceContainerLow,
+    Widget row = Material(
+      color: widget.outlined
+          ? colors.onSurface.withValues(alpha: _outlinedFillOpacity)
+          : Colors.transparent,
       shape: shape,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -95,35 +118,40 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
         customBorder: shape,
         hoverColor: colors.surfaceContainerHigh,
         child: Padding(
-          padding: widget.padding ?? _pillPadding,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final Widget label = Text(
-                widget.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.flowTypography.labelLarge.copyWith(
-                  color: foreground,
-                ),
-              );
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.icon != null) ...[
-                    Icon(widget.icon, size: 16, color: foreground),
-                    const SizedBox(width: _iconGap),
+          padding: widget.padding ?? _rowPadding,
+          child: SizedBox(
+            height: _rowHeight,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final Widget label = Text(
+                  widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.flowTypography.bodyLarge.copyWith(
+                    height: 1.3,
+                    color: foreground,
+                  ),
+                );
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.icon != null) ...[
+                      Icon(widget.icon, size: _iconSize, color: foreground),
+                      const SizedBox(width: _iconGap),
+                    ],
+                    // A row lays non-flex children out unbounded, so the
+                    // label only ellipsizes as a flex child — which in turn
+                    // is only legal when something bounds the row. The
+                    // scrolling layout doesn't, and there a long label just
+                    // runs on.
+                    if (constraints.maxWidth.isFinite)
+                      Flexible(child: label)
+                    else
+                      label,
                   ],
-                  // A row lays non-flex children out unbounded, so the label
-                  // only ellipsizes as a flex child — which in turn is only
-                  // legal when something bounds the pill. The scrolling
-                  // layout doesn't, and there a long label just runs on.
-                  if (constraints.maxWidth.isFinite)
-                    Flexible(child: label)
-                  else
-                    label,
-                ],
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -131,26 +159,27 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
 
     final tooltip = widget.tooltip;
     if (tooltip != null) {
-      pill = Tooltip(message: tooltip, child: pill);
+      row = Tooltip(message: tooltip, child: row);
     }
-    return pill;
+    return row;
   }
 }
 
-/// How a [FlowSuggestionGroup] arranges its pills.
+/// How a [FlowSuggestionGroup] arranges its rows.
 enum FlowSuggestionLayout {
-  /// One row that scrolls horizontally, without a scrollbar. Keeps a long
+  /// One strip that scrolls horizontally, without a scrollbar. Keeps a long
   /// set to a single line — the usual treatment above a composer.
   scroll,
 
   /// Wraps onto as many lines as needed; nothing scrolls.
   wrap,
 
-  /// One pill per line, each hugging its label.
+  /// One suggestion per line, each filling the width — the design's
+  /// primary form.
   column,
 }
 
-/// Lays out prompt suggestions as a scrolling row, a wrap, or a column —
+/// Lays out prompt suggestions as a scrolling strip, a wrap, or a column —
 /// typically above a `FlowComposer` on an empty thread:
 ///
 /// ```dart
@@ -178,25 +207,31 @@ class FlowSuggestionGroup extends StatelessWidget {
 
   final FlowSuggestionLayout layout;
 
-  /// Gap between pills, and between lines when wrapping. Defaults to the
-  /// design's 8.
+  /// Gap between rows, and between lines when wrapping. Defaults to the
+  /// design's 6 in a column and 10 in the scrolling and wrapping layouts.
   final double? spacing;
 
   /// Around the whole group; defaults to none. In the scrolling layout it
-  /// scrolls with the pills, so the first and last clear the edge.
+  /// scrolls with the rows, so the first and last clear the edge.
   final EdgeInsetsGeometry? padding;
+
+  /// The design's layout gaps: tight in a column, roomier along a strip.
+  static const double _columnGap = 6;
+  static const double _rowGap = 10;
 
   @override
   Widget build(BuildContext context) {
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
-    final gap = spacing ?? _defaultGap;
+    final gap =
+        spacing ??
+        (layout == FlowSuggestionLayout.column ? _columnGap : _rowGap);
 
     switch (layout) {
       case FlowSuggestionLayout.scroll:
         return ScrollConfiguration(
-          // No scrollbar over the pills, and draggable with a mouse so the
-          // row works on desktop without a horizontal wheel.
+          // No scrollbar over the rows, and draggable with a mouse so the
+          // strip works on desktop without a horizontal wheel.
           behavior: ScrollConfiguration.of(context).copyWith(
             scrollbars: false,
             dragDevices: PointerDeviceKind.values.toSet(),
@@ -218,15 +253,13 @@ class FlowSuggestionGroup extends StatelessWidget {
         return _padded(
           Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // Full-width rows, per the design's column form.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: _withGaps(gap, Axis.vertical),
           ),
         );
     }
   }
-
-  /// The design's gap between pills — the same 8 the attachment strip uses.
-  static const double _defaultGap = 8;
 
   Widget _padded(Widget child) {
     if (padding == null) return child;
