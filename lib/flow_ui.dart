@@ -14,6 +14,7 @@ export 'src/widgets/flow_attachment_group.dart';
 export 'src/widgets/flow_attachment_preview.dart';
 export 'src/widgets/flow_chat_screen.dart';
 export 'src/widgets/flow_composer.dart';
+export 'src/widgets/flow_greeting.dart';
 export 'src/widgets/flow_menu.dart';
 export 'src/widgets/flow_menu_style.dart';
 export 'src/widgets/flow_message.dart';

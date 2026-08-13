@@ -30,11 +30,14 @@ const String _reply =
     'scrolled back through the history. The pieces inside it are the same '
     'FlowThread and FlowComposer you would use on their own.';
 
-const List<String> _starters = [
-  'Plan a weekend trip',
-  'Explain this error',
-  'Draft a reply',
-  'Summarize a document',
+/// The zero state's starters, icons and prompts per the design.
+const List<(IconData, String)> _starters = [
+  (Icons.article_outlined, 'Write an essay about life and enjoyment'),
+  (
+    Icons.event_available_outlined,
+    'Create a Monday briefing about my tasks and meetings',
+  ),
+  (Icons.search, 'Suggest a new venture for me'),
 ];
 
 class _ChatDemo extends StatefulWidget {
@@ -167,21 +170,28 @@ class _ChatDemoState extends State<_ChatDemo> {
       ),
       threadController: _controller,
       jumpToLatestTooltip: 'Jump to latest',
-      // Starters go once the thread has a message in it.
-      aboveComposer: empty
-          ? FlowSuggestionGroup(
-              suggestions: [
-                for (final prompt in _starters)
-                  FlowSuggestion(
-                    label: prompt,
-                    onTap: () => _input.text = prompt,
-                  ),
-              ],
-            )
-          : null,
+      // The zero-state slots are passed unconditionally; the screen only
+      // shows them while `empty` — the composer lifted to the centre on the
+      // web view, docked with the starters above it in the phone frame.
+      empty: empty,
+      greeting: const FlowGreeting(
+        icon: Icons.wb_twilight,
+        text: 'Good Afternoon, Divyanshu',
+      ),
+      suggestions: FlowSuggestionGroup(
+        layout: FlowSuggestionLayout.column,
+        suggestions: [
+          for (final (icon, prompt) in _starters)
+            FlowSuggestion(
+              label: prompt,
+              icon: icon,
+              onTap: () => _input.text = prompt,
+            ),
+        ],
+      ),
       composer: FlowComposer(
         controller: _input,
-        placeholder: 'Message flow_ui…',
+        placeholder: 'How can I help you today?',
         isStreaming: _generating,
         onSend: _send,
         onStop: _stop,
@@ -272,7 +282,7 @@ class _DemoHeader extends StatelessWidget {
           Expanded(
             child: Text(
               empty
-                  ? 'Empty thread — starters sit above the composer.'
+                  ? 'Zero state — greeting and starters around the composer.'
                   : 'Scroll back for the jump-to-latest button.',
               style: context.flowTypography.bodySmall.copyWith(
                 color: context.flowColors.onSurfaceVariant,

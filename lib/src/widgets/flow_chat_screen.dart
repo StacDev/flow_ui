@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/flow_theme.dart';
@@ -15,14 +17,17 @@ const Duration _jumpReveal = Duration(milliseconds: 150);
 const Duration _jumpScroll = Duration(milliseconds: 240);
 
 /// The chat surface: a bounded thread above a composer, centred at a
-/// readable width.
+/// readable width, with a zero state for the conversation that hasn't
+/// started.
 ///
 /// ```dart
 /// FlowChatScreen(
+///   empty: messages.isEmpty,
+///   greeting: FlowGreeting(icon: Icons.wb_twilight, text: 'Good afternoon'),
+///   suggestions: FlowSuggestionGroup(...),
 ///   thread: FlowThread(messages: messages, controller: controller),
 ///   composer: FlowComposer(onSend: send),
 ///   threadController: controller,
-///   aboveComposer: messages.isEmpty ? FlowSuggestionGroup(...) : null,
 /// )
 /// ```
 ///
@@ -41,11 +46,21 @@ class FlowChatScreen extends StatefulWidget {
     this.composer,
     this.header,
     this.aboveComposer,
+    this.empty = false,
+    this.greeting,
+    this.suggestions,
     this.threadController,
     this.jumpToLatestTooltip,
-    this.maxContentWidth = 768,
+    this.maxContentWidth = 760,
+    this.emptyComposerWidth = 640,
+    this.emptySuggestionsWidth = 480,
     this.padding,
-  }) : assert(maxContentWidth > 0, 'maxContentWidth must be positive');
+  }) : assert(maxContentWidth > 0, 'maxContentWidth must be positive'),
+       assert(emptyComposerWidth > 0, 'emptyComposerWidth must be positive'),
+       assert(
+         emptySuggestionsWidth > 0,
+         'emptySuggestionsWidth must be positive',
+       );
 
   /// The conversation, usually a [FlowThread]. Given the bounded height it
   /// needs, so it does not want a `SizedBox` of its own.
@@ -62,12 +77,33 @@ class FlowChatScreen extends StatefulWidget {
   /// `onSend` required, and a stand-in would swallow what the user typed.
   final Widget? composer;
 
-  /// Optional bar above the thread, inside the content width.
+  /// Optional bar above the thread, full-bleed — the design's mobile nav
+  /// spans edge to edge. A host wanting a capped header constrains it
+  /// itself.
   final Widget? header;
 
-  /// Between the thread and the composer — prompt starters on an empty
-  /// thread, a notice, anything the host wants pinned above the input.
+  /// Between the thread and the composer — a scrolling starter strip, a
+  /// notice, anything the host wants pinned above the input.
   final Widget? aboveComposer;
+
+  /// The zero state: no messages yet. The thread gives way to [greeting]
+  /// and [suggestions] — on wide layouts the composer lifts to the vertical
+  /// centre between them, per the design; on compact ones it stays docked
+  /// with the suggestions just above it and the greeting floating centred.
+  ///
+  /// The host flips this (typically `messages.isEmpty`): the screen takes
+  /// finished widgets and cannot see into the thread.
+  final bool empty;
+
+  /// The zero state's headline, usually a `FlowGreeting`. Shown only while
+  /// [empty].
+  final Widget? greeting;
+
+  /// The zero state's starters, usually a column `FlowSuggestionGroup`.
+  /// Shown only while [empty]; the screen places them — 48 below the
+  /// composer on wide layouts, capped at [emptySuggestionsWidth], and 16
+  /// above it on compact ones, stepped in a further 8.
+  final Widget? suggestions;
 
   /// Enables the jump-to-latest button. Pass the **same** controller to the
   /// [thread]; taking finished widgets means this one cannot reach in and
@@ -77,14 +113,24 @@ class FlowChatScreen extends StatefulWidget {
   /// Host-localized label for the jump-to-latest button.
   final String? jumpToLatestTooltip;
 
-  /// A conversation spanning a wide display is unreadable, so the whole
-  /// column is centred and capped.
+  /// A conversation spanning a wide display is unreadable, so the thread
+  /// and composer are centred and capped. The composer spans this rail in
+  /// full where there is room; `FlowThread`'s own edge padding insets the
+  /// bubbles 16 inside it. Defaults to the design's 760.
   final double maxContentWidth;
 
-  /// Around the composer and [aboveComposer]. Defaults to 16 horizontally —
-  /// matching `FlowThread`'s own default padding, so their edges line up —
-  /// and 16 below, with no top: the thread's bottom padding already
-  /// separates the two.
+  /// The composer's rail in the wide zero state, where it sits narrower
+  /// than in a running chat. Defaults to the design's 640.
+  final double emptyComposerWidth;
+
+  /// The [suggestions] rail in the wide zero state. Defaults to the
+  /// design's 480.
+  final double emptySuggestionsWidth;
+
+  /// Around the composer block. Defaults to the design's 16 at the sides —
+  /// kept *outside* [maxContentWidth], so the composer still reaches the
+  /// full rail where there is room — with 40 below on wide layouts and 24
+  /// on compact ones. An explicit value is used as given on both.
   final EdgeInsetsGeometry? padding;
 
   @override
@@ -92,14 +138,26 @@ class FlowChatScreen extends StatefulWidget {
 }
 
 class _FlowChatScreenState extends State<FlowChatScreen> {
-  /// The design's surface metrics: the composer block's edge padding, the
-  /// jump button's lift off the composer, and the starters-to-composer gap.
-  /// The horizontal 16 must match `FlowThread`'s own default padding — the
-  /// doc on [FlowChatScreen.padding] promises the edges line up.
-  static const EdgeInsetsGeometry _defaultPadding =
-      EdgeInsetsDirectional.fromSTEB(16, 0, 16, 16);
+  /// The design's surface metrics. Compact begins below 600, Material's
+  /// compact/medium boundary — read from this widget's own constraints, so
+  /// a pane or a phone frame counts, not just a phone. The composer block
+  /// floats 40 off the bottom on wide layouts and 24 on compact ones, the
+  /// jump button 12 off the composer, starters 8 above it.
+  static const double _compactBreakpoint = 600;
+  static const double _sideInset = 16;
+  static const double _bottomInsetWide = 40;
+  static const double _bottomInsetCompact = 24;
   static const double _jumpInset = 12;
   static const double _composerGap = 8;
+
+  /// The zero state's rhythm: greeting 32 above the composer; suggestions
+  /// 48 below it on wide layouts, and on compact ones 16 above the docked
+  /// composer, stepped in a further 8 — the design's 24 with the default
+  /// padding.
+  static const double _greetingGap = 32;
+  static const double _suggestionsGapWide = 48;
+  static const double _suggestionsGapCompact = 16;
+  static const double _suggestionsExtraInset = 8;
 
   bool _showJump = false;
 
@@ -117,6 +175,10 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
       widget.threadController?.addListener(_handleScroll);
       _handleScroll();
     }
+    // Entering the zero state unmounts the thread, and no scroll event
+    // arrives from a detaching position — recompute, or a jump button shown
+    // before the switch would still be showing when the thread returns.
+    if (oldWidget.empty != widget.empty) _handleScroll();
   }
 
   @override
@@ -147,79 +209,198 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < _compactBreakpoint;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.header != null) widget.header!,
+              if (widget.empty && !compact)
+                // The wide zero state: the composer leaves the bottom edge
+                // and the whole cluster centres itself instead.
+                Expanded(child: _emptyCentre(constraints.maxWidth))
+              else ...[
+                Expanded(
+                  child: widget.empty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: _sideInset,
+                            ),
+                            child: widget.greeting,
+                          ),
+                        )
+                      : _threadArea(context),
+                ),
+                ..._composerZone(compact),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// The running chat: the thread on the content rail, with the
+  /// jump-to-latest button floating over its bottom edge.
+  Widget _threadArea(BuildContext context) {
     final colors = context.flowColors;
-    final padding = widget.padding ?? _defaultPadding;
 
     // An empty thread rather than an empty box: the surface behaves the same
     // whether or not a host has wired one up yet.
-    final thread = widget.thread ?? const FlowThread(messages: []);
+    final thread = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: widget.maxContentWidth),
+        child: widget.thread ?? const FlowThread(messages: []),
+      ),
+    );
+    if (widget.threadController == null) return thread;
 
-    Widget threadArea = thread;
-    if (widget.threadController != null) {
-      threadArea = Stack(
-        children: [
-          Positioned.fill(child: thread),
-          Positioned(
-            bottom: _jumpInset,
-            left: 0,
-            right: 0,
-            child: Center(
-              // Opacity alone still hit-tests and still takes focus, so a
-              // faded-out button would swallow taps meant for the thread.
-              child: IgnorePointer(
-                ignoring: !_showJump,
-                child: AnimatedOpacity(
-                  opacity: _showJump ? 1 : 0,
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : _jumpReveal,
-                  child: FlowCircleButton(
-                    icon: Icons.arrow_downward,
-                    background: colors.surfaceContainerHigh,
-                    foreground: colors.onSurface,
-                    tooltip: widget.jumpToLatestTooltip,
-                    onTap: _jumpToLatest,
-                  ),
+    return Stack(
+      children: [
+        Positioned.fill(child: thread),
+        Positioned(
+          bottom: _jumpInset,
+          left: 0,
+          right: 0,
+          child: Center(
+            // Opacity alone still hit-tests and still takes focus, so a
+            // faded-out button would swallow taps meant for the thread.
+            child: IgnorePointer(
+              ignoring: !_showJump,
+              child: AnimatedOpacity(
+                opacity: _showJump ? 1 : 0,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : _jumpReveal,
+                child: FlowCircleButton(
+                  icon: Icons.arrow_downward,
+                  background: colors.surfaceContainerHigh,
+                  foreground: colors.onSurface,
+                  tooltip: widget.jumpToLatestTooltip,
+                  onTap: _jumpToLatest,
                 ),
               ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  /// The wide zero state's centred cluster: greeting, composer, starters,
+  /// each on its own rail. Scrollable so a short window degrades gracefully
+  /// instead of overflowing.
+  Widget _emptyCentre(double viewportWidth) {
+    final available = viewportWidth - _sideInset * 2;
+    final composerWidth = math.min(widget.emptyComposerWidth, available);
+    final suggestionsWidth = math.min(widget.emptySuggestionsWidth, available);
+
+    final composerBlock = <Widget>[
+      if (widget.aboveComposer != null) widget.aboveComposer!,
+      if (widget.composer != null) ...[
+        if (widget.aboveComposer != null) const SizedBox(height: _composerGap),
+        widget.composer!,
+      ],
+    ];
+
+    // Gaps only between the pieces actually present, so a host without a
+    // greeting or without starters still gets a coherent centre.
+    final cluster = <Widget>[];
+    if (widget.greeting != null) cluster.add(widget.greeting!);
+    if (composerBlock.isNotEmpty) {
+      if (cluster.isNotEmpty) {
+        cluster.add(const SizedBox(height: _greetingGap));
+      }
+      cluster.add(
+        SizedBox(
+          width: composerWidth,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: composerBlock,
+          ),
+        ),
       );
     }
+    if (widget.suggestions != null) {
+      if (cluster.isNotEmpty) {
+        cluster.add(const SizedBox(height: _suggestionsGapWide));
+      }
+      cluster.add(SizedBox(width: suggestionsWidth, child: widget.suggestions));
+    }
 
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: widget.maxContentWidth),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.header != null) widget.header!,
-              Expanded(child: threadArea),
-              // Skipped entirely when there is nothing to put below the
-              // thread, so a read-only surface doesn't carry a strip of
-              // padding where its composer would have been.
-              if (widget.composer != null || widget.aboveComposer != null)
-                Padding(
-                  padding: padding,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (widget.aboveComposer != null) widget.aboveComposer!,
-                      if (widget.composer != null) ...[
-                        if (widget.aboveComposer != null)
-                          const SizedBox(height: _composerGap),
-                        widget.composer!,
-                      ],
-                    ],
-                  ),
-                ),
-            ],
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(_sideInset),
+        child: Column(mainAxisSize: MainAxisSize.min, children: cluster),
+      ),
+    );
+  }
+
+  /// The docked composer block: starters and strip above the input, on the
+  /// content rail, inside the surface padding. Skipped entirely when there
+  /// is nothing to put below the thread, so a read-only surface doesn't
+  /// carry a strip of padding where its composer would have been.
+  List<Widget> _composerZone(bool compact) {
+    final suggestions = widget.empty ? widget.suggestions : null;
+    if (widget.composer == null &&
+        widget.aboveComposer == null &&
+        suggestions == null) {
+      return const [];
+    }
+
+    final padding =
+        widget.padding ??
+        EdgeInsetsDirectional.fromSTEB(
+          _sideInset,
+          0,
+          _sideInset,
+          compact ? _bottomInsetCompact : _bottomInsetWide,
+        );
+
+    final column = <Widget>[];
+    if (suggestions != null) {
+      column.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: _suggestionsExtraInset,
+          ),
+          child: suggestions,
+        ),
+      );
+    }
+    if (widget.aboveComposer != null) {
+      if (column.isNotEmpty) {
+        column.add(const SizedBox(height: _suggestionsGapCompact));
+      }
+      column.add(widget.aboveComposer!);
+    }
+    if (widget.composer != null) {
+      if (widget.aboveComposer != null) {
+        column.add(const SizedBox(height: _composerGap));
+      } else if (column.isNotEmpty) {
+        column.add(const SizedBox(height: _suggestionsGapCompact));
+      }
+      column.add(widget.composer!);
+    }
+
+    return [
+      Padding(
+        padding: padding,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: widget.maxContentWidth),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: column,
+            ),
           ),
         ),
       ),
-    );
+    ];
   }
 }

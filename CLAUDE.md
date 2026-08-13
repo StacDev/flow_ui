@@ -95,6 +95,6 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 24 | Chat Screen | thread + composer, centred, jump to latest | ✅ |
+| 24 | Chat Screen | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
 | 25 | SidePanel | | ⬜ |
 | 26 | Modal | | ⬜ |
