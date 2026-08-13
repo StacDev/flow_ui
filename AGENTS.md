@@ -72,7 +72,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 12 | Message composer | | ✅ |
 | 13 | Model selector | | ✅ |
 | 14 | Add menu | the "+" menu: attachments, tools | ✅ |
-| 15 | Attachments | images; videos and files pending | ✅ |
+| 15 | Attachments | images and files, type pill; videos pending | ✅ |
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |
 | 18 | Suggestion & Suggestion Group | scrolling row, wrap, column | ✅ |

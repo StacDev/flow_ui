@@ -204,7 +204,7 @@ class _FlowComposerState extends State<FlowComposer> {
         // The composer is the design's raised card: it sits above the page
         // rather than tinting it, in both themes.
         color: colors.surfaceContainerLowest,
-        borderRadius: context.flowRadii.lg,
+        borderRadius: context.flowRadii.xl,
         border: Border.all(color: _focused ? colors.primary : colors.outline),
       ),
       padding: EdgeInsets.fromLTRB(

@@ -245,6 +245,7 @@ class _RadiiSection extends StatelessWidget {
       'sm': radii.sm,
       'md': radii.md,
       'lg': radii.lg,
+      'xl': radii.xl,
       'full': radii.full,
     };
 

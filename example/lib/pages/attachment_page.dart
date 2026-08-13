@@ -13,6 +13,7 @@ FlowAttachmentGroup(
       FlowAttachment(
         id: picked.id,
         thumbnail: FileImage(picked.file),
+        kind: picked.extension,
         label: picked.name,
       ),
   ],
@@ -20,10 +21,26 @@ FlowAttachmentGroup(
   removeTooltip: 'Remove attachment',
 )''';
 
+const String _filesSnippet = '''
+FlowAttachmentGroup(
+  layout: FlowAttachmentLayout.wrap,
+  attachments: [
+    // No thumbnail: the tile draws its ground and the type pill, and
+    // stays inert rather than opening an empty preview.
+    FlowAttachment(id: 'c', kind: 'PDF', label: 'contract.pdf'),
+    FlowAttachment(id: 'n', kind: 'DOCX', label: 'notes.docx'),
+    FlowAttachment(
+      id: 'd',
+      thumbnail: AssetImage('assets/dusk.png'),
+      kind: 'PNG',
+      label: 'dusk-ridge.png',
+    ),
+  ],
+)''';
+
 const String _wrapSnippet = '''
 FlowAttachmentGroup(
   layout: FlowAttachmentLayout.wrap,
-  size: 80,
   // No onRemove → read-only. Tapping still opens the preview: pass onTap
   // only to replace it, and call showFlowAttachmentPreview yourself to
   // keep it alongside your own handling.
@@ -37,7 +54,7 @@ FlowMessage(
     role: FlowMessageRole.user,
     parts: [
       FlowAttachmentPart([
-        FlowAttachment(id: 'a', thumbnail: NetworkImage(url)),
+        FlowAttachment(id: 'a', thumbnail: NetworkImage(url), kind: 'JPG'),
       ]),
       FlowTextPart('What is the peak on the left?'),
     ],
@@ -68,15 +85,23 @@ class AttachmentPage extends StatelessWidget {
       title: 'Attachments',
       className: 'FlowAttachment & FlowAttachmentGroup',
       description:
-          'Image thumbnails for the composer and for sent messages. Tapping '
-          'one opens a full-screen preview you can zoom and page through. '
-          'The remove button fades in on hover and stays visible on touch; '
-          'without an onRemove callback the tiles are read-only.',
+          'Tiles for the composer and for sent messages, each with its file '
+          'type in a pill. An attachment with an image shows it and opens a '
+          'full-screen preview you can zoom and page through; one without — a '
+          'document — draws a bare tile and stays inert. The remove button '
+          'fades in on hover and stays visible on touch; without an onRemove '
+          'callback the tiles are read-only.',
       children: [
         SectionHeader('Scrolling row'),
         DemoPreview(
           preview: _RowDemo(),
           code: _rowSnippet,
+          alignment: Alignment.centerLeft,
+        ),
+        SectionHeader('Files'),
+        DemoPreview(
+          preview: _FilesDemo(),
+          code: _filesSnippet,
           alignment: Alignment.centerLeft,
         ),
         SectionHeader('Wrap, read-only'),
@@ -115,6 +140,7 @@ List<FlowAttachment> _attachments([int count = 4]) => [
     FlowAttachment(
       id: sample.id,
       thumbnail: AssetImage(sample.asset),
+      kind: 'PNG',
       label: sample.label,
     ),
 ];
@@ -147,6 +173,36 @@ class _RowDemoState extends State<_RowDemo> {
   }
 }
 
+/// A document beside a photo: the tile without a thumbnail is the one that
+/// only the pill identifies, and the only one that doesn't open a preview.
+class _FilesDemo extends StatelessWidget {
+  const _FilesDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    final sample = _samples.first;
+    return FlowAttachmentGroup(
+      layout: FlowAttachmentLayout.wrap,
+      previewCloseTooltip: 'Close preview',
+      attachments: [
+        const FlowAttachment(
+          id: 'contract',
+          kind: 'PDF',
+          label: 'contract.pdf',
+        ),
+        const FlowAttachment(id: 'notes', kind: 'DOCX', label: 'notes.docx'),
+        const FlowAttachment(id: 'budget', kind: 'XLSX', label: 'budget.xlsx'),
+        FlowAttachment(
+          id: sample.id,
+          thumbnail: AssetImage(sample.asset),
+          kind: 'PNG',
+          label: sample.label,
+        ),
+      ],
+    );
+  }
+}
+
 class _WrapDemo extends StatelessWidget {
   const _WrapDemo();
 
@@ -155,7 +211,6 @@ class _WrapDemo extends StatelessWidget {
     return FlowAttachmentGroup(
       attachments: _attachments(),
       layout: FlowAttachmentLayout.wrap,
-      size: 80,
       previewCloseTooltip: 'Close preview',
     );
   }
@@ -203,6 +258,7 @@ class _ComposerDemoState extends State<_ComposerDemo> {
         FlowAttachment(
           id: sample.id,
           thumbnail: AssetImage(sample.asset),
+          kind: 'PNG',
           label: sample.label,
         ),
       ];

@@ -46,7 +46,7 @@ class _DemoPreviewState extends State<DemoPreview> {
     return Container(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: context.flowRadii.lg,
+        borderRadius: context.flowRadii.xl,
         border: Border.all(color: colors.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,

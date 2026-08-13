@@ -333,17 +333,25 @@ class _ZoomablePageState extends State<_ZoomablePage> {
     // The inset wraps the viewer rather than its child: inside, it would be
     // part of the transformed content, so zooming to 5x would blow a 24dp
     // gutter up to 120dp and widen the dead band at the pan extremes.
+    final image = widget.attachment.previewImage;
     return Padding(
       padding: widget.padding,
       child: InteractiveViewer(
         transformationController: _transform,
         minScale: 1,
         maxScale: 5,
-        child: Image(
-          image: widget.attachment.preview ?? widget.attachment.thumbnail,
-          fit: BoxFit.contain,
-          errorBuilder: flowAttachmentErrorBuilder(iconSize: 48, filled: false),
-        ),
+        // An attachment with no image of its own can't be opened from its own
+        // tile, but paging can still land on one from a neighbour.
+        child: image == null
+            ? const FlowAttachmentError(iconSize: 48, filled: false)
+            : Image(
+                image: image,
+                fit: BoxFit.contain,
+                errorBuilder: flowAttachmentErrorBuilder(
+                  iconSize: 48,
+                  filled: false,
+                ),
+              ),
       ),
     );
   }

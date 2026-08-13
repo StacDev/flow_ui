@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
@@ -19,17 +21,22 @@ enum FlowAttachmentLayout {
   wrap,
 }
 
-/// A group of image attachment thumbnails, each optionally removable:
+/// A group of attachment tiles, each optionally removable:
 ///
 /// ```dart
 /// FlowAttachmentGroup(
 ///   attachments: [
-///     FlowAttachment(id: 'a', thumbnail: FileImage(picked), label: 'sun.jpg'),
+///     FlowAttachment(id: 'a', thumbnail: FileImage(picked), kind: 'JPG'),
+///     FlowAttachment(id: 'b', kind: 'PDF', label: 'contract.pdf'),
 ///   ],
 ///   onRemove: (id) => detach(id),
 ///   removeTooltip: 'Remove attachment',
 /// )
 /// ```
+///
+/// A tile draws its attachment's thumbnail when it has one and a bare ground
+/// when it doesn't, with `FlowAttachment.kind` — 'PDF', 'JPG' — in a pill in
+/// the bottom corner.
 ///
 /// Callbacks report the attachment's own id, never an index, so the ids in
 /// [attachments] must be unique within the group — asserted in debug. A null
@@ -38,8 +45,9 @@ enum FlowAttachmentLayout {
 /// without guarding.
 ///
 /// Tapping a tile opens a [FlowAttachmentPreview] over the whole group,
-/// starting on the tapped image. Passing [onTap] replaces that entirely —
-/// call [showFlowAttachmentPreview] from the handler to keep it.
+/// starting on the tapped image; an attachment with no image at all is inert.
+/// Passing [onTap] replaces that entirely — call [showFlowAttachmentPreview]
+/// from the handler to keep it.
 class FlowAttachmentGroup extends StatefulWidget {
   const FlowAttachmentGroup({
     super.key,
@@ -49,7 +57,7 @@ class FlowAttachmentGroup extends StatefulWidget {
     this.removeTooltip,
     this.previewCloseTooltip,
     this.layout = FlowAttachmentLayout.scroll,
-    this.size = 64,
+    this.size = 80,
     this.spacing,
     this.padding,
   }) : assert(size > 0, 'size must be positive');
@@ -151,6 +159,10 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
   Widget _tile(int index) {
     final attachment = widget.attachments[index];
     final onRemove = widget.onRemove;
+    // Without a host handler the tap opens the built-in preview, which needs
+    // something to show — so an attachment with no image of its own, like a
+    // document, is inert rather than opening an empty viewer.
+    final tappable = widget.onTap != null || attachment.previewImage != null;
     return _AttachmentTile(
       // Keyed by id so removing one from the middle unmounts that tile
       // instead of shifting every later tile's hover/focus state — and its
@@ -160,7 +172,7 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
       size: widget.size,
       removeTooltip: widget.removeTooltip,
       alwaysShowRemove: !_hoverCapable,
-      onTap: () => _handleTap(index),
+      onTap: tappable ? () => _handleTap(index) : null,
       onRemove: onRemove == null ? null : () => onRemove(attachment.id),
     );
   }
@@ -210,6 +222,19 @@ bool _idsAreUnique(List<FlowAttachment> attachments) =>
 
 /// The reveal is short enough to feel like part of the hover itself.
 const Duration _revealDuration = Duration(milliseconds: 120);
+
+/// The tile's ground, as an alpha over the ink. Deeper behind a photo than
+/// behind a bare tile, which is what the design draws: the wash reads as the
+/// edge of the image while it decodes, and as the tile itself without one.
+const double _groundOpacity = 0.04;
+const double _imageGroundOpacity = 0.08;
+
+/// The ambient lift under a tile: wide, offsetless and barely there.
+const double _shadowOpacity = 0.02;
+const double _shadowBlur = 24;
+
+/// The type pill's frosting, over whatever the thumbnail puts behind it.
+const double _pillBlur = 2;
 
 class _AttachmentTile extends StatefulWidget {
   const _AttachmentTile({
@@ -267,34 +292,44 @@ class _AttachmentTileState extends State<_AttachmentTile> {
     final attachment = widget.attachment;
     final tooltip = attachment.tooltip ?? attachment.label;
 
+    final thumbnail = attachment.thumbnail;
+    final kind = attachment.kind;
+    final onRemove = widget.onRemove;
+
     final shape = RoundedRectangleBorder(
-      borderRadius: context.flowRadii.md,
+      borderRadius: context.flowRadii.lg,
       side: BorderSide(color: colors.outline),
     );
 
-    // Decode at tile resolution — a full-size photo behind a 64dp tile costs
+    // Decode at tile resolution — a full-size photo behind an 80dp tile costs
     // orders of magnitude more memory than it can ever show.
     final cachePixels = (widget.size * MediaQuery.devicePixelRatioOf(context))
         .round();
 
     Widget tile = Material(
-      color: colors.surfaceContainerLowest,
+      // A wash of ink rather than a surface token: the ink ramp is the half
+      // of the palette that carries alpha, so one value tints the page
+      // correctly in both themes, where an opaque surface would have to be
+      // picked twice.
+      color: colors.onSurface.withValues(
+        alpha: thumbnail == null ? _groundOpacity : _imageGroundOpacity,
+      ),
       shape: shape,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: widget.onTap,
         customBorder: shape,
-        child: Image(
-          image: ResizeImage.resizeIfNeeded(
-            cachePixels,
-            null,
-            attachment.thumbnail,
-          ),
-          fit: BoxFit.cover,
-          filterQuality: FilterQuality.medium,
-          // A dead provider must not paint the framework's red error box.
-          errorBuilder: flowAttachmentErrorBuilder(),
-        ),
+        // Nothing to draw over the ground when the attachment has no image of
+        // its own — the pill carries what a document tile says.
+        child: thumbnail == null
+            ? null
+            : Image(
+                image: ResizeImage.resizeIfNeeded(cachePixels, null, thumbnail),
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.medium,
+                // A dead provider must not paint the framework's red error box.
+                errorBuilder: flowAttachmentErrorBuilder(),
+              ),
       ),
     );
 
@@ -304,21 +339,79 @@ class _AttachmentTileState extends State<_AttachmentTile> {
     // Semantics label here would only announce it twice.
     tile = Semantics(
       button: widget.onTap != null,
-      image: widget.onTap == null,
+      image: widget.onTap == null && thumbnail != null,
       child: tile,
     );
     if (tooltip != null) {
       tile = Tooltip(message: tooltip, child: tile);
     }
 
-    final onRemove = widget.onRemove;
+    final showRemove = widget.alwaysShowRemove || _hovered || _removeFocused;
+
+    Widget result = DecoratedBox(
+      // Outside the Material, which clips its own contents away.
+      decoration: BoxDecoration(
+        borderRadius: context.flowRadii.lg,
+        boxShadow: [
+          BoxShadow(
+            color: colors.onSurface.withValues(alpha: _shadowOpacity),
+            blurRadius: _shadowBlur,
+          ),
+        ],
+      ),
+      child: SizedBox.square(
+        dimension: widget.size,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            tile,
+            if (kind != null)
+              PositionedDirectional(
+                bottom: spacing.sm,
+                start: spacing.sm,
+                child: _TypePill(kind: kind),
+              ),
+            if (onRemove != null)
+              PositionedDirectional(
+                top: spacing.xs,
+                end: spacing.xs,
+                // Opacity alone still hit-tests and still takes focus, so a
+                // faded-out button would quietly eat corner taps.
+                child: IgnorePointer(
+                  ignoring: !showRemove,
+                  child: AnimatedOpacity(
+                    opacity: showRemove ? 1 : 0,
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : _revealDuration,
+                    child: FlowCircleButton(
+                      icon: Icons.close,
+                      // A scrim rather than a flat token: the disc sits over
+                      // host pixels the package can't see. The ink tint stays
+                      // the ambient one so hovering doesn't snap it opaque.
+                      background: flowScrimColor(
+                        colors.surfaceContainerHighest,
+                      ),
+                      foreground: colors.onSurface,
+                      iconSize: 16,
+                      padding: spacing.xs,
+                      tooltip: widget.removeTooltip,
+                      onTap: onRemove,
+                      onFocusChange: _setRemoveFocused,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
     if (onRemove == null) {
       // No hover plumbing on a read-only tile — which is every attachment in
       // every sent message — since nothing would read the result.
-      return SizedBox.square(dimension: widget.size, child: tile);
+      return result;
     }
-
-    final showRemove = widget.alwaysShowRemove || _hovered || _removeFocused;
 
     return MouseRegion(
       // Hover comes from here, not from InkWell.onHover: an InkWell only
@@ -326,41 +419,46 @@ class _AttachmentTileState extends State<_AttachmentTile> {
       // often have none.
       onEnter: (_) => _setHovered(true),
       onExit: (_) => _setHovered(false),
-      child: SizedBox.square(
-        dimension: widget.size,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            tile,
-            PositionedDirectional(
-              top: spacing.xs,
-              end: spacing.xs,
-              // Opacity alone still hit-tests and still takes focus, so a
-              // faded-out button would quietly eat corner taps.
-              child: IgnorePointer(
-                ignoring: !showRemove,
-                child: AnimatedOpacity(
-                  opacity: showRemove ? 1 : 0,
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : _revealDuration,
-                  child: FlowCircleButton(
-                    icon: Icons.close,
-                    // A scrim rather than a flat token: the disc sits over
-                    // host pixels the package can't see. The ink tint stays
-                    // the ambient one so hovering doesn't snap it opaque.
-                    background: flowScrimColor(colors.surfaceContainerHighest),
-                    foreground: colors.onSurface,
-                    iconSize: 16,
-                    padding: spacing.xs,
-                    tooltip: widget.removeTooltip,
-                    onTap: onRemove,
-                    onFocusChange: _setRemoveFocused,
-                  ),
+      child: result,
+    );
+  }
+}
+
+/// The file-type chip in a tile's bottom corner — 'PDF', 'JPG'.
+class _TypePill extends StatelessWidget {
+  const _TypePill({required this.kind});
+
+  final String kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.flowColors;
+
+    return ExcludeSemantics(
+      // The tile is already named after the file, which says the same thing:
+      // announcing 'PDF' after 'contract.pdf' is noise.
+      child: ClipRRect(
+        borderRadius: context.flowRadii.sm,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: _pillBlur, sigmaY: _pillBlur),
+          child: ColoredBox(
+            // A scrim, like the remove disc: the chip sits over host pixels
+            // the package can't see.
+            color: flowScrimColor(colors.surfaceContainerHighest),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.flowSpacing.xs,
+                vertical: 1,
+              ),
+              child: Text(
+                kind,
+                style: context.flowTypography.labelMedium.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
