@@ -80,7 +80,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 20 | Error state | | ⬜ |
 | 21 | Code block | | ⬜ |
 | 22 | Loading indicator | staggered three-dot pulse | ✅ |
-| 23 | Shimmer | text only | ⬜ |
+| 23 | Shimmer | text only; sweeping highlight, static when settled | ✅ |
 
 ### Surfaces
 

@@ -9,6 +9,7 @@ import 'pages/loading_indicator_page.dart';
 import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
 import 'pages/model_selector_page.dart';
+import 'pages/shimmer_text_page.dart';
 import 'pages/streaming_text_page.dart';
 import 'pages/suggestion_page.dart';
 import 'pages/tokens_page.dart';
@@ -61,6 +62,12 @@ final List<GalleryGroup> galleryGroups = [
         subtitle: 'FlowStreamingText — animated streaming reveal',
         icon: Icons.notes_rounded,
         builder: (_) => const StreamingTextPage(),
+      ),
+      GalleryEntry(
+        title: 'Shimmer text',
+        subtitle: 'FlowShimmerText — sweeping highlight on waiting text',
+        icon: Icons.gradient_rounded,
+        builder: (_) => const ShimmerTextPage(),
       ),
       GalleryEntry(
         title: 'Loading indicator',
