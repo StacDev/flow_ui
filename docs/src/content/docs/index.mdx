@@ -1,72 +1,129 @@
 ---
-title: Chat UI components for Flutter
-description: flow_ui renders the conversation and reports intent back — streaming, composer, attachments, suggestions — with zero third-party dependencies and nothing model-facing.
+title: AI Native Library for Chat Interfaces
+description: Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.
 template: splash
 editUrl: false
 hero:
-  tagline: flow_ui is the presentation layer for AI assistants in Flutter — components render the state you pass in and report intent back out. Zero third-party dependencies, nothing model-facing.
+  tagline: Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.
   actions:
     - text: Get started
       link: /getting-started/
       variant: primary
-    - text: Browse components
-      link: /components/message-thread/
-      icon: right-arrow
-      variant: minimal
+    - text: Try in playground
+      link: /playground/
+      variant: secondary
 ---
 
+import logo from '../../assets/flow-ui-logo.svg';
+
 <div class="landing not-content">
-	<div class="chat-mock" aria-hidden="true">
-		<div class="chat-mock__thread">
-			<div class="chat-mock__bubble">Ship the new assistant screen in both themes?</div>
-			<div class="chat-mock__reply">
-				<span class="chat-mock__spark">&#x2733;&#xFE0E;</span>
-				<p>Done — thread, composer and attachments are wired, and every color comes from <code>context.flowColors</code>, so dark mode is already handled.</p>
-			</div>
-			<div class="chat-mock__shimmer">Running flutter analyze…</div>
-		</div>
-		<div class="chat-mock__composer">
-			<span>Message the assistant…</span>
-			<span class="chat-mock__send">↑</span>
-		</div>
+	<div class="platforms">
+		<span class="platforms__label">Supported platforms</span>
+		<ul class="platforms__row">
+			<li class="platform platform--active">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.314 0L2.3 12 6 15.7 21.684.013h-7.357L14.314 0zm.014 11.072L7.857 17.53l6.47 6.47H21.7l-6.46-6.468 6.46-6.46h-7.37z" /></svg>
+				Flutter
+			</li>
+			<li class="platform">
+				<svg class="platform__icon--android" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02 1.9973-3.4592a.416.416 0 0 0-.1521-.5676.416.416 0 0 0-.5676.1521l-2.0223 3.5025c-1.5464-.7063-3.2832-1.0996-5.1365-1.0996-1.8533 0-3.5901.3933-5.1365 1.0996L4.8422 5.4467a.4161.4161 0 0 0-.5677-.1521.4157.4157 0 0 0-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396" /></svg>
+				Android
+				<span class="platform__soon">Soon</span>
+			</li>
+			<li class="platform">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702" /></svg>
+				iOS
+				<span class="platform__soon">Soon</span>
+			</li>
+			<li class="platform">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.3" ry="3.9" /><ellipse cx="12" cy="12" rx="9.3" ry="3.9" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="9.3" ry="3.9" transform="rotate(120 12 12)" /></svg>
+				React Native
+				<span class="platform__soon">Soon</span>
+			</li>
+		</ul>
 	</div>
-	<section>
-		<h2>Built on two constraints</h2>
-		<p class="section-sub">Everything in the library follows from what it refuses to do.</p>
-		<div class="feature-grid">
-			<div class="feature">
-				<h3>Zero dependencies</h3>
-				<p><code>dependencies:</code> is the Flutter SDK and nothing else. Figtree, the face the design is set in, ships inside the package as a bundled asset.</p>
+	<section class="box box--widget">
+		<div class="chat-mock" aria-hidden="true">
+			<div class="chat-mock__thread">
+				<div class="chat-mock__bubble">Ship the new assistant screen in both themes?</div>
+				<p class="chat-mock__reply">Done. Thread, composer and attachments are wired, and every color comes from <code>context.flowColors</code>, so dark mode is already handled.</p>
+				<div class="chat-mock__thinking">
+					<svg class="chat-mock__asterisk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16" /><path d="m5.1 8 13.8 8" /><path d="m18.9 8-13.8 8" /></svg>
+					<span class="chat-mock__shimmer">running diagnostics…</span>
+				</div>
 			</div>
-			<div class="feature">
-				<h3>Nothing model-facing</h3>
-				<p>No prompts, no schemas, no provider calls. Wire the callbacks to any backend — the components never know which model is on the other side.</p>
-			</div>
-			<div class="feature">
-				<h3>Streaming-first</h3>
-				<p>Streaming text, a thinking indicator, shimmer labels, message status — the in-between states an assistant UI actually spends its time in.</p>
-			</div>
-			<div class="feature">
-				<h3>Yours to theme</h3>
-				<p>Color roles follow Material&nbsp;3's <code>ColorScheme</code>, installed as a <code>ThemeExtension</code>. Map an existing scheme straight across, or ship the Flow presets untouched.</p>
+			<div class="chat-mock__composer">
+				<div class="chat-mock__prompt">How can I help you today?</div>
+				<div class="chat-mock__bar">
+					<span class="chat-mock__plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg></span>
+					<span class="chat-mock__tools">
+						<span class="chat-mock__model"><span>Fable 5</span> <em>Extra</em> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
+						<span class="chat-mock__send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5" /><path d="m5 12 7-7 7 7" /></svg></span>
+					</span>
+				</div>
 			</div>
 		</div>
 	</section>
-	<section>
-		<h2>Start here</h2>
+	<section class="box box--start">
 		<div class="tile-grid">
 			<a class="tile" href="/getting-started/">
-				<strong>Getting started</strong>
-				<span>Install from GitHub, wire the theme, render your first conversation.</span>
+				<div class="tile__top">
+					<svg class="tile__icon" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.14,179.09a6,6,0,0,1-8.23,2.06L134,138.6V216a6,6,0,0,1-12,0V138.6L51.09,181.15A6.07,6.07,0,0,1,48,182a6,6,0,0,1-3.1-11.15L116.34,128,44.91,85.15a6,6,0,0,1,6.18-10.3L122,117.4V40a6,6,0,0,1,12,0v77.4l70.91-42.55a6,6,0,0,1,6.18,10.3L139.66,128l71.43,42.85A6,6,0,0,1,213.14,179.09Z" /></svg>
+					<span class="tile__num">01</span>
+				</div>
+				<div class="tile__body">
+					<strong>Getting started</strong>
+					<span>Add the package, wire the Flow theme, and render your first conversation.</span>
+				</div>
 			</a>
 			<a class="tile" href="/theming/">
-				<strong>Theming</strong>
-				<span>Three levels of ink, opaque surfaces, and the Material 3 mapping.</span>
+				<div class="tile__top">
+					<svg class="tile__icon" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M199.37,55.31A101.32,101.32,0,0,0,128,26h-1A102,102,0,0,0,26,128c0,42.09,26.07,77.44,68,92.26A30.21,30.21,0,0,0,104.11,222,30.06,30.06,0,0,0,134,192a18,18,0,0,1,18-18h46.21a29.82,29.82,0,0,0,29.25-23.31A102.71,102.71,0,0,0,230,127.11,101.25,101.25,0,0,0,199.37,55.31ZM215.76,148a17.89,17.89,0,0,1-17.55,14H152a30,30,0,0,0-30,30,18,18,0,0,1-24,17C61,195.86,38,164.85,38,128a90,90,0,0,1,89.07-90H128a90.34,90.34,0,0,1,90,89.22A90.46,90.46,0,0,1,215.76,148ZM138,76a10,10,0,1,1-10-10A10,10,0,0,1,138,76ZM94,100A10,10,0,1,1,84,90,10,10,0,0,1,94,100Zm0,56a10,10,0,1,1-10-10A10,10,0,0,1,94,156Zm88-56a10,10,0,1,1-10-10A10,10,0,0,1,182,100Z" /></svg>
+					<span class="tile__num">02</span>
+				</div>
+				<div class="tile__body">
+					<strong>Theming</strong>
+					<span>Map your Material 3 scheme across, or ship the Flow light and dark presets.</span>
+				</div>
 			</a>
 			<a class="tile" href="/components/chat-screen/">
-				<strong>Chat screen</strong>
-				<span>The assembled surface — thread, composer, zero state, jump to latest.</span>
+				<div class="tile__top">
+					<svg class="tile__icon" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M166,112a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h64A6,6,0,0,1,166,112Zm-6,26H96a6,6,0,0,0,0,12h64a6,6,0,0,0,0-12Zm70-10A102,102,0,0,1,79.31,217.65L44.44,229.27a14,14,0,0,1-17.71-17.71l11.62-34.87A102,102,0,1,1,230,128Zm-12,0A90,90,0,1,0,50.08,173.06a6,6,0,0,1,.5,4.91L38.12,215.35a2,2,0,0,0,2.53,2.53L78,205.42a6.2,6.2,0,0,1,1.9-.31,6.09,6.09,0,0,1,3,.81A90,90,0,0,0,218,128Z" /></svg>
+					<span class="tile__num">03</span>
+				</div>
+				<div class="tile__body">
+					<strong>Chat screen</strong>
+					<span>Thread, composer, attachments and suggestions in one streaming surface.</span>
+				</div>
 			</a>
 		</div>
 	</section>
+	<footer class="site-footer">
+		<div class="site-footer__brand">
+			<img src={logo.src} alt="" width="40" height="40" />
+			<span class="site-footer__name">Flow UI</span>
+			<span class="site-footer__tagline">AI Native Library for Chat Interfaces</span>
+		</div>
+		<div class="site-footer__social">
+			<a href="https://github.com/StacDev/flow_ui" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
+				GitHub
+			</a>
+			<a href="https://pub.dev/packages/flow_ui" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.105 4.105S9.158 1.58 11.684.316a3.079 3.079 0 0 1 1.481-.315c.766.047 1.677.788 1.677.788L24 9.948v9.789h-4.263V24H9.789l-9-9C.303 14.5 0 13.795 0 13.105c0-.319.18-.818.316-1.105l3.789-7.895zm.679.679v11.787c.002.543.021 1.024.498 1.508L10.204 23h8.533v-4.263L4.784 4.784zm12.055-.678c-.899-.896-1.809-1.78-2.74-2.643-.302-.267-.567-.468-1.07-.462-.37.014-.87.195-.87.195L6.341 4.105l10.498.001z" /></svg>
+				pub.dev
+			</a>
+			<a href="https://x.com/stac_dev" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>
+				X
+			</a>
+			<a href="https://discord.gg/PDFX9Ndsx" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" /></svg>
+				Discord
+			</a>
+		</div>
+		<div class="site-footer__bar">
+			<span>Built with love for Open Source</span>
+			<span>© 2026 Stac Studios</span>
+		</div>
+	</footer>
 </div>

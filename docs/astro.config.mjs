@@ -31,12 +31,14 @@ export default defineConfig({
 		starlight({
 			title: 'Flow UI',
 			description:
-				'Chat & assistant UI components for Flutter — renders state, reports intent, zero dependencies.',
+				'Chat and assistant UI components for Flutter. Renders state, reports intent, zero third-party dependencies.',
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
 			components: {
 				PageTitle: './src/components/PageTitle.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
+				SiteTitle: './src/components/SiteTitle.astro',
+				SocialIcons: './src/components/SocialIcons.astro',
 			},
 			expressiveCode: {
 				styleOverrides: {
@@ -62,11 +64,6 @@ export default defineConfig({
 			},
 			social: [
 				{
-					icon: 'rocket',
-					label: 'Playground',
-					href: '/playground/',
-				},
-				{
 					icon: 'seti:dart',
 					label: 'pub.dev',
 					href: 'https://pub.dev/packages/flow_ui',
@@ -75,6 +72,16 @@ export default defineConfig({
 					icon: 'github',
 					label: 'GitHub',
 					href: 'https://github.com/StacDev/flow_ui',
+				},
+				{
+					icon: 'x.com',
+					label: 'X',
+					href: 'https://x.com/stac_dev',
+				},
+				{
+					icon: 'discord',
+					label: 'Discord',
+					href: 'https://discord.gg/PDFX9Ndsx',
 				},
 			],
 			editLink: {
