@@ -24,6 +24,12 @@
             "request": "launch",
             "type": "dart",
             "deviceId": "android"
+        },
+        {
+            "name": "playground",
+            "cwd": "playground",
+            "request": "launch",
+            "type": "dart"
         }
     ]
 }
