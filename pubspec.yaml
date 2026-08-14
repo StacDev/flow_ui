@@ -1,8 +1,7 @@
 name: flow_ui
 description: >-
-  Chat & AI assistant UI kit for Flutter — themed message threads, streaming
-  text, composer, attachments, suggestions — with zero third-party
-  dependencies and nothing model-facing.
+  Flow UI is an open-source Flutter UI library to build production-grade
+  Chat & AI assistant interfaces.
 version: 0.1.0
 repository: https://github.com/StacDev/flow_ui
 issue_tracker: https://github.com/StacDev/flow_ui/issues

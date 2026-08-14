@@ -19,10 +19,7 @@
 </p>
 
 <p align="center">
-flow_ui is a Flutter UI library for AI assistant interfaces — thoughtfully
-designed chat components that render the state you pass in and report
-intent back out. Zero third-party dependencies, nothing model-facing,
-light and dark out of the box.
+<a href="https://flowui.stac.dev/">Flow UI</a> is an open-source Flutter UI library to build production-grade Chat &amp; AI assistant interfaces.
 </p>
 
 ![The flow_ui chat surface](doc/chat_zero_light.png)

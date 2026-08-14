@@ -31,7 +31,7 @@ export default defineConfig({
 		starlight({
 			title: 'Flow UI',
 			description:
-				'Chat & assistant UI components for Flutter — renders state, reports intent, zero dependencies.',
+				'Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.',
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
 			components: {
