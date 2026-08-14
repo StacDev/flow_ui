@@ -17,11 +17,14 @@ migrate_working_dir/
 *.iws
 .idea/
 .env
-/pubspec.lock
+# Unrooted (unlike .gitignore) so example/ stays covered even when
+# publishing from outside a git checkout, where .gitignore files are not
+# consulted.
+pubspec.lock
 **/doc/api/
 .dart_tool/
 .flutter-plugins-dependencies
-/build/
+build/
 /coverage/
 
 # Repo-only: the playground app, the documentation site, README screenshots
