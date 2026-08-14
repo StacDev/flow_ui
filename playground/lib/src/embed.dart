@@ -13,10 +13,15 @@ import 'playground_item.dart';
 /// `embed` is a [PlaygroundItem] in kebab-case (`full-chat`,
 /// `model-selector`…; the enum name itself is accepted too). `variant`
 /// must be one of the item's [variantsFor] ids and falls back to the
-/// default otherwise. `theme` is `light` (default) or `dark` — fixed for
-/// the session; the docs page reloads the iframe when its theme flips.
+/// default otherwise. `theme` is `light` or `dark` — fixed for the
+/// session; the docs page reloads the iframe when its theme flips. Left
+/// out, the embed follows the OS scheme (light when none is reported).
 class EmbedRequest {
-  const EmbedRequest({required this.item, this.variant, required this.themeMode});
+  const EmbedRequest({
+    required this.item,
+    this.variant,
+    required this.themeMode,
+  });
 
   /// Null when `embed=` named no known item — render the fallback surface,
   /// never crash inside somebody's docs page.
@@ -47,9 +52,11 @@ class EmbedRequest {
     return EmbedRequest(
       item: item,
       variant: variant,
-      themeMode: uri.queryParameters['theme'] == 'dark'
-          ? ThemeMode.dark
-          : ThemeMode.light,
+      themeMode: switch (uri.queryParameters['theme']) {
+        'dark' => ThemeMode.dark,
+        'light' => ThemeMode.light,
+        _ => ThemeMode.system,
+      },
     );
   }
 

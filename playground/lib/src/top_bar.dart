@@ -11,7 +11,6 @@ import 'stage.dart';
 class TopBar extends StatelessWidget {
   const TopBar({
     super.key,
-    required this.themeMode,
     required this.onThemeModeChanged,
     required this.device,
     required this.onDeviceChanged,
@@ -19,7 +18,6 @@ class TopBar extends StatelessWidget {
     required this.onToggleCode,
   });
 
-  final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final StageDevice device;
   final ValueChanged<StageDevice> onDeviceChanged;
@@ -68,7 +66,11 @@ class TopBar extends StatelessWidget {
               (ThemeMode.light, 'Light'),
               (ThemeMode.dark, 'Dark'),
             ],
-            value: themeMode,
+            // While the mode is system the segment tracking the OS scheme
+            // reads as active; picking either segment pins it.
+            value: Theme.of(context).brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
             onChanged: onThemeModeChanged,
           ),
           const SizedBox(width: 18),

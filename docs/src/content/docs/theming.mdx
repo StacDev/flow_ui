@@ -11,7 +11,10 @@ Every flow_ui component draws from two token sets — **colors** and
 ```dart title="main.dart"
 MaterialApp(
   theme: ThemeData(extensions: [FlowTheme.light()]),
-  darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+  darkTheme: ThemeData(
+    brightness: Brightness.dark,
+    extensions: [FlowTheme.dark()],
+  ),
 )
 ```
 

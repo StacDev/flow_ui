@@ -11,13 +11,8 @@ import 'top_bar.dart';
 /// panel. Owns the selection, the stage device, and the panel state; the
 /// theme lives with the app so the whole MaterialApp flips.
 class PlaygroundShell extends StatefulWidget {
-  const PlaygroundShell({
-    super.key,
-    required this.themeMode,
-    required this.onThemeModeChanged,
-  });
+  const PlaygroundShell({super.key, required this.onThemeModeChanged});
 
-  final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
 
   @override
@@ -45,7 +40,6 @@ class _PlaygroundShellState extends State<PlaygroundShell> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TopBar(
-            themeMode: widget.themeMode,
             onThemeModeChanged: widget.onThemeModeChanged,
             device: _device,
             onDeviceChanged: (device) => setState(() => _device = device),
