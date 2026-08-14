@@ -131,7 +131,7 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
             FlowCircleButton(
               icon: atRoot ? Icons.close : Icons.arrow_back,
               background: Colors.transparent,
-              foreground: colors.onSurface,
+              foreground: colors.onSurfaceVariant,
               iconSize: _navIconSize,
               tooltip: atRoot
                   ? localizations.closeButtonTooltip
