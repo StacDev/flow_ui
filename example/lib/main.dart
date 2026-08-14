@@ -5,6 +5,7 @@ import 'pages/menu_page.dart';
 import 'pages/attachment_page.dart';
 import 'pages/chat_screen_page.dart';
 import 'pages/composer_page.dart';
+import 'pages/greeting_page.dart';
 import 'pages/thinking_indicator_page.dart';
 import 'pages/message_actions_page.dart';
 import 'pages/message_thread_page.dart';
@@ -115,6 +116,12 @@ final List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     label: 'Surfaces',
     entries: [
+      GalleryEntry(
+        title: 'Greeting',
+        subtitle: 'FlowGreeting — zero-state headline',
+        icon: Icons.wb_twilight,
+        builder: (_) => const GreetingPage(),
+      ),
       GalleryEntry(
         title: 'Chat screen',
         subtitle: 'FlowChatScreen — thread and composer assembled',
