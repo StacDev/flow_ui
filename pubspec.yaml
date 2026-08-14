@@ -6,6 +6,7 @@ description: >-
 version: 0.1.0
 repository: https://github.com/StacDev/flow_ui
 issue_tracker: https://github.com/StacDev/flow_ui/issues
+documentation: https://flowui.stac.dev/
 topics:
   - ai
   - chat

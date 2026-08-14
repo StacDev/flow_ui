@@ -11,9 +11,9 @@ flutter create . --platforms=web
 flutter run -d chrome
 ```
 
-For a live tour of every component — with variants and code snippets — run
-the [playground](https://github.com/StacDev/flow_ui/tree/main/playground)
-instead:
+For a live tour of every component — with variants and code snippets — open
+the hosted [playground](https://flowui.stac.dev/playground), or run it from
+[the repo](https://github.com/StacDev/flow_ui/tree/main/playground):
 
 ```bash
 cd ../playground && flutter run -d chrome

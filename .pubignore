@@ -24,9 +24,10 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# Repo-only: the playground app, README screenshots (pub.dev loads them from
-# the repository), and development/agent docs
+# Repo-only: the playground app, the documentation site, README screenshots
+# (pub.dev loads them from the repository), and development/agent docs
 playground/
+docs/
 doc/
 AGENTS.md
 CLAUDE.md

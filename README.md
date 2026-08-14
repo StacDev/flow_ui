@@ -7,6 +7,8 @@ Chat & AI assistant UI components for Flutter — the presentation layer for
 assistant interfaces: message threads, streaming text, a composer with
 attachments and menus, suggestions, and a complete chat surface.
 
+**[Documentation](https://flowui.stac.dev/) · [Live playground](https://flowui.stac.dev/playground)**
+
 ![The chat surface zero state, light theme](doc/chat_zero_light.png)
 
 ![A conversation thread, dark theme](doc/chat_thread_dark.png)
@@ -164,8 +166,8 @@ class _ChatPageState extends State<ChatPage> {
 `FlowChatScreen` is body-only — it builds no `Scaffold` and no app bar, so
 your app keeps the chrome, the background, and the keyboard inset. See
 [`example/lib/main.dart`](example/lib/main.dart) for a complete runnable
-version of this page, and the [playground](https://github.com/StacDev/flow_ui/tree/main/playground)
-for a live demo of every component with variants and code snippets.
+version of this page, and the [live playground](https://flowui.stac.dev/playground)
+for a demo of every component with variants and code snippets.
 
 ## Composer accessories
 
@@ -258,10 +260,14 @@ and exposes per-widget overrides (`padding:`, `borderRadius:`) where hosts
 retheme. Strings shown to the user (tooltips, placeholders, labels) are all
 host-supplied, so localization stays in your app.
 
-## Playground
+## Docs & playground
 
-The repo ships a [playground app](https://github.com/StacDev/flow_ui/tree/main/playground)
-— a stage for every component with variant pills and code snippets:
+Full documentation lives at [flowui.stac.dev](https://flowui.stac.dev/), and
+every component has a stage in the
+[live playground](https://flowui.stac.dev/playground) — variant pills and
+code snippets included. The playground is also
+[in the repo](https://github.com/StacDev/flow_ui/tree/main/playground) to run
+locally:
 
 ```bash
 cd playground && flutter run -d chrome
