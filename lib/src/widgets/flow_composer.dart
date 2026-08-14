@@ -112,15 +112,16 @@ class FlowComposer extends StatefulWidget {
 }
 
 class _FlowComposerState extends State<FlowComposer> {
-  /// The design's card: 24px corners padded 18 above and 10 below, its
-  /// content — attachment strip and field — inset 18 from the sides while
-  /// the action row tucks in at 10, under a soft ambient shadow.
+  /// The design's card: 24px corners padded 19 above and 11 below (the
+  /// outline's 1px included), its content — attachment strip and field —
+  /// inset 18 further from the sides while the action row tucks in at 10,
+  /// under a soft ambient shadow.
   static const BorderRadius _cardRadius = BorderRadius.all(Radius.circular(24));
   static const EdgeInsetsGeometry _cardPadding = EdgeInsetsDirectional.fromSTEB(
-    0,
-    18,
-    0,
-    10,
+    1,
+    19,
+    1,
+    11,
   );
   static const double _contentInset = 18;
   static const double _actionInset = 10;
@@ -128,6 +129,18 @@ class _FlowComposerState extends State<FlowComposer> {
   static const double _fieldGap = 16;
   static const double _leadingGap = 4;
   static const double _trailingGap = 8;
+
+  /// The field's floor, sized so an empty composer stands at the design's
+  /// 116px: 19 + 38 + 16 (gap) + 32 (action row) + 11.
+  static const double _fieldMinHeight = 38;
+
+  /// The design's outline: a 1px hairline over the ink, sweeping from the
+  /// top-left toward the bottom-right where it thins — 14% → 8% at rest,
+  /// 20% → 12% while the composer is hovered or focused.
+  static const double _outlineRestAlpha = 0.14;
+  static const double _outlineRestFadeAlpha = 0.08;
+  static const double _outlineActiveAlpha = 0.20;
+  static const double _outlineActiveFadeAlpha = 0.12;
 
   /// Send and stop are the design's ringed button: a 26px disc inside a
   /// surface-colored gap and a 1px ring, on a 32px frame.
@@ -146,6 +159,7 @@ class _FlowComposerState extends State<FlowComposer> {
   FocusNode? _internalFocusNode;
   late FocusNode _attachedFocusNode;
   bool _focused = false;
+  bool _hovered = false;
 
   TextEditingController get _controller =>
       widget.controller ?? (_internalController ??= TextEditingController());
@@ -279,91 +293,151 @@ class _FlowComposerState extends State<FlowComposer> {
     final colors = context.flowColors;
     final typography = context.flowTypography;
 
-    return Container(
-      decoration: BoxDecoration(
-        // The composer is the design's raised card: it sits above the page
-        // rather than tinting it, in both themes, under a barely-there
-        // ambient lift.
-        color: colors.surfaceContainerLowest,
-        borderRadius: widget.borderRadius ?? _cardRadius,
-        border: Border.all(color: _focused ? colors.primary : colors.outline),
-        boxShadow: [
-          BoxShadow(
-            color: colors.onSurface.withValues(alpha: _shadowOpacity),
-            blurRadius: _shadowBlur,
+    final active = widget.enabled && (_focused || _hovered);
+    final radius = widget.borderRadius ?? _cardRadius;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: CustomPaint(
+        // The outline is painted rather than a layout border so the card
+        // never shifts as it swaps between its rest and active gradients.
+        foregroundPainter: _OutlinePainter(
+          radius: radius,
+          start: colors.onSurface.withValues(
+            alpha: active ? _outlineActiveAlpha : _outlineRestAlpha,
           ),
-        ],
-      ),
-      padding: widget.padding ?? _cardPadding,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.attachments.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _contentInset),
-              child: FlowAttachmentGroup(
-                attachments: widget.attachments,
-                onTap: widget.onAttachmentTap,
-                // Editing is what `enabled` gates; viewing an attachment
-                // that is already pending stays available, as does the send
-                // button while streaming.
-                onRemove: widget.enabled ? widget.onRemoveAttachment : null,
-                removeTooltip: widget.removeAttachmentTooltip,
-                previewCloseTooltip: widget.previewCloseTooltip,
+          end: colors.onSurface.withValues(
+            alpha: active ? _outlineActiveFadeAlpha : _outlineRestFadeAlpha,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            // The composer is the design's raised card: it sits above the
+            // page rather than tinting it, in both themes, under a
+            // barely-there ambient lift.
+            color: colors.surfaceContainerLowest,
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: colors.onSurface.withValues(alpha: _shadowOpacity),
+                blurRadius: _shadowBlur,
               ),
-            ),
-            const SizedBox(height: _attachmentGap),
-          ],
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _contentInset),
-            child: Focus(
-              onKeyEvent: _handleKeyEvent,
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: widget.enabled,
-                minLines: 1,
-                maxLines: widget.maxLines,
-                style: typography.bodyLarge.copyWith(
-                  height: 1.3,
-                  color: colors.onSurface,
-                ),
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: InputBorder.none,
-                  hintText: widget.placeholder,
-                  hintStyle: typography.bodyLarge.copyWith(
-                    height: 1.3,
-                    color: colors.onSurfaceMuted,
+            ],
+          ),
+          padding: widget.padding ?? _cardPadding,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.attachments.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _contentInset,
                   ),
-                  contentPadding: EdgeInsets.zero,
+                  child: FlowAttachmentGroup(
+                    attachments: widget.attachments,
+                    onTap: widget.onAttachmentTap,
+                    // Editing is what `enabled` gates; viewing an attachment
+                    // that is already pending stays available, as does the send
+                    // button while streaming.
+                    onRemove: widget.enabled ? widget.onRemoveAttachment : null,
+                    removeTooltip: widget.removeAttachmentTooltip,
+                    previewCloseTooltip: widget.previewCloseTooltip,
+                  ),
+                ),
+                const SizedBox(height: _attachmentGap),
+              ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: _contentInset),
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: _fieldMinHeight),
+                  alignment: AlignmentDirectional.topStart,
+                  child: Focus(
+                    onKeyEvent: _handleKeyEvent,
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      enabled: widget.enabled,
+                      minLines: 1,
+                      maxLines: widget.maxLines,
+                      style: typography.bodyLarge.copyWith(
+                        height: 1.3,
+                        color: colors.onSurface,
+                      ),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: widget.placeholder,
+                        hintStyle: typography.bodyLarge.copyWith(
+                          height: 1.3,
+                          color: colors.onSurfaceMuted,
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: _fieldGap),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: _actionInset),
+                child: Row(
+                  children: [
+                    for (final action in widget.leadingActions) ...[
+                      action,
+                      const SizedBox(width: _leadingGap),
+                    ],
+                    const Spacer(),
+                    for (final action in widget.trailingActions) ...[
+                      action,
+                      const SizedBox(width: _trailingGap),
+                    ],
+                    _buildSendStopButton(context),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: _fieldGap),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _actionInset),
-            child: Row(
-              children: [
-                for (final action in widget.leadingActions) ...[
-                  action,
-                  const SizedBox(width: _leadingGap),
-                ],
-                const Spacer(),
-                for (final action in widget.trailingActions) ...[
-                  action,
-                  const SizedBox(width: _trailingGap),
-                ],
-                _buildSendStopButton(context),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+/// The card's hairline: a 1px stroke centered on the card's edge, shaded by
+/// the design's ink gradient — strongest at the top-left, thinning toward
+/// the bottom-right.
+class _OutlinePainter extends CustomPainter {
+  const _OutlinePainter({
+    required this.radius,
+    required this.start,
+    required this.end,
+  });
+
+  final BorderRadius radius;
+  final Color start;
+  final Color end;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [start, end],
+      ).createShader(rect);
+    canvas.drawRRect(radius.toRRect(rect).deflate(0.5), paint);
+  }
+
+  @override
+  bool shouldRepaint(_OutlinePainter oldDelegate) =>
+      oldDelegate.start != start ||
+      oldDelegate.end != end ||
+      oldDelegate.radius != radius;
 }
 
 /// The send arrow: a thin rounded stroke, matching the design's 1.5-weight
