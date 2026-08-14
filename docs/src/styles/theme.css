@@ -73,6 +73,12 @@
 	--flow-card: #1e1e1e;
 	--flow-bubble: #262626;
 	--flow-card-shadow: none;
+	/* FlowColors.dark: outline 20% white, onSurface 4% wash, onPrimary. */
+	--flow-outline: rgba(255, 255, 255, 0.2);
+	--flow-outline-hi: rgba(255, 255, 255, 0.22);
+	--flow-outline-lo: rgba(255, 255, 255, 0.07);
+	--flow-ink-wash: rgba(255, 255, 255, 0.04);
+	--flow-on-accent: #1e1e1e;
 }
 
 /* Light: FlowColors.light — #F9F9F7 warm paper, #1A1A19 ink. */
@@ -98,6 +104,12 @@
 	--flow-card: #ffffff;
 	--flow-bubble: #f0f0ee;
 	--flow-card-shadow: 0 1px 2px rgba(26, 26, 25, 0.04), 0 8px 24px -12px rgba(26, 26, 25, 0.08);
+	/* FlowColors.light: outline 14% ink, onSurface 4% wash, onPrimary. */
+	--flow-outline: rgba(26, 26, 25, 0.14);
+	--flow-outline-hi: rgba(26, 26, 25, 0.18);
+	--flow-outline-lo: rgba(26, 26, 25, 0.08);
+	--flow-ink-wash: rgba(26, 26, 25, 0.04);
+	--flow-on-accent: #ffffff;
 }
 
 body {
@@ -106,25 +118,65 @@ body {
 
 /* --------------------------------------------------------------- chrome */
 
-/* One continuous surface: the header blurs over content with no seam,
- * and the panes below share the page background with no dividers. */
+/* The header blurs over content behind a single hairline seam. */
 header.header {
 	background: color-mix(in srgb, var(--sl-color-black) 78%, transparent);
 	-webkit-backdrop-filter: blur(14px);
 	backdrop-filter: blur(14px);
-	border-bottom: 1px solid transparent;
+	border-bottom: 1px solid var(--sl-color-hairline-light);
 }
 
-.site-title {
+.site-title,
+.site-title span {
+	align-items: center;
 	font-weight: 700;
 	font-size: 1.125rem;
 	letter-spacing: -0.015em;
+	/* The wordmark is full onSurface ink, never a translucent step. */
 	color: var(--sl-color-white);
 	gap: 0.5625rem;
+	text-decoration: none;
+	white-space: nowrap;
 }
 .site-title img {
 	height: 1.375rem;
 	width: auto;
+}
+
+/* Brand cluster: wordmark plus quiet nav links (Docs, Stac ↗). */
+.brand-group {
+	align-items: center;
+	gap: 1.25rem;
+	min-width: 0;
+}
+.site-nav {
+	align-items: center;
+	gap: 0.125rem;
+}
+.site-nav a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3125rem;
+	padding: 0.3125rem 0.625rem;
+	border-radius: 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--sl-color-gray-3);
+	text-decoration: none;
+	transition: color 120ms;
+}
+.site-nav a:hover {
+	color: var(--sl-color-white);
+}
+.site-nav a svg {
+	width: 0.6875rem;
+	height: 0.6875rem;
+	opacity: 0.6;
+}
+@media (max-width: 49.98rem) {
+	.site-nav {
+		display: none;
+	}
 }
 
 /* Brand left, search dead-centre, actions right. */
@@ -171,31 +223,44 @@ starlight-menu-button[aria-expanded='true'] button {
 	align-items: center;
 }
 
-/* Search: tonal filled field, label left, magnifier right, no kbd hint. */
+/* Search: quiet bordered field, label left, ⌘K hint right. */
 button[data-open-modal] {
-	background: var(--sl-color-gray-6);
-	border: 1px solid transparent;
-	border-radius: 999px;
+	background: transparent;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.625rem;
 	color: var(--sl-color-gray-3);
-	font-size: 0.875rem;
-	padding-block: 0.5rem;
+	font-size: 0.8438rem;
+	height: 2rem;
+	padding-block: 0;
 	justify-content: space-between;
-	transition: background 120ms, color 120ms;
+	gap: 0.75rem;
+	transition: border-color 120ms, color 120ms;
 }
 button[data-open-modal]:hover {
-	background: var(--sl-color-gray-5);
+	border-color: var(--sl-color-gray-4);
 	color: var(--sl-color-gray-2);
 }
 button[data-open-modal] svg {
-	order: 2;
-}
-button[data-open-modal] kbd {
 	display: none;
+}
+button[data-open-modal] > kbd {
+	background: transparent;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.375rem;
+	padding: 0.125rem 0.375rem;
+	font-size: 0.6563rem;
+	color: var(--sl-color-gray-3);
+}
+button[data-open-modal] kbd kbd {
+	font-family: inherit;
+	background: transparent;
+	color: inherit;
+	padding: 0;
 }
 @media (min-width: 50rem) {
 	button[data-open-modal] {
 		min-inline-size: 14rem;
-		padding-inline: 1.125rem;
+		padding-inline: 0.875rem 0.5rem;
 	}
 }
 
@@ -211,13 +276,13 @@ button[data-open-modal] kbd {
 	display: none;
 }
 .social-icons a {
-	width: 2.375rem;
-	height: 2.375rem;
+	width: 2.25rem;
+	height: 2.25rem;
 	margin: 0;
 	padding: 0;
 	align-items: center;
 	justify-content: center;
-	border-radius: 999px;
+	border-radius: 0.625rem;
 	font-size: 1.125rem;
 	color: var(--sl-color-gray-2);
 	text-decoration: none;
@@ -228,51 +293,14 @@ button[data-open-modal] kbd {
 	color: var(--sl-color-white);
 	opacity: 1;
 }
-/* The Playground pill, with breathing room before the icon cluster. */
-.social-icons a[href*='/playground'] {
-	width: auto;
-	height: auto;
-	background: var(--sl-color-white);
-	color: var(--sl-color-black);
-	padding: 0.4375rem 1.0625rem;
-	font-size: 0.875rem;
-	font-weight: 600;
-	gap: 0.375rem;
-	margin-inline-end: 0.875rem;
-}
-.social-icons a[href*='/playground']:hover {
-	background: color-mix(in srgb, var(--sl-color-white) 86%, var(--sl-color-black));
-	color: var(--sl-color-black);
-}
-.social-icons a[href*='/playground'] svg {
-	display: none;
-}
-.social-icons a[href*='/playground']::after {
-	content: '\2197\FE0E';
-	font-size: 0.9375em;
-	font-weight: 500;
-	line-height: 1;
-	transform: translateY(0.05em);
-}
-.social-icons a[href*='/playground'] .sr-only {
-	position: static;
-	width: auto;
-	height: auto;
-	margin: 0;
-	overflow: visible;
-	clip: auto;
-	clip-path: none;
-	white-space: nowrap;
-}
-
 /* Theme toggle: one quiet icon button; the resolved theme picks the glyph. */
 theme-toggle button {
 	display: grid;
 	place-items: center;
-	width: 2.375rem;
-	height: 2.375rem;
+	width: 2.25rem;
+	height: 2.25rem;
 	border: 0;
-	border-radius: 999px;
+	border-radius: 0.625rem;
 	background: transparent;
 	color: var(--sl-color-gray-2);
 	cursor: pointer;
@@ -425,8 +453,8 @@ copy-page-button button:hover {
 }
 .content-panel h1 {
 	font-size: clamp(2rem, 4vw, 2.625rem);
-	font-weight: 700;
-	letter-spacing: -0.03em;
+	font-weight: 500;
+	letter-spacing: -0.025em;
 	line-height: 1.08;
 }
 .page-header .lede {
@@ -468,7 +496,7 @@ copy-page-button button:hover {
 }
 .sl-markdown-content h2 {
 	font-size: 1.4375rem;
-	font-weight: 600;
+	font-weight: 500;
 	letter-spacing: -0.02em;
 	margin-top: 2.75em;
 }
@@ -541,10 +569,10 @@ copy-page-button button:hover {
 /* -------------------------------------------------------------- buttons */
 
 .sl-link-button {
-	border-radius: 999px;
-	font-size: 0.9375rem;
+	border-radius: 0.75rem;
+	font-size: 0.875rem;
 	font-weight: 600;
-	padding: 0.6875rem 1.5rem;
+	padding: 0.5rem 1.25rem;
 	gap: 0.5rem;
 	border: 1px solid transparent;
 	transition: background 140ms, border-color 140ms, color 140ms, transform 140ms;
@@ -564,6 +592,7 @@ copy-page-button button:hover {
 }
 .sl-link-button.secondary:hover {
 	background: var(--sl-color-gray-6);
+	border-color: var(--sl-color-gray-4);
 }
 .sl-link-button.minimal {
 	color: var(--sl-color-gray-2);
@@ -576,7 +605,7 @@ copy-page-button button:hover {
 /* ----------------------------------------------------------------- hero */
 
 .hero {
-	padding-block: clamp(2rem, 7vw, 4.5rem) 0;
+	padding-block: calc(clamp(2rem, 7vw, 4.5rem) + 2rem) 1.5rem;
 }
 /* Centered splash hero: one vertical spine with the mock panel below it.
  * (Starlight keeps a 2-col hero grid even with no image — collapse it.) */
@@ -591,11 +620,12 @@ copy-page-button button:hover {
 }
 .hero h1 {
 	font-size: clamp(2.5rem, 5.5vw, 3.625rem);
-	font-weight: 700;
-	letter-spacing: -0.035em;
-	line-height: 1.04;
+	font-weight: 500;
+	letter-spacing: -0.025em;
+	line-height: 1.12;
 	color: var(--sl-color-white);
-	max-width: 22ch;
+	/* Two lines, breaking after "Library". */
+	max-width: 11em;
 	margin-inline: auto;
 	text-wrap: balance;
 }
@@ -603,235 +633,469 @@ copy-page-button button:hover {
 	font-size: 1.0938rem;
 	line-height: 1.7;
 	color: var(--sl-color-gray-3);
-	max-width: 40rem;
+	max-width: 43rem;
 	margin-inline: auto;
 	text-wrap: balance;
 }
 .hero .actions {
 	justify-content: center;
-	gap: 0.875rem;
+	gap: 0.75rem;
 }
 
 /* ---------------------------------------------------- landing sections */
 
 .landing {
-	margin-top: clamp(2.5rem, 6vw, 4.5rem);
-	display: grid;
-	gap: clamp(3.5rem, 7vw, 5.5rem);
-	padding-bottom: 2rem;
+	margin-top: clamp(2.25rem, 5vw, 3.5rem);
+	padding-bottom: 0.5rem;
 }
-.landing h2 {
-	font-size: 1.4375rem;
+
+/* Supported-platforms strip under the hero. */
+.platforms {
+	display: grid;
+	justify-items: center;
+	gap: 1.125rem;
+	margin-bottom: clamp(3rem, 7vw, 4.75rem);
+}
+.platforms__label {
+	font-size: 0.8125rem;
 	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--sl-color-gray-4);
+}
+.platforms__row {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem 2.5rem;
+	margin: 0;
+	padding: 0;
+}
+.platform {
+	display: flex;
+	align-items: center;
+	gap: 0.5625rem;
+	font-size: 1.125rem;
+	font-weight: 500;
+	white-space: nowrap;
+	color: var(--sl-color-gray-3);
+}
+/* MDX wraps the li's text run in a <p>; flatten it so the name and the
+ * badge center as flex items of the row. */
+.platform p {
+	display: contents;
+}
+.platform svg {
+	width: 1.375rem;
+	height: 1.375rem;
+	flex: none;
+}
+/* The Android head is wide and short; a slightly larger box balances it
+ * against the taller marks. */
+.platform svg.platform__icon--android {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+.platform--active {
+	color: var(--sl-color-white);
+}
+.platform__soon {
+	display: inline-flex;
+	align-items: center;
+	height: 18px;
+	font-size: 0.6563rem;
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--sl-color-gray-3);
+	background: var(--sl-color-gray-6);
+	border: 1px solid var(--sl-color-hairline-light);
+	border-radius: 0.375rem;
+	padding: 0 0.4375rem;
+}
+
+/* Stacked full-width boxes with collapsed borders. */
+.landing .box {
+	border: 1px solid var(--sl-color-hairline-light);
+}
+.landing .box + .box {
+	margin-top: -1px;
+}
+.landing .box h2 {
+	font-size: clamp(1.4375rem, 2.6vw, 1.75rem);
+	font-weight: 500;
 	letter-spacing: -0.02em;
 	color: var(--sl-color-white);
-	margin: 0 0 0.375rem;
+	text-align: center;
+	margin: 0 0 0.5rem;
+	padding-inline: 1.5rem;
 }
 .landing .section-sub {
 	font-size: 0.9375rem;
 	color: var(--sl-color-gray-3);
-	margin: 0 0 1.5rem;
+	text-align: center;
+	margin: 0 auto;
 	max-width: 44rem;
+	padding-inline: 1.5rem;
 }
 
-/* Feature cards: lifted, borderless-feeling panels. */
-.feature-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-	gap: 0.875rem;
-}
-.feature {
-	background: var(--flow-card);
-	border: 1px solid var(--sl-color-hairline-shade);
-	border-radius: 1rem;
-	box-shadow: var(--flow-card-shadow);
-	padding: 1.375rem 1.375rem 1.25rem;
-}
-.feature h3 {
-	font-size: 0.9688rem;
-	font-weight: 600;
-	letter-spacing: -0.01em;
-	color: var(--sl-color-white);
-	margin: 0 0 0.45rem;
+/* Box 1: the widget, vertically centred in the frame. */
+.box--widget {
 	display: flex;
-	align-items: baseline;
-	gap: 0.5rem;
+	flex-direction: column;
+	justify-content: center;
+	min-height: clamp(26rem, 46vw, 34.5rem);
+	padding: clamp(2rem, 5vw, 3rem) clamp(1.25rem, 5vw, 3rem);
 }
-.feature h3::before {
-	content: '\2733\FE0E';
-	color: var(--sl-color-accent);
-	font-size: 0.8125rem;
-	transform: translateY(-0.05em);
-}
-.feature p {
-	font-size: 0.875rem;
-	line-height: 1.65;
-	color: var(--sl-color-gray-3);
-	margin: 0;
-}
-.feature code {
-	font-size: 0.8125em;
-	background: var(--sl-color-gray-6);
-	border-radius: 0.3rem;
-	padding: 0.08em 0.3em;
+.box--widget .chat-mock {
+	width: 100%;
 }
 
-/* Start tiles */
+/* Box 2: three doorway cells split by end-to-end hairlines, sharing the
+ * parent box's block structure. */
+.box--start {
+	padding: 0;
+}
 .tile-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-	gap: 0.875rem;
+	grid-template-columns: repeat(3, 1fr);
 }
 a.tile {
-	display: block;
-	background: var(--flow-card);
-	border: 1px solid var(--sl-color-hairline-shade);
-	border-radius: 1rem;
-	box-shadow: var(--flow-card-shadow);
-	padding: 1.25rem 1.375rem;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 3rem;
+	min-height: clamp(19rem, 32vw, 25rem);
+	padding: 2rem 2rem 3rem;
 	text-decoration: none;
-	transition: border-color 140ms;
+	transition: background 160ms;
+}
+/* MDX wraps loose inline runs in <p>; flatten them so the tile's own
+ * layout owns the spacing. */
+a.tile p {
+	display: contents;
+}
+a.tile + a.tile {
+	border-inline-start: 1px solid var(--sl-color-hairline-light);
 }
 a.tile:hover {
-	border-color: var(--sl-color-gray-4);
+	background: color-mix(in srgb, var(--sl-color-gray-6) 25%, transparent);
 }
-a.tile strong {
+/* Lines art (Figma hover state): five edge-to-edge 1px rules at stepped
+ * ink opacities, fading in on hover. */
+a.tile::after {
+	content: '';
+	position: absolute;
+	inset-inline: 0;
+	top: 28%;
+	height: 69px;
+	background-image: linear-gradient(
+			color-mix(in srgb, var(--sl-color-white) 10%, transparent) 0 0
+		),
+		linear-gradient(color-mix(in srgb, var(--sl-color-white) 15%, transparent) 0 0),
+		linear-gradient(color-mix(in srgb, var(--sl-color-white) 20%, transparent) 0 0),
+		linear-gradient(color-mix(in srgb, var(--sl-color-white) 10%, transparent) 0 0),
+		linear-gradient(color-mix(in srgb, var(--sl-color-white) 5%, transparent) 0 0);
+	background-size: 100% 1px;
+	background-position: 0 0, 0 17px, 0 34px, 0 51px, 0 68px;
+	background-repeat: no-repeat;
+	opacity: 0;
+	transition: opacity 650ms ease;
+	pointer-events: none;
+}
+a.tile:hover::after {
+	opacity: 1;
+}
+.tile__top {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	font-size: 0.9375rem;
-	font-weight: 600;
-	letter-spacing: -0.01em;
+	gap: 1rem;
+}
+.tile__icon {
+	display: block;
+	width: 2.5rem;
+	height: 2.5rem;
+	color: color-mix(in srgb, var(--sl-color-white) 50%, transparent);
+}
+.tile__num {
+	font-size: 0.875rem;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--sl-color-white) 30%, transparent);
+}
+a.tile strong {
+	display: block;
+	font-size: 1.375rem;
+	font-weight: 500;
+	letter-spacing: -0.015em;
+	line-height: 1.3;
 	color: var(--sl-color-white);
-	margin-bottom: 0.3rem;
+	margin-bottom: 1.375rem;
 }
-a.tile strong::after {
-	content: '→';
-	color: var(--sl-color-gray-4);
-	font-weight: 400;
-	transition: transform 140ms, color 140ms;
+a.tile .tile__body span {
+	display: block;
+	font-size: 1rem;
+	line-height: 1.5;
+	color: color-mix(in srgb, var(--sl-color-white) 75%, transparent);
+	max-width: 18.5rem;
 }
-a.tile:hover strong::after {
-	transform: translateX(3px);
-	color: var(--sl-color-accent);
+@media (max-width: 48rem) {
+	.tile-grid {
+		grid-template-columns: 1fr;
+	}
+	a.tile {
+		min-height: 15rem;
+		gap: 2.25rem;
+	}
+	a.tile + a.tile {
+		border-inline-start: 0;
+		border-top: 1px solid var(--sl-color-hairline-light);
+	}
 }
-a.tile span {
-	font-size: 0.8438rem;
-	line-height: 1.6;
+
+/* Footer: centred brand block, social row, then the meta bar. */
+.site-footer {
+	margin-top: 5rem;
+	padding: clamp(3rem, 7vw, 4.5rem) 0 0.75rem;
+	font-size: 0.875rem;
 	color: var(--sl-color-gray-3);
+}
+.site-footer__brand {
+	display: grid;
+	justify-items: center;
+	text-align: center;
+}
+.site-footer__brand img {
+	width: 2.5rem;
+	height: 2.5rem;
+}
+.site-footer__name {
+	margin-top: 1.125rem;
+	font-size: 1.25rem;
+	font-weight: 500;
+	letter-spacing: -0.015em;
+	color: var(--sl-color-white);
+}
+.site-footer__tagline {
+	margin-top: 0.4375rem;
+	font-size: 0.9375rem;
+	color: var(--sl-color-gray-3);
+}
+.site-footer__social {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.875rem 2rem;
+	margin-top: 1.875rem;
+}
+.site-footer__social a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--sl-color-gray-2);
+	text-decoration: none;
+	transition: color 120ms;
+}
+.site-footer__social a:hover {
+	color: var(--sl-color-white);
+}
+.site-footer__social svg {
+	width: 1.0625rem;
+	height: 1.0625rem;
+}
+.site-footer__bar {
+	margin-top: clamp(2.5rem, 6vw, 3.5rem);
+	border-top: 1px solid var(--sl-color-hairline-light);
+	padding-top: 1.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.5rem;
+	font-size: 0.8438rem;
+	color: var(--sl-color-gray-4);
 }
 
 /* ------------------------------------------------------------ chat mock */
 
+/* Mirrors the components' spec values: 4% ink-wash bubble (r12, 16/10),
+ * plain assistant paragraph, 18px turning asterisk with a shimmer label,
+ * and the surfaceContainerLowest composer card (r24, outline border,
+ * 0/12 ambient shadow, 32px controls). */
 .chat-mock {
-	background: var(--flow-panel);
-	border: 1px solid var(--sl-color-hairline-shade);
-	border-radius: 1.375rem;
-	padding: clamp(1.375rem, 4vw, 2.75rem);
-	display: grid;
-	gap: 1.375rem;
-	max-width: 46rem;
+	max-width: 47.5rem;
 	margin-inline: auto;
-	width: 100%;
+	display: grid;
+	gap: clamp(1.75rem, 4vw, 2.5rem);
 }
 .chat-mock__thread {
 	display: grid;
-	gap: 1.125rem;
-	font-size: 0.9063rem;
-	line-height: 1.6;
+	justify-items: start;
+	gap: 1rem;
+	font-size: 1rem;
 }
 .chat-mock__bubble {
 	justify-self: end;
 	max-width: 78%;
-	background: var(--flow-bubble);
-	color: var(--sl-color-gray-1);
-	border-radius: 1.125rem 1.125rem 0.25rem 1.125rem;
-	padding: 0.75rem 1.0625rem;
+	background: var(--flow-ink-wash);
+	color: var(--sl-color-white);
+	border-radius: 0.75rem;
+	padding: 0.625rem 1rem;
+	line-height: 1.3;
+	margin-bottom: 0.5rem;
 }
 .chat-mock__reply {
-	display: flex;
-	gap: 0.6875rem;
-	align-items: flex-start;
-	color: var(--sl-color-gray-2);
-	max-width: 88%;
-}
-.chat-mock__reply p {
 	margin: 0;
+	color: var(--sl-color-white);
+	line-height: 1.5;
+	max-width: 42.5rem;
 }
 .chat-mock__reply code {
 	font-size: 0.8125em;
-	background: var(--flow-bubble);
+	background: var(--flow-ink-wash);
 	border-radius: 0.3rem;
 	padding: 0.08em 0.35em;
-	color: var(--sl-color-gray-1);
+	color: var(--sl-color-white);
 }
-.chat-mock__spark {
-	color: var(--sl-color-accent);
-	font-size: 1rem;
-	line-height: 1.45;
-	animation: flow-spark 3.2s ease-in-out infinite;
+.chat-mock__thinking {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+.chat-mock__asterisk {
+	width: 1.125rem;
+	height: 1.125rem;
+	color: var(--sl-color-white);
+	animation: flow-think 2.8s ease-in-out infinite;
 }
 .chat-mock__shimmer {
-	font-size: 0.8438rem;
-	font-weight: 500;
 	color: transparent;
 	background: linear-gradient(
 			90deg,
-			var(--sl-color-gray-4) 30%,
-			var(--sl-color-gray-1) 50%,
-			var(--sl-color-gray-4) 70%
+			color-mix(in srgb, var(--sl-color-white) 50%, transparent) 35%,
+			var(--sl-color-white) 50%,
+			color-mix(in srgb, var(--sl-color-white) 50%, transparent) 65%
 		)
 		0 0 / 200% 100%;
 	-webkit-background-clip: text;
 	background-clip: text;
 	animation: flow-shimmer 2.4s linear infinite;
-	padding-inline-start: 1.7rem;
 }
 .chat-mock__composer {
+	position: relative;
+	background: var(--flow-card);
+	border: 1px solid transparent;
+	border-radius: 1.5rem;
+	box-shadow: 0 0 12px color-mix(in srgb, var(--sl-color-white) 2%, transparent);
+	padding: 1.125rem 0.625rem 0.75rem;
+}
+/* Gradient outline: lit from the top, fading down; lightens on hover. */
+.chat-mock__composer::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 1px;
+	background: linear-gradient(180deg, var(--flow-outline-hi), var(--flow-outline-lo) 62%);
+	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	mask-composite: exclude;
+	opacity: 0.8;
+	transition: opacity 160ms;
+	pointer-events: none;
+}
+.chat-mock__composer:hover::before {
+	opacity: 1;
+}
+.chat-mock__prompt {
+	padding-inline: 0.5rem;
+	font-size: 1rem;
+	line-height: 1.3;
+	color: color-mix(in srgb, var(--sl-color-white) 50%, transparent);
+}
+.chat-mock__bar {
+	margin-top: 1.875rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 1rem;
-	background: var(--flow-card);
-	border: 1px solid var(--sl-color-hairline-light);
-	border-radius: 1.125rem;
-	box-shadow: var(--flow-card-shadow);
-	padding: 0.9375rem 0.9375rem 0.9375rem 1.25rem;
-	font-size: 0.9063rem;
-	color: var(--sl-color-gray-4);
 }
-.chat-mock__send {
-	flex: none;
+.chat-mock__plus {
 	display: grid;
 	place-items: center;
-	width: 2.125rem;
-	height: 2.125rem;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 999px;
+	color: var(--sl-color-white);
+}
+.chat-mock__plus svg {
+	width: 1.125rem;
+	height: 1.125rem;
+}
+.chat-mock__tools {
+	display: flex;
+	align-items: center;
+	gap: 0.4375rem;
+}
+.chat-mock__model {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding-inline: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--sl-color-white);
+}
+.chat-mock__model em {
+	font-style: normal;
+	color: color-mix(in srgb, var(--sl-color-white) 50%, transparent);
+}
+.chat-mock__model svg {
+	width: 0.75rem;
+	height: 0.75rem;
+	color: color-mix(in srgb, var(--sl-color-white) 50%, transparent);
+}
+/* Accent disc inside a card-colored gap and a 1px accent ring (Figma). */
+.chat-mock__send {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
 	border-radius: 999px;
 	background: var(--sl-color-accent);
-	color: #fff;
-	font-size: 1.0625rem;
-	font-weight: 600;
-	line-height: 1;
+	border: 1px solid var(--sl-color-accent);
+	box-shadow: inset 0 0 0 2px var(--flow-card);
+	color: var(--flow-on-accent);
+}
+.chat-mock__send svg {
+	width: 0.75rem;
+	height: 0.75rem;
 }
 @keyframes flow-shimmer {
 	to {
 		background-position: -200% 0;
 	}
 }
-@keyframes flow-spark {
+@keyframes flow-think {
 	0%,
 	100% {
 		transform: rotate(0deg) scale(1);
 		opacity: 1;
 	}
 	50% {
-		transform: rotate(90deg) scale(0.92);
-		opacity: 0.75;
+		transform: rotate(90deg) scale(0.8);
+		opacity: 0.7;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
 	.chat-mock__shimmer,
-	.chat-mock__spark {
+	.chat-mock__asterisk {
 		animation: none;
 	}
 }

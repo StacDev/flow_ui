@@ -1,0 +1,37 @@
+---
+import { logos } from 'virtual:starlight/user-images';
+import config from 'virtual:starlight/user-config';
+
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<span class="brand-group sl-flex">
+	<a href={siteTitleHref} class="site-title sl-flex">
+		{
+			config.logo && logos.dark && (
+				<img
+					alt={config.logo.alt}
+					src={logos.dark.src}
+					width={logos.dark.width}
+					height={logos.dark.height}
+				/>
+			)
+		}
+		<span translate="no">{siteTitle}</span>
+	</a>
+	<nav class="site-nav sl-flex" aria-label="Primary">
+		<a href="/getting-started/">Docs</a>
+		<a href="https://stac.dev" target="_blank" rel="noopener">
+			Stac
+			<svg
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"><path d="M7 17 17 7" /><path d="M9 7h8v8" /></svg
+			>
+		</a>
+	</nav>
+</span>

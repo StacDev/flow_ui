@@ -36,6 +36,8 @@ export default defineConfig({
 			components: {
 				PageTitle: './src/components/PageTitle.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
+				SiteTitle: './src/components/SiteTitle.astro',
+				SocialIcons: './src/components/SocialIcons.astro',
 				// Stock provider with the auto fallback flipped to light for
 				// browsers that don't support prefers-color-scheme.
 				ThemeProvider: './src/components/ThemeProvider.astro',
@@ -64,11 +66,6 @@ export default defineConfig({
 			},
 			social: [
 				{
-					icon: 'rocket',
-					label: 'Playground',
-					href: '/playground/',
-				},
-				{
 					icon: 'seti:dart',
 					label: 'pub.dev',
 					href: 'https://pub.dev/packages/flow_ui',
@@ -77,6 +74,16 @@ export default defineConfig({
 					icon: 'github',
 					label: 'GitHub',
 					href: 'https://github.com/StacDev/flow_ui',
+				},
+				{
+					icon: 'x.com',
+					label: 'X',
+					href: 'https://x.com/stac_dev',
+				},
+				{
+					icon: 'discord',
+					label: 'Discord',
+					href: 'https://discord.gg/PDFX9Ndsx',
 				},
 			],
 			editLink: {
