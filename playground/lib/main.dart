@@ -2,10 +2,20 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/material.dart';
 
 import 'src/code_panel.dart';
+import 'src/embed.dart';
 import 'src/playground_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // `?embed=` boots the chrome-less single-demo mode the docs site
+  // iframes. It shows no code panel, so the grammar load is skipped for a
+  // faster first paint. On non-web platforms Uri.base has no query — the
+  // full playground always boots.
+  final embed = EmbedRequest.fromUri(Uri.base);
+  if (embed != null) {
+    runApp(EmbedApp(request: embed));
+    return;
+  }
   // Loads the Dart grammar and both highlight themes once, so the code
   // panel renders synchronously.
   await CodeHighlighting.init();

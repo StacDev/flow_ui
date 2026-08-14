@@ -1,0 +1,48 @@
+---
+title: Chat screen
+description: The assembled surface — thread above composer on a centred rail, with a zero state and jump-to-latest.
+sidebar:
+  order: 12
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowChatScreen` is the chat surface assembled: a bounded thread above a
+composer, centred on a readable rail (760 by default), with a zero state
+for the conversation that hasn't started and a jump-to-latest button once
+you've scrolled back through history.
+
+<FlowDemo demo="full-chat" height={640} title="The chat screen" />
+
+```dart title="Assemble the surface"
+FlowChatScreen(
+  empty: messages.isEmpty,
+  greeting: FlowGreeting(icon: Icons.wb_twilight, text: 'Good afternoon'),
+  suggestions: FlowSuggestionGroup(...),
+  thread: FlowThread(messages: messages, controller: controller),
+  composer: FlowComposer(onSend: send),
+  threadController: controller,
+)
+```
+
+## It takes finished widgets
+
+The screen accepts a built `FlowThread` and `FlowComposer` rather than
+their data, so it stays correct as those components grow. What it adds is
+the one thing every host would otherwise have to know: the bounded height
+a thread needs, the width caps, and where the zero state's pieces go —
+the composer lifts to the vertical centre on wide layouts and stays
+docked on compact ones.
+
+## Body-only
+
+It builds no `Scaffold` and no app bar. Drop it in a scaffold body and the
+host keeps the chrome, the background, and the keyboard inset. Pass
+`composer: null` for a read-only surface — an archived thread, a shared
+transcript.
+
+## Jump to latest
+
+Pass the **same** `ScrollController` to the thread and to
+`threadController:` — taking finished widgets means the screen can't
+reach in and attach its own. Null leaves the button out entirely.

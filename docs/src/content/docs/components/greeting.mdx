@@ -1,0 +1,76 @@
+---
+title: Greeting
+description: The zero state's headline — a glyph beside the text, restacking when compact.
+sidebar:
+  order: 11
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowGreeting` is the zero state's headline over an empty thread. Where
+there is room it sets a 40px glyph beside 32px text, bottom-aligned; below
+600px of available width it restacks itself — glyph above the text, at the
+design's 21px. The host supplies the whole string (name and all);
+`FlowChatScreen` centres it when the conversation hasn't started.
+
+## Default
+
+<FlowDemo demo="greeting" variant="icon" height={220} title="The wide form" />
+
+```dart title="The wide form"
+FlowGreeting(
+  // Wide form: 40px glyph beside 32px text, bottom-aligned.
+  icon: Icons.wb_twilight,
+  text: 'Good Afternoon, Divyanshu',
+)
+```
+
+## Compact
+
+The restack is driven by available width, not screen size — box the
+greeting narrower and it adapts:
+
+```dart title="Below 600px it restacks"
+// Below 600px of available width the greeting restacks itself:
+// glyph above the text, at the design's 21px.
+SizedBox(
+  width: 390,
+  child: FlowGreeting(
+    icon: Icons.wb_twilight,
+    text: 'Good Afternoon, Divyanshu',
+  ),
+)
+```
+
+## Text only
+
+<FlowDemo demo="greeting" variant="text" height={200} title="Text only" />
+
+```dart title="No glyph"
+FlowGreeting(text: 'Welcome back')
+```
+
+## Custom style
+
+An explicit `textStyle` is used as given in both forms — the responsive
+sizing steps aside when you take control:
+
+```dart title="Restyled"
+FlowGreeting(
+  icon: Icons.auto_awesome_outlined,
+  iconColor: colors.onSurfaceVariant,
+  text: 'Ready when you are',
+  // An explicit style is used as given in both forms.
+  textStyle: typography.headlineSmall.copyWith(
+    color: colors.onSurfaceVariant,
+  ),
+)
+```
+
+## Key API
+
+- `text` — the whole headline; the package composes no copy.
+- `icon`, `iconColor` — the optional glyph.
+- `textStyle` — overrides the responsive sizing outright.
+- In the assembled surface: pass it to `FlowChatScreen`'s `greeting:`
+  slot, shown only while `empty` is true.

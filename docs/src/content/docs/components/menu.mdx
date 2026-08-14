@@ -1,0 +1,94 @@
+---
+title: Menu
+description: The icon-trigger menu — groups, submenus, toggles; a sheet on phones.
+sidebar:
+  order: 8
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowMenu` is a menu of options behind a single icon trigger — the
+composer's "+" is this widget with the add glyph. Entries are data, not
+widgets: a sealed tree of `FlowMenuOption`s and `FlowMenuDivider`s, so the
+same description renders as an anchored menu on desktop and a bottom sheet
+on phones.
+
+## The menu
+
+Dividers group rows. An option with non-empty `children` becomes a
+submenu — a pushed page when presenting as a sheet. `selected` draws a
+check on modes the host has toggled on:
+
+<FlowDemo demo="add-to-chat" height={440} title="The add-to-chat menu" />
+
+```dart title="Groups, submenus, and a toggle"
+FlowMenu(
+  icon: Icons.add,
+  tooltip: 'Add to chat',
+  entries: [
+    FlowMenuOption(
+      id: 'files',
+      icon: Icons.upload_file_outlined,
+      label: 'Add Files or Photos',
+    ),
+    FlowMenuDivider(),
+    // Non-empty children turn a row into a submenu — a pushed
+    // page when presenting as a bottom sheet.
+    FlowMenuOption(
+      id: 'skills',
+      icon: Icons.history_edu_outlined,
+      label: 'Skills',
+      children: [
+        FlowMenuOption(id: 'slides', icon: Icons.co_present_outlined,
+            label: 'Slide deck'),
+        FlowMenuOption(id: 'review', icon: Icons.rate_review_outlined,
+            label: 'Code review'),
+      ],
+    ),
+    FlowMenuDivider(),
+    // `selected` draws the check — a mode the host toggled on.
+    FlowMenuOption(
+      id: 'research',
+      icon: Icons.school_outlined,
+      label: 'Research',
+      selected: researchOn,
+    ),
+    FlowMenuOption(
+      id: 'web-search',
+      icon: Icons.language_outlined,
+      label: 'Web Search',
+    ),
+  ],
+  onSelected: (id) => handle(id),
+  // Presentation is automatic: an anchored menu on desktop, a
+  // bottom sheet on iOS and Android. FlowMenuPresentation.menu /
+  // .sheet force either.
+  sheetTitle: 'Add to Chat',
+)
+```
+
+Every selection — top level or inside a submenu — lands in the single
+`onSelected` callback with the option's `id`. Toggling is host state:
+flip your flag and rebuild with the new `selected` value.
+
+## Presentation follows the platform
+
+The `auto` default anchors a menu on desktop and presents a sheet titled
+with `sheetTitle` on iOS and Android; `FlowMenuPresentation.menu` /
+`.sheet` force either. Submenus become pushed pages inside the sheet, with
+a back affordance.
+
+## Restyling
+
+`FlowMenuStyle` overrides the menu's metrics and colors per instance —
+corner radius, paddings, inks — without touching the global tokens.
+
+## Key API
+
+- `entries` — the sealed `FlowMenuEntry` tree: `FlowMenuOption`
+  (`id`, `icon`, `label`, `selected`, `enabled`, `children`) and
+  `FlowMenuDivider`.
+- `onSelected` — one callback, every level; receives the `id`.
+- `icon`, `tooltip` — the trigger.
+- `sheetTitle`, `presentation` — sheet form and when it's used.
+- `style` — a `FlowMenuStyle` for per-instance retheming.

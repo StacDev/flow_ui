@@ -1,0 +1,121 @@
+---
+title: Suggestions
+description: Prompt starters as tappable rows — plain or outlined, in column, strip, or wrap layouts.
+sidebar:
+  order: 10
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowSuggestion` is one prompt starter as a tappable row, in two variants:
+plain rows in the secondary ink, and `outlined` rows on a faint fill in
+full ink. `FlowSuggestionGroup` arranges them in the layout the surface
+needs. Taps report back through each row's `onTap`; sending the prompt is
+the host's move. A row without a callback renders disabled.
+
+## Column
+
+Full-width plain rows are the design's primary form — the zero state's
+starters:
+
+<FlowDemo demo="suggestions" variant="column" height={300} title="Column layout" />
+
+```dart title="The zero state's starters"
+FlowSuggestionGroup(
+  // The design's primary form: full-width plain rows, 6px apart.
+  layout: FlowSuggestionLayout.column,
+  suggestions: [
+    FlowSuggestion(
+      label: 'Write an essay about life and enjoyment',
+      icon: Icons.article_outlined,
+      onTap: () => send('Write an essay about life and enjoyment'),
+    ),
+    FlowSuggestion(
+      label: 'Create a Monday briefing about my tasks',
+      icon: Icons.event_available_outlined,
+      onTap: () => send('Create a Monday briefing about my tasks'),
+    ),
+  ],
+)
+```
+
+## Scrolling strip
+
+The default layout is one strip that scrolls, no scrollbar — the form for
+follow-up suggestions above a composer. `outlined: true` draws each row on
+the faint fill and hairline:
+
+<FlowDemo demo="suggestions" variant="scroll" height={200} title="Scrolling strip" />
+
+```dart title="Outlined rows in a strip"
+FlowSuggestionGroup(
+  // The default: one strip that scrolls, no scrollbar. outlined
+  // draws each row on the faint fill and hairline, in full ink.
+  suggestions: [
+    for (final prompt in prompts)
+      FlowSuggestion(
+        label: prompt,
+        outlined: true,
+        onTap: () => send(prompt),
+      ),
+  ],
+)
+```
+
+## Wrap
+
+`FlowSuggestionLayout.wrap` flows the rows like chips. A suggestion
+without `onTap` renders disabled — its `tooltip` can say why:
+
+<FlowDemo demo="suggestions" variant="wrap" height={260} title="Wrap layout" />
+
+```dart title="Wrapped, with a disabled row"
+FlowSuggestionGroup(
+  layout: FlowSuggestionLayout.wrap,
+  suggestions: [
+    FlowSuggestion(
+      label: 'Summarize this thread',
+      icon: Icons.summarize_outlined,
+      outlined: true,
+      onTap: () => send('Summarize this thread'),
+    ),
+    // No onTap → disabled.
+    FlowSuggestion(label: 'Run a deep research pass', outlined: true),
+  ],
+)
+```
+
+## Above a composer
+
+The pattern hosts copy: starters that fill the field, gone once the
+thread starts. An empty `suggestions` list takes no space, so the column
+collapses cleanly:
+
+```dart title="Starters that hand off to the field"
+Column(
+  children: [
+    FlowSuggestionGroup(
+      // Empty once the thread starts — the group then takes no space.
+      layout: FlowSuggestionLayout.column,
+      suggestions: [
+        for (final prompt in starters)
+          FlowSuggestion(
+            label: prompt,
+            onTap: () => controller.text = prompt,
+          ),
+      ],
+    ),
+    const SizedBox(height: 8),
+    FlowComposer(controller: controller, onSend: send),
+  ],
+)
+```
+
+## Key API
+
+- `FlowSuggestion` — `label`, optional `icon`, `outlined`, `onTap`,
+  `tooltip`; no `onTap` → disabled.
+- `FlowSuggestionGroup` — `suggestions` + `layout`:
+  `FlowSuggestionLayout.scroll` (default), `.column`, `.wrap`.
+- `FlowChatScreen` places a column group in its zero state via the
+  `suggestions:` slot.

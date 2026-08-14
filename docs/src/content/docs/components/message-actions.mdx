@@ -1,0 +1,68 @@
+---
+title: Message actions
+description: The action row under a message — copy, regenerate, edit, and feedback.
+sidebar:
+  order: 2
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowMessageActions` is the muted icon row that lives under an assistant
+turn. Each `FlowMessageAction` comes from a named constructor — `.copy`,
+`.regenerate`, `.edit`, `.thumbUp`, `.thumbDown` — and carries its tooltip
+and callback. The row lays them out at the design's rhythm and reports the
+taps; what they do is entirely the host's business.
+
+## Action row
+
+An action without an `onPressed` renders muted and disabled. The thumbs
+carry a `selected` flag — making them exclusive is host state, not widget
+behavior:
+
+<FlowDemo demo="message-actions" height={240} title="The action row" />
+
+```dart title="Copy, regenerate, edit, feedback"
+FlowMessageActions(
+  actions: [
+    FlowMessageAction.copy(tooltip: 'Copy', onPressed: () {}),
+    FlowMessageAction.regenerate(tooltip: 'Regenerate', onPressed: () {}),
+    FlowMessageAction.edit(tooltip: 'Edit'), // no onPressed → disabled
+    FlowMessageAction.thumbUp(
+      tooltip: 'Good response',
+      selected: liked,
+      onPressed: toggleLike,
+    ),
+    FlowMessageAction.thumbDown(
+      tooltip: 'Bad response',
+      selected: disliked,
+      onPressed: toggleDislike,
+    ),
+  ],
+)
+```
+
+## Under a message
+
+`FlowMessage` takes the row in its `footer:` slot, placing it under the
+content at the design's spacing:
+
+```dart title="The footer slot"
+FlowMessage(
+  message,
+  footer: FlowMessageActions(
+    actions: [
+      FlowMessageAction.copy(tooltip: 'Copy', onPressed: () {}),
+      FlowMessageAction.regenerate(tooltip: 'Regenerate', onPressed: () {}),
+    ],
+  ),
+)
+```
+
+## Key API
+
+- `FlowMessageAction.copy / .regenerate / .edit / .thumbUp / .thumbDown` —
+  the shipped actions; every one takes `tooltip`, `onPressed`, and
+  `selected` where it applies.
+- No `onPressed` → the action renders muted and ignores taps.
+- Tooltips are host-supplied strings — the package ships no copy, so
+  localization stays yours.

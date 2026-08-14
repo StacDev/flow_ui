@@ -1,0 +1,51 @@
+---
+/**
+ * A live component preview: an iframe of the playground's chrome-less
+ * embed mode (`/playground/?embed=<demo>`). The src is composed
+ * client-side so it can carry the docs page's current theme, and a shared
+ * observer reloads every frame when the reader flips the theme — the
+ * embed pre-paints the matching surface color, so there's no flash.
+ *
+ * `demo` is a playground item id in kebab-case (`thread`, `full-chat`,
+ * `model-selector`…), `variant` one of its variant ids.
+ */
+interface Props {
+	demo: string;
+	variant?: string;
+	height?: number;
+	title?: string;
+}
+const { demo, variant, height = 360, title } = Astro.props;
+const label = title ?? `${demo} demo`;
+---
+
+<div class="flow-demo not-content" style={`height: ${height}px`}>
+	<iframe
+		loading="lazy"
+		allow="clipboard-write"
+		title={label}
+		data-demo={demo}
+		data-variant={variant}></iframe>
+</div>
+
+<script>
+	const applySrc = (frame: HTMLIFrameElement) => {
+		const theme =
+			document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+		const params = new URLSearchParams({ embed: frame.dataset.demo ?? '' });
+		if (frame.dataset.variant) params.set('variant', frame.dataset.variant);
+		params.set('theme', theme);
+		// index.html spelled out: directory-index resolution differs between
+		// dev/preview servers and real static hosts, and nobody sees an
+		// iframe's URL.
+		const src = `/playground/index.html?${params}`;
+		if (frame.getAttribute('src') !== src) frame.setAttribute('src', src);
+	};
+	const frames = () =>
+		document.querySelectorAll<HTMLIFrameElement>('.flow-demo iframe');
+	frames().forEach(applySrc);
+	new MutationObserver(() => frames().forEach(applySrc)).observe(
+		document.documentElement,
+		{ attributes: true, attributeFilter: ['data-theme'] }
+	);
+</script>

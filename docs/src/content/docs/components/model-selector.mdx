@@ -1,0 +1,86 @@
+---
+title: Model selector
+description: The model picker for the composer's trailing slot — effort section, overflow, sheet on phones.
+sidebar:
+  order: 7
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowModelSelector` is the compact model picker made for the composer's
+trailing slot: a menu of `FlowModelOption`s with descriptions, an optional
+**Effort** section, and an overflow behind a *More models* row. Picking a
+model or an effort applies immediately and closes the menu — no confirm
+step.
+
+## The picker
+
+<FlowDemo demo="modal-selector" height={420} title="Model selector" />
+
+```dart title="Models, efforts, and the overflow"
+FlowModelSelector(
+  tooltip: 'Choose model',
+  models: [
+    FlowModelOption(
+      id: 'fable-5',
+      label: 'Fable 5',
+      description: 'Our flagship model',
+    ),
+    FlowModelOption(
+      id: 'opus-5-1',
+      label: 'Opus 5.1',
+      description: 'For complex & thinking tasks',
+    ),
+    FlowModelOption(
+      id: 'haiku-4-5',
+      label: 'Haiku 4.5',
+      description: 'Fastest for quick answers',
+    ),
+  ],
+  selectedId: selectedModelId,
+  onSelected: (id) => setModel(id),
+  // Optional: an Effort section. Picking a model or an effort
+  // applies immediately and closes the menu.
+  efforts: [
+    FlowEffortOption(
+      id: 'low',
+      label: 'Low',
+      description: 'Quickest replies. Simple answers',
+    ),
+    FlowEffortOption(
+      id: 'max',
+      label: 'Max',
+      description: 'Complex, extensive tasks',
+    ),
+  ],
+  selectedEffortId: selectedEffortId,
+  onEffortSelected: (id) => setEffort(id),
+  // Optional: overflow models behind a 'More models' row.
+  moreModels: [
+    FlowModelOption(id: 'sonnet-4-5', label: 'Sonnet 4.5'),
+  ],
+  // Presentation is automatic: an anchored menu on desktop, a
+  // bottom sheet on iOS and Android. FlowMenuPresentation.menu /
+  // .sheet force either.
+  sheetTitle: 'Select model',
+)
+```
+
+## Presentation follows the platform
+
+On desktop the selector anchors a menu at the trigger; on iOS and Android
+it presents a bottom sheet titled with `sheetTitle`. That's the `auto`
+default — `FlowMenuPresentation.menu` or `.sheet` force either. Effort and
+*More models* become pushed pages inside the sheet.
+
+## Key API
+
+- `models` / `selectedId` / `onSelected` — the primary list;
+  `FlowModelOption` carries `id`, `label`, `description`, and `enabled`.
+- `efforts` / `selectedEffortId` / `onEffortSelected` — the optional
+  Effort section (`FlowEffortOption`, same shape).
+- `moreModels` — overflow options behind *More models*.
+- `sheetTitle`, `tooltip` — host-supplied strings; the package ships no
+  copy.
+- `presentation` — `FlowMenuPresentation.auto` (default) / `.menu` /
+  `.sheet`.
