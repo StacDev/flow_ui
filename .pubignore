@@ -1,0 +1,35 @@
+# .pubignore replaces .gitignore for publishing, so it repeats the relevant
+# rules and adds the repo-only files the package archive should not carry.
+
+# From .gitignore
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+*.iml
+*.ipr
+*.iws
+.idea/
+.env
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.flutter-plugins-dependencies
+/build/
+/coverage/
+
+# Repo-only: the playground app, README screenshots (pub.dev loads them from
+# the repository), and development/agent docs
+playground/
+doc/
+AGENTS.md
+CLAUDE.md
+.claude/
+.vscode/
+.metadata
