@@ -33,6 +33,27 @@ export default defineConfig({
 				'Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.',
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
+			head: [
+				// Social-preview image on every page — Starlight emits the rest
+				// of the OG/Twitter tags; the image is ours to provide.
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image', content: 'https://flowui.stac.dev/og.png' },
+				},
+				{ tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+				{ tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+				{
+					tag: 'meta',
+					attrs: {
+						property: 'og:image:alt',
+						content: 'Flow UI — Flutter UI library for AI chat interfaces',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:image', content: 'https://flowui.stac.dev/og.png' },
+				},
+			],
 			components: {
 				PageTitle: './src/components/PageTitle.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',

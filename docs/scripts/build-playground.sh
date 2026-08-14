@@ -4,12 +4,15 @@
 # docs at / and the playground (plus the docs' live demo embeds) at
 # /playground/.
 #
-# Default renderer on purpose: the multithreaded wasm build needs COOP/COEP
-# headers that would have to apply to every docs page embedding an iframe.
+# --wasm: skwasm runs multithreaded on the standalone playground, where
+# public/_headers sets COOP/COEP on /playground/* — and degrades to
+# single-threaded inside the docs' demo iframes, whose top-level pages are
+# deliberately not cross-origin isolated. Browsers without WasmGC fall back
+# to the bundled JS build.
 # --pwa-strategy=none: no service worker serving a stale playground.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-(cd ../playground && flutter pub get && flutter build web --release --base-href /playground/ --pwa-strategy=none)
+(cd ../playground && flutter pub get && flutter build web --release --wasm --base-href /playground/ --pwa-strategy=none)
 rm -rf public/playground
 mkdir -p public
 cp -R ../playground/build/web public/playground

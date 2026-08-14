@@ -39,7 +39,7 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flow UI Playground',
+      title: 'Flow UI Playground · Flutter UI library for AI Chat Interfaces',
       debugShowCheckedModeBanner: false,
       themeMode: _mode,
       // The chrome paints itself from ShellPalette; the FlowTheme

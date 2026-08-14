@@ -1,3 +1,8 @@
+# one-off local tooling (og-card generation, screenshot capture) — kept out
+# of the public repo
+scripts/gen-og.mjs
+*.tmp.mjs
+
 # build output
 dist/
 # generated types

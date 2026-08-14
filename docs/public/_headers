@@ -1,0 +1,6 @@
+# Cross-origin isolation for the standalone playground only, so skwasm runs
+# multithreaded there. Docs pages stay non-isolated — their demo iframes fall
+# back to single-threaded skwasm, and the pages keep embedding freely.
+/playground/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
