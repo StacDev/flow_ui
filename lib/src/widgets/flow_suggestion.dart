@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
@@ -74,6 +75,10 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
   static const double _iconSize = 20;
   static const double _iconGap = 16;
 
+  /// The hover affordance in the column form: a 16px arrow at the row's
+  /// far end, in the muted ink.
+  static const double _arrowSize = 16;
+
   /// The outlined row's ground, as an alpha over the ink — a step fainter
   /// than the attachment tile's wash, per the design.
   static const double _outlinedFillOpacity = 0.02;
@@ -116,7 +121,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
         onTap: enabled ? widget.onTap : null,
         onHover: enabled ? (value) => setState(() => _hovered = value) : null,
         customBorder: shape,
-        hoverColor: colors.surfaceContainerHigh,
+        hoverColor: colors.surfaceContainerLow,
         child: Padding(
           padding: widget.padding ?? _rowPadding,
           child: SizedBox(
@@ -132,6 +137,22 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
                     color: foreground,
                   ),
                 );
+                // The hovered row in the group's column form points onward
+                // with an arrow at its far end — the design's web
+                // affordance, so apps (where a trackpad can still hover)
+                // never show it. The mobile check reads the theme's
+                // platform rather than the real one, like the menus'
+                // sheet resolution, so hosts and tests can steer it
+                // without a device.
+                final platform = Theme.of(context).platform;
+                final mobile =
+                    platform == TargetPlatform.iOS ||
+                    platform == TargetPlatform.android;
+                final inColumn =
+                    constraints.maxWidth.isFinite &&
+                    FlowSuggestionColumnScope.of(context);
+                final showArrow =
+                    kIsWeb && !mobile && inColumn && _hovered && enabled;
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -143,11 +164,24 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
                     // label only ellipsizes as a flex child — which in turn
                     // is only legal when something bounds the row. The
                     // scrolling layout doesn't, and there a long label just
-                    // runs on.
-                    if (constraints.maxWidth.isFinite)
+                    // runs on. In the column form the label owns the whole
+                    // stretch — Expanded, not a Spacer beside it, which
+                    // would split the row's space with the label and
+                    // truncate it at half width.
+                    if (inColumn)
+                      Expanded(child: label)
+                    else if (constraints.maxWidth.isFinite)
                       Flexible(child: label)
                     else
                       label,
+                    if (showArrow) ...[
+                      const SizedBox(width: _iconGap),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: _arrowSize,
+                        color: colors.onSurfaceMuted,
+                      ),
+                    ],
                   ],
                 );
               },
@@ -163,6 +197,22 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
     }
     return row;
   }
+}
+
+/// Marks the subtree as a [FlowSuggestionGroup] column, where a hovered
+/// [FlowSuggestion] shows its trailing arrow. Public so a host laying out
+/// its own full-width column can opt suggestion rows into the same
+/// affordance.
+class FlowSuggestionColumnScope extends InheritedWidget {
+  const FlowSuggestionColumnScope({super.key, required super.child});
+
+  /// Whether [context] sits inside a column of suggestions.
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<FlowSuggestionColumnScope>() !=
+      null;
+
+  @override
+  bool updateShouldNotify(FlowSuggestionColumnScope oldWidget) => false;
 }
 
 /// How a [FlowSuggestionGroup] arranges its rows.
@@ -251,11 +301,13 @@ class FlowSuggestionGroup extends StatelessWidget {
         );
       case FlowSuggestionLayout.column:
         return _padded(
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            // Full-width rows, per the design's column form.
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: _withGaps(gap, Axis.vertical),
+          FlowSuggestionColumnScope(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              // Full-width rows, per the design's column form.
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _withGaps(gap, Axis.vertical),
+            ),
           ),
         );
     }
