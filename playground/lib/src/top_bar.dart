@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+
 import 'flow_logo.dart';
 import 'shell_palette.dart';
 import 'stage.dart';
@@ -207,7 +209,7 @@ class _CodeToggleState extends State<_CodeToggle> {
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Icon(
-            Icons.code,
+            PhosphorIconsRegular.code,
             size: 17,
             color: widget.active ? shell.text : shell.segmentRest,
           ),

@@ -2,6 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+
+import 'demo_registry.dart';
 import 'playground_item.dart';
 import 'shell_palette.dart';
 
@@ -9,75 +12,151 @@ import 'shell_palette.dart';
 enum StageDevice { web, mobile }
 
 /// The canvas: the warm-grey work area with the demo stage centred on it —
-/// a fluid 860px rail in web mode, a phone mock in mobile mode. Demos are
-/// not wired up yet, so both frames stage a quiet placeholder.
+/// a fluid rail in web mode, a phone mock in mobile mode — and, for items
+/// with variants, the floating pill switcher over the top edge.
 class Stage extends StatelessWidget {
-  const Stage({super.key, required this.device, required this.item});
+  const Stage({
+    super.key,
+    required this.device,
+    required this.item,
+    this.variant,
+    this.onVariantChanged,
+  });
 
   final StageDevice device;
   final PlaygroundItem item;
+  final String? variant;
+  final ValueChanged<String>? onVariantChanged;
 
   @override
   Widget build(BuildContext context) {
     final shell = ShellPalette.of(context);
+    final demo = demoFor(item, variant: variant);
+    final variants = variantsFor(item);
+
+    final Widget content;
+    if (device == StageDevice.web) {
+      // A full-surface demo (the chat) owns the whole pane; object demos
+      // sit centred on the canvas.
+      content = demoFillsStage(item)
+          ? demo
+          : Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(28, 56, 28, 52),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 860),
+                  child: demo,
+                ),
+              ),
+            );
+    } else {
+      content = LayoutBuilder(
+        builder: (context, constraints) => Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(28, 56, 28, 52),
+            child: _PhoneStage(
+              // Keep the phone inside the pane on short windows.
+              maxHeight: constraints.maxHeight - 108,
+              // On the phone screen, object demos centre with room to
+              // breathe; full surfaces keep filling it.
+              child: demoFillsStage(item)
+                  ? demo
+                  : Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: demo,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return ColoredBox(
       color: shell.canvas,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final Widget stage = device == StageDevice.web
-              ? ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 860),
-                  child: _Placeholder(item: item),
-                )
-              : _PhoneStage(
-                  // Keep the phone inside the pane on short windows.
-                  maxHeight: constraints.maxHeight - 108,
-                  child: _Placeholder(item: item),
-                );
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(28, 56, 28, 52),
-              child: stage,
+      child: Stack(
+        children: [
+          Positioned.fill(child: content),
+          if (variants.isNotEmpty)
+            Positioned(
+              top: 14,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _VariantPills(
+                  variants: variants,
+                  selected: variant ?? variants.first.$1,
+                  onSelect: onVariantChanged ?? (_) {},
+                ),
+              ),
             ),
-          );
-        },
+        ],
       ),
     );
   }
 }
 
-/// Stands in for the component demo the stage will hold next.
-class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.item});
+/// The design's floating variant switcher, over the canvas top edge.
+class _VariantPills extends StatelessWidget {
+  const _VariantPills({
+    required this.variants,
+    required this.selected,
+    required this.onSelect,
+  });
 
-  final PlaygroundItem item;
+  final List<(String, String)> variants;
+  final String selected;
+  final ValueChanged<String> onSelect;
 
   @override
   Widget build(BuildContext context) {
     final shell = ShellPalette.of(context);
 
-    return Center(
-      child: Column(
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: shell.topBarBg,
+        border: Border.all(color: shell.pillBorder),
+        borderRadius: const BorderRadius.all(Radius.circular(9)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            item.label,
-            style: shellText(
-              size: 15,
-              weight: FontWeight.w600,
-              color: shell.navText,
+          for (final (i, (id, label)) in variants.indexed) ...[
+            if (i > 0) const SizedBox(width: 2),
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => onSelect(id),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: id == selected ? shell.chip : Colors.transparent,
+                    borderRadius: const BorderRadius.all(Radius.circular(7)),
+                  ),
+                  child: Text(
+                    label,
+                    style: shellText(
+                      size: 12.5,
+                      weight: FontWeight.w500,
+                      color: id == selected ? shell.text : shell.segmentRest,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Component demo coming soon',
-            style: shellText(
-              size: 12.5,
-              weight: FontWeight.w500,
-              color: shell.sectionLabel,
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -164,12 +243,38 @@ class _PhoneStage extends StatelessWidget {
               color: shell.stageBg,
               child: Stack(
                 children: [
-                  Column(
-                    children: [
-                      const _StatusBar(),
-                      const _MobileNav(),
-                      Expanded(child: child),
-                    ],
+                  // The screen reports a phone: its size override makes
+                  // width-responsive demos take their compact branch, the
+                  // platform override makes platform-adaptive menus present
+                  // as sheets, and the nested Navigator keeps those sheets
+                  // inside the frame instead of over the whole window.
+                  MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      size: Size(_screenWidth, screenHeight),
+                      padding: EdgeInsets.zero,
+                      viewPadding: EdgeInsets.zero,
+                      viewInsets: EdgeInsets.zero,
+                    ),
+                    child: Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(platform: TargetPlatform.iOS),
+                      child: Navigator(
+                        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                          settings: settings,
+                          builder: (_) => Material(
+                            color: shell.stageBg,
+                            child: Column(
+                              children: [
+                                const _StatusBar(),
+                                const _MobileNav(),
+                                Expanded(child: child),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                   // Dynamic island.
                   Positioned(
@@ -250,7 +355,7 @@ class _StatusBar extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: 6),
-              Icon(Icons.wifi, size: 15, color: shell.text),
+              Icon(PhosphorIconsRegular.wifiHigh, size: 15, color: shell.text),
               const SizedBox(width: 6),
               // Battery.
               Container(
@@ -290,7 +395,7 @@ class _MobileNav extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.arrow_back, size: 18, color: shell.navText),
+          Icon(PhosphorIconsRegular.arrowLeft, size: 18, color: shell.navText),
           const SizedBox(width: 12),
           Text(
             'AI Chat',
@@ -301,7 +406,7 @@ class _MobileNav extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Icon(Icons.settings_outlined, size: 17, color: shell.navText),
+          Icon(PhosphorIconsRegular.gearSix, size: 17, color: shell.navText),
         ],
       ),
     );

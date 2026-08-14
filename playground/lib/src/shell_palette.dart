@@ -44,6 +44,7 @@ class ShellPalette {
     required this.navActiveBg,
     required this.canvas,
     required this.stageBg,
+    required this.pillBorder,
     required this.codeBg,
     required this.codeHeaderBg,
     required this.codeBorder,
@@ -67,6 +68,7 @@ class ShellPalette {
   final Color navActiveBg;
   final Color canvas;
   final Color stageBg;
+  final Color pillBorder;
   final Color codeBg;
   final Color codeHeaderBg;
   final Color codeBorder;
@@ -90,6 +92,7 @@ class ShellPalette {
     navActiveBg: Color(0xFFF1F0EC),
     canvas: Color(0xFFF0EFEA),
     stageBg: Color(0xFFF5F4F1),
+    pillBorder: Color(0xFFE7E6E1),
     codeBg: Color(0xFFFFFFFF),
     codeHeaderBg: Color(0xFFFBFAF8),
     codeBorder: Color(0xFFEFEEE9),
@@ -114,6 +117,7 @@ class ShellPalette {
     navActiveBg: Color(0xFF2E2D2A),
     canvas: Color(0xFF131211),
     stageBg: Color(0xFF1A1918),
+    pillBorder: Color(0xFF3B3936),
     codeBg: Color(0xFF181715),
     codeHeaderBg: Color(0x05FFFFFF),
     codeBorder: Color(0x12FFFFFF),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'code_panel.dart';
+import 'demo_registry.dart';
 import 'playground_item.dart';
 import 'sidebar.dart';
 import 'stage.dart';
@@ -26,7 +27,16 @@ class PlaygroundShell extends StatefulWidget {
 class _PlaygroundShellState extends State<PlaygroundShell> {
   PlaygroundItem _selected = PlaygroundItem.fullChat;
   StageDevice _device = StageDevice.web;
-  bool _codeOpen = false;
+  bool _codeOpen = true;
+
+  /// The chosen variant per item; items absent fall back to their first.
+  final Map<PlaygroundItem, String> _variants = {};
+
+  String? get _variant {
+    final variants = variantsFor(_selected);
+    if (variants.isEmpty) return null;
+    return _variants[_selected] ?? variants.first.$1;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +61,13 @@ class _PlaygroundShellState extends State<PlaygroundShell> {
                   onSelect: (item) => setState(() => _selected = item),
                 ),
                 Expanded(
-                  child: Stage(device: _device, item: _selected),
+                  child: Stage(
+                    device: _device,
+                    item: _selected,
+                    variant: _variant,
+                    onVariantChanged: (id) =>
+                        setState(() => _variants[_selected] = id),
+                  ),
                 ),
                 CodePanel(
                   open: _codeOpen,
