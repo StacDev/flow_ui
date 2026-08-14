@@ -37,6 +37,9 @@ export default defineConfig({
 			components: {
 				PageTitle: './src/components/PageTitle.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
+				// Stock provider with the auto fallback flipped to light for
+				// browsers that don't support prefers-color-scheme.
+				ThemeProvider: './src/components/ThemeProvider.astro',
 			},
 			expressiveCode: {
 				styleOverrides: {

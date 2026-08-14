@@ -68,7 +68,11 @@ class TopBar extends StatelessWidget {
               (ThemeMode.light, 'Light'),
               (ThemeMode.dark, 'Dark'),
             ],
-            value: themeMode,
+            // While the mode is system the segment tracking the OS scheme
+            // reads as active; picking either segment pins it.
+            value: Theme.of(context).brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
             onChanged: onThemeModeChanged,
           ),
           const SizedBox(width: 18),

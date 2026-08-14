@@ -32,7 +32,9 @@ class PlaygroundApp extends StatefulWidget {
 }
 
 class _PlaygroundAppState extends State<PlaygroundApp> {
-  ThemeMode _mode = ThemeMode.light;
+  // Follows the OS scheme until the reader picks a side in the top bar;
+  // platforms that report no preference resolve to light.
+  ThemeMode _mode = ThemeMode.system;
 
   @override
   Widget build(BuildContext context) {
