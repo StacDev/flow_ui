@@ -9,7 +9,10 @@ import 'flow_typography.dart';
 /// ```dart
 /// MaterialApp(
 ///   theme: ThemeData(extensions: [FlowTheme.light()]),
-///   darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+///   darkTheme: ThemeData(
+///     brightness: Brightness.dark,
+///     extensions: [FlowTheme.dark()],
+///   ),
 /// )
 /// ```
 ///

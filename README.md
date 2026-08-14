@@ -65,7 +65,10 @@ preset matching the ambient brightness):
 ```dart
 MaterialApp(
   theme: ThemeData(extensions: [FlowTheme.light()]),
-  darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+  darkTheme: ThemeData(
+    brightness: Brightness.dark,
+    extensions: [FlowTheme.dark()],
+  ),
 )
 ```
 

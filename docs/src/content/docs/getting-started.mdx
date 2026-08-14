@@ -30,7 +30,10 @@ The design tokens — colors and typography — install as a `ThemeExtension`:
 ```dart title="main.dart"
 MaterialApp(
   theme: ThemeData(extensions: [FlowTheme.light()]),
-  darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+  darkTheme: ThemeData(
+    brightness: Brightness.dark,
+    extensions: [FlowTheme.dark()],
+  ),
 )
 ```
 

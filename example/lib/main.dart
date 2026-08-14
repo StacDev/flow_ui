@@ -14,7 +14,10 @@ class ExampleApp extends StatelessWidget {
       title: 'flow_ui example',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(extensions: [FlowTheme.light()]),
-      darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        extensions: [FlowTheme.dark()],
+      ),
       home: const ChatPage(),
     );
   }
