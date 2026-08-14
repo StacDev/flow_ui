@@ -90,9 +90,9 @@ class FlowColors {
   /// The page.
   final Color surface;
 
-  /// The brightest surface: the floating card — menus and sheets. The one
-  /// surface that lifts *off* the page in both themes, sitting outside the
-  /// container tint ladder below.
+  /// The brightest surface: the raised card — the composer, menus, sheets.
+  /// The one surface that lifts *off* the page in both themes, sitting
+  /// outside the container tint ladder below.
   final Color surfaceBright;
 
   /// Content ink at full strength: prose, the model name, an active label.
@@ -108,8 +108,7 @@ class FlowColors {
   final Color onSurfaceDisabled;
 
   /// The tint ladder's faintest rung — 2% ink over the page, as are the
-  /// rest of the containers at even steps up to 10%: the composer card and
-  /// attachment tiles.
+  /// rest of the containers at even steps up to 10%.
   final Color surfaceContainerLowest;
 
   /// Faintest fill — a suggestion row at rest.

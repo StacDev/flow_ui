@@ -234,7 +234,7 @@ class _FlowComposerState extends State<FlowComposer> {
       height: _buttonFrame,
       alignment: Alignment.center,
       decoration: ShapeDecoration(
-        color: colors.surfaceContainerLowest,
+        color: colors.surfaceBright,
         shape: CircleBorder(
           side: BorderSide(color: active ? colors.primary : colors.outline),
         ),
@@ -314,7 +314,7 @@ class _FlowComposerState extends State<FlowComposer> {
             // The composer is the design's raised card: it sits above the
             // page rather than tinting it, in both themes, under a
             // barely-there ambient lift.
-            color: colors.surfaceContainerLowest,
+            color: colors.surfaceBright,
             borderRadius: radius,
             boxShadow: [
               BoxShadow(
