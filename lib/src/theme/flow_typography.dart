@@ -33,8 +33,14 @@ class FlowTypography {
     required this.titleMedium,
     required this.titleSmall,
     required this.bodyLarge,
+    required this.bodyLargeEmphasised,
+    required this.bodyLargeDark,
     required this.bodyMedium,
+    required this.bodyMediumEmphasised,
+    required this.bodyMediumDark,
     required this.bodySmall,
+    required this.bodySmallEmphasised,
+    required this.bodySmallDark,
     required this.labelLarge,
     required this.labelMedium,
     required this.labelSmall,
@@ -51,9 +57,17 @@ class FlowTypography {
   final TextStyle titleSmall;
 
   /// Prose and composer input — the design's 16/1.5 body.
+  /// Each size carries three inks: regular (w400), emphasised (w500) and
+  /// dark (w600).
   final TextStyle bodyLarge;
+  final TextStyle bodyLargeEmphasised;
+  final TextStyle bodyLargeDark;
   final TextStyle bodyMedium;
+  final TextStyle bodyMediumEmphasised;
+  final TextStyle bodyMediumDark;
   final TextStyle bodySmall;
+  final TextStyle bodySmallEmphasised;
+  final TextStyle bodySmallDark;
 
   /// Controls — the design's 14/1.3 label.
   final TextStyle labelLarge;
@@ -134,6 +148,20 @@ class FlowTypography {
       fontWeight: FontWeight.w400,
       height: 1.5,
     ),
+    bodyLargeEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      height: 1.5,
+    ),
+    bodyLargeDark: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 1.5,
+    ),
     bodyMedium: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
@@ -141,11 +169,39 @@ class FlowTypography {
       fontWeight: FontWeight.w400,
       height: 1.5,
     ),
+    bodyMediumEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      height: 1.5,
+    ),
+    bodyMediumDark: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      height: 1.5,
+    ),
     bodySmall: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
       fontSize: 12,
       fontWeight: FontWeight.w400,
+      height: 1.5,
+    ),
+    bodySmallEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      height: 1.5,
+    ),
+    bodySmallDark: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
       height: 1.5,
     ),
     labelLarge: TextStyle(
@@ -198,8 +254,14 @@ class FlowTypography {
       titleMedium: reface(titleMedium),
       titleSmall: reface(titleSmall),
       bodyLarge: reface(bodyLarge),
+      bodyLargeEmphasised: reface(bodyLargeEmphasised),
+      bodyLargeDark: reface(bodyLargeDark),
       bodyMedium: reface(bodyMedium),
+      bodyMediumEmphasised: reface(bodyMediumEmphasised),
+      bodyMediumDark: reface(bodyMediumDark),
       bodySmall: reface(bodySmall),
+      bodySmallEmphasised: reface(bodySmallEmphasised),
+      bodySmallDark: reface(bodySmallDark),
       labelLarge: reface(labelLarge),
       labelMedium: reface(labelMedium),
       labelSmall: reface(labelSmall),
@@ -217,8 +279,14 @@ class FlowTypography {
     TextStyle? titleMedium,
     TextStyle? titleSmall,
     TextStyle? bodyLarge,
+    TextStyle? bodyLargeEmphasised,
+    TextStyle? bodyLargeDark,
     TextStyle? bodyMedium,
+    TextStyle? bodyMediumEmphasised,
+    TextStyle? bodyMediumDark,
     TextStyle? bodySmall,
+    TextStyle? bodySmallEmphasised,
+    TextStyle? bodySmallDark,
     TextStyle? labelLarge,
     TextStyle? labelMedium,
     TextStyle? labelSmall,
@@ -234,8 +302,14 @@ class FlowTypography {
       titleMedium: titleMedium ?? this.titleMedium,
       titleSmall: titleSmall ?? this.titleSmall,
       bodyLarge: bodyLarge ?? this.bodyLarge,
+      bodyLargeEmphasised: bodyLargeEmphasised ?? this.bodyLargeEmphasised,
+      bodyLargeDark: bodyLargeDark ?? this.bodyLargeDark,
       bodyMedium: bodyMedium ?? this.bodyMedium,
+      bodyMediumEmphasised: bodyMediumEmphasised ?? this.bodyMediumEmphasised,
+      bodyMediumDark: bodyMediumDark ?? this.bodyMediumDark,
       bodySmall: bodySmall ?? this.bodySmall,
+      bodySmallEmphasised: bodySmallEmphasised ?? this.bodySmallEmphasised,
+      bodySmallDark: bodySmallDark ?? this.bodySmallDark,
       labelLarge: labelLarge ?? this.labelLarge,
       labelMedium: labelMedium ?? this.labelMedium,
       labelSmall: labelSmall ?? this.labelSmall,
@@ -255,8 +329,26 @@ class FlowTypography {
       titleMedium: TextStyle.lerp(titleMedium, other.titleMedium, t)!,
       titleSmall: TextStyle.lerp(titleSmall, other.titleSmall, t)!,
       bodyLarge: TextStyle.lerp(bodyLarge, other.bodyLarge, t)!,
+      bodyLargeEmphasised: TextStyle.lerp(
+        bodyLargeEmphasised,
+        other.bodyLargeEmphasised,
+        t,
+      )!,
+      bodyLargeDark: TextStyle.lerp(bodyLargeDark, other.bodyLargeDark, t)!,
       bodyMedium: TextStyle.lerp(bodyMedium, other.bodyMedium, t)!,
+      bodyMediumEmphasised: TextStyle.lerp(
+        bodyMediumEmphasised,
+        other.bodyMediumEmphasised,
+        t,
+      )!,
+      bodyMediumDark: TextStyle.lerp(bodyMediumDark, other.bodyMediumDark, t)!,
       bodySmall: TextStyle.lerp(bodySmall, other.bodySmall, t)!,
+      bodySmallEmphasised: TextStyle.lerp(
+        bodySmallEmphasised,
+        other.bodySmallEmphasised,
+        t,
+      )!,
+      bodySmallDark: TextStyle.lerp(bodySmallDark, other.bodySmallDark, t)!,
       labelLarge: TextStyle.lerp(labelLarge, other.labelLarge, t)!,
       labelMedium: TextStyle.lerp(labelMedium, other.labelMedium, t)!,
       labelSmall: TextStyle.lerp(labelSmall, other.labelSmall, t)!,
