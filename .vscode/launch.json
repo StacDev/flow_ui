@@ -5,10 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "example",
+            "name": "example (chrome)",
             "cwd": "example",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "deviceId": "chrome"
         },
+        {
+            "name": "example (ios)",
+            "cwd": "example",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "iphone"
+        },
+        {
+            "name": "example (android)",
+            "cwd": "example",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "android"
+        }
     ]
 }
