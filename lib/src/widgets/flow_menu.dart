@@ -163,9 +163,11 @@ class _FlowMenuState extends State<FlowMenu> {
                     entry.icon,
                     size: 18,
                     color: entry.enabled
-                        ? (style?.iconColor ?? context.flowColors.onSurface)
+                        ? (style?.iconColor ??
+                              context.flowColors.onSurfaceVariant)
                         : flowDisabledColor(
-                            style?.iconColor ?? context.flowColors.onSurface,
+                            style?.iconColor ??
+                                context.flowColors.onSurfaceVariant,
                           ),
                   ),
                   const SizedBox(width: flowMenuIconGap),
@@ -195,7 +197,7 @@ class _FlowMenuState extends State<FlowMenu> {
         children: (context) => [
           for (final entry in widget.entries)
             switch (entry) {
-              FlowMenuDivider() => FlowMenuRule(style: style),
+              FlowMenuDivider() => FlowMenuRule(style: style, large: true),
               FlowMenuOption(children: []) => _optionRow(entry, large: true),
               FlowMenuOption() => FlowMenuRow(
                 label: entry.label,

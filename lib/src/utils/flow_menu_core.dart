@@ -30,20 +30,28 @@ const double _shadowBlur = 12;
 /// step closer to the section they close.
 const BorderRadius _menuRadius = BorderRadius.all(Radius.circular(12));
 const EdgeInsetsGeometry _cardPadding = EdgeInsets.only(top: 6, bottom: 8);
+
+/// The sheet's rows: inset 20 from the sheet's edge, their 9s pairing into
+/// the design's 18 between neighbouring rows' text. Sheet rules share the
+/// same rhythm.
 const EdgeInsetsGeometry _rowPadding = EdgeInsets.symmetric(
-  horizontal: 16,
-  vertical: 8,
+  horizontal: 20,
+  vertical: 9,
 );
 const EdgeInsetsGeometry _dividerMargin = EdgeInsets.fromLTRB(16, 6, 16, 4);
+const EdgeInsetsGeometry _sheetDividerMargin = EdgeInsets.symmetric(
+  horizontal: 20,
+  vertical: 9,
+);
 
-/// In the anchored menu the hover wash is a chip, not a bar: inset 4 from
-/// the card's edge on 4px corners, its content padded 12 so the text keeps
+/// In the anchored menu the hover wash is a chip, not a bar: inset 8 from
+/// the card's edge on 8px corners, its content padded 8 so the text keeps
 /// the design's 16 from the edge. The sheet keeps edge-to-edge rows on
 /// [_rowPadding].
-const double _rowOuterInset = 4;
-const Radius _rowRadius = Radius.circular(4);
+const double _rowOuterInset = 8;
+const Radius _rowRadius = Radius.circular(8);
 const EdgeInsetsGeometry _menuRowPadding = EdgeInsets.symmetric(
-  horizontal: 12,
+  horizontal: 8,
   vertical: 8,
 );
 
@@ -162,17 +170,19 @@ class FlowMenuCard extends StatelessWidget {
 }
 
 /// The hairline rule between menu sections, inset like the rows beside it —
-/// what a `FlowMenuDivider` entry renders.
+/// what a `FlowMenuDivider` entry renders. [large] switches to the sheet's
+/// insets and rhythm.
 class FlowMenuRule extends StatelessWidget {
-  const FlowMenuRule({super.key, this.style});
+  const FlowMenuRule({super.key, this.style, this.large = false});
 
   final FlowMenuStyle? style;
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 1,
-      margin: _dividerMargin,
+      margin: large ? _sheetDividerMargin : _dividerMargin,
       color: flowMenuSeparatorColor(context, style),
     );
   }
@@ -192,15 +202,25 @@ ButtonStyle _submenuRowStyle(
   final hover = flowMenuHoverColor(context, style);
   final foreground = context.flowColors.onSurface;
   return ButtonStyle(
-    backgroundColor: WidgetStatePropertyAll(open ? hover : Colors.transparent),
+    // The off state is the wash at zero alpha, not Colors.transparent —
+    // Material lerps color changes, and fading toward transparent *black*
+    // drags the row through a smoky flash on the way out.
+    backgroundColor: WidgetStatePropertyAll(
+      open ? hover : hover.withValues(alpha: 0),
+    ),
     foregroundColor: WidgetStateProperty.resolveWith(
       (states) => states.contains(WidgetState.disabled)
           ? flowDisabledColor(foreground)
           : foreground,
     ),
+    // The idle branch must not be Colors.transparent: menu rows create a
+    // focus highlight the moment hover focuses them, and the CanvasKit
+    // renderer paints a transparent-*black* ink highlight as solid black.
+    // A hair of the wash's own hue keeps the highlight invisible instead.
     overlayColor: WidgetStateProperty.resolveWith(
-      (states) =>
-          states.contains(WidgetState.hovered) ? hover : Colors.transparent,
+      (states) => states.contains(WidgetState.hovered)
+          ? hover
+          : hover.withValues(alpha: 1 / 255),
     ),
     padding: const WidgetStatePropertyAll(_menuRowPadding),
     minimumSize: WidgetStatePropertyAll(Size(style?.minWidth ?? 220, 0)),
@@ -352,7 +372,7 @@ class FlowMenuRow extends StatelessWidget {
 
     final labelStyle = flowMenuLabelStyle(context, large: large, style: style);
     final descriptionStyle = flowMenuDescriptionStyle(context, style: style);
-    final iconColor = style?.iconColor ?? colors.onSurface;
+    final iconColor = style?.iconColor ?? colors.onSurfaceVariant;
     final labelColor = labelStyle.color ?? colors.onSurface;
 
     final iconSize = large ? 20.0 : 18.0;

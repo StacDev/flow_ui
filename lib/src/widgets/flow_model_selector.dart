@@ -281,7 +281,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
         children: (context) => [
           for (final model in widget.models) _modelRow(model, large: true),
           if (widget.efforts.isNotEmpty) ...[
-            FlowMenuRule(style: style),
+            FlowMenuRule(style: style, large: true),
             FlowMenuRow(
               label: widget.effortLabel,
               trailingLabel: _selectedEffort?.label,
@@ -301,7 +301,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
             ),
           ],
           if (widget.moreModels.isNotEmpty) ...[
-            FlowMenuRule(style: style),
+            FlowMenuRule(style: style, large: true),
             FlowMenuRow(
               label: widget.moreModelsLabel,
               showChevron: true,
@@ -356,8 +356,13 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
         final active = controller.isOpen || _sheetOpen;
         Widget trigger = Material(
           // Hovered and open wear the same fill: the design's 6% ink,
-          // which is the ladder's `surfaceContainer` rung.
-          color: active ? colors.surfaceContainer : Colors.transparent,
+          // which is the ladder's `surfaceContainer` rung. Off is that
+          // wash at zero alpha, not Colors.transparent — Material lerps
+          // color changes, and fading toward transparent *black* drags
+          // the pill through a smoky flash on the way out.
+          color: active
+              ? colors.surfaceContainer
+              : colors.surfaceContainer.withValues(alpha: 0),
           borderRadius: _triggerRadius,
           child: InkWell(
             onTap: !enabled

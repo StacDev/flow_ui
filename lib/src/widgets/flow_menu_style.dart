@@ -70,7 +70,7 @@ class FlowMenuStyle {
   /// `onSurfaceMuted`).
   final TextStyle? descriptionStyle;
 
-  /// Leading row icons. Defaults to `onSurface`.
+  /// Leading row icons. Defaults to `onSurfaceVariant`.
   final Color? iconColor;
 
   /// The selected check. Defaults to `primary`.
