@@ -143,18 +143,15 @@ class FlowModelSelector extends StatefulWidget {
 }
 
 class _FlowModelSelectorState extends State<FlowModelSelector> {
-  /// The trigger's fill while its menu or sheet is up, as an alpha over the
-  /// ink — the design's active state.
-  static const double _activeOpacity = 0.06;
-
-  /// The design's trigger: an 8px-radius pill padded 8/4, its pieces 4
+  /// The design's trigger: an 8px-radius pill padded 8/7 — 32 tall around
+  /// its 18px line, matching the action row's buttons — its pieces 4
   /// apart.
   static const BorderRadius _triggerRadius = BorderRadius.all(
     Radius.circular(8),
   );
   static const EdgeInsetsGeometry _triggerPadding = EdgeInsets.symmetric(
     horizontal: 8,
-    vertical: 4,
+    vertical: 7,
   );
   static const double _gap = 4;
 
@@ -218,12 +215,8 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
       for (final model in widget.models) _modelRow(model, large: false),
       if (widget.efforts.isNotEmpty) ...[
         FlowMenuRule(style: style),
-        SubmenuButton(
-          menuStyle: flowMenuStyle(context, style: style),
-          style: flowSubmenuRowStyle(context, style: style),
-          // The chevron goes in the submenu-indicator slot; putting it in
-          // trailingIcon would double up with the button's built-in arrow.
-          submenuIcon: flowSubmenuChevron(context),
+        FlowSubmenuRow(
+          style: style,
           trailingIcon: effort == null
               ? null
               : Text(
@@ -235,8 +228,13 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                   ).copyWith(color: flowMenuAccentColor(context, style)),
                 ),
           menuChildren: [
-            for (final option in widget.efforts)
-              _effortRow(option, large: false),
+            FlowMenuCard(
+              style: style,
+              children: [
+                for (final option in widget.efforts)
+                  _effortRow(option, large: false),
+              ],
+            ),
           ],
           child: Text(
             widget.effortLabel,
@@ -246,13 +244,16 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
       ],
       if (widget.moreModels.isNotEmpty) ...[
         FlowMenuRule(style: style),
-        SubmenuButton(
-          menuStyle: flowMenuStyle(context, style: style),
-          style: flowSubmenuRowStyle(context, style: style),
-          submenuIcon: flowSubmenuChevron(context),
+        FlowSubmenuRow(
+          style: style,
           menuChildren: [
-            for (final model in widget.moreModels)
-              _modelRow(model, large: false),
+            FlowMenuCard(
+              style: style,
+              children: [
+                for (final model in widget.moreModels)
+                  _modelRow(model, large: false),
+              ],
+            ),
           ],
           child: Text(
             widget.moreModelsLabel,
@@ -280,7 +281,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
         children: (context) => [
           for (final model in widget.models) _modelRow(model, large: true),
           if (widget.efforts.isNotEmpty) ...[
-            FlowMenuRule(style: style),
+            FlowMenuRule(style: style, large: true),
             FlowMenuRow(
               label: widget.effortLabel,
               trailingLabel: _selectedEffort?.label,
@@ -300,7 +301,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
             ),
           ],
           if (widget.moreModels.isNotEmpty) ...[
-            FlowMenuRule(style: style),
+            FlowMenuRule(style: style, large: true),
             FlowMenuRow(
               label: widget.moreModelsLabel,
               showChevron: true,
@@ -343,15 +344,25 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
     return MenuAnchor(
       controller: _menuController,
       style: flowMenuStyle(context, style: widget.menuStyle),
-      menuChildren: asSheet ? const [] : _menuChildren(context),
+      menuChildren: asSheet
+          ? const []
+          : [
+              FlowMenuCard(
+                style: widget.menuStyle,
+                children: _menuChildren(context),
+              ),
+            ],
       builder: (context, controller, _) {
         final active = controller.isOpen || _sheetOpen;
         Widget trigger = Material(
-          // The active state is a wash of ink over whatever the trigger
-          // sits on, matching the open menu rather than the hover fill.
+          // Hovered and open wear the same fill: the design's 6% ink,
+          // which is the ladder's `surfaceContainer` rung. Off is that
+          // wash at zero alpha, not Colors.transparent — Material lerps
+          // color changes, and fading toward transparent *black* drags
+          // the pill through a smoky flash on the way out.
           color: active
-              ? colors.onSurface.withValues(alpha: _activeOpacity)
-              : Colors.transparent,
+              ? colors.surfaceContainer
+              : colors.surfaceContainer.withValues(alpha: 0),
           borderRadius: _triggerRadius,
           child: InkWell(
             onTap: !enabled
@@ -362,7 +373,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                       ? controller.close()
                       : controller.open(),
             borderRadius: _triggerRadius,
-            hoverColor: colors.surfaceContainerHigh,
+            hoverColor: colors.surfaceContainer,
             child: Padding(
               padding: _triggerPadding,
               child: Row(

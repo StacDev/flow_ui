@@ -27,7 +27,7 @@ class FlowThinkingIndicator extends StatefulWidget {
     this.label,
     this.active = true,
     this.color,
-    this.size = 18,
+    this.size = 14,
     this.duration = const Duration(milliseconds: 2400),
     this.semanticLabel,
   }) : assert(size > 0, 'size must be positive');
@@ -40,7 +40,7 @@ class FlowThinkingIndicator extends StatefulWidget {
   /// settled state.
   final bool active;
 
-  /// Glyph ink. Defaults to `onSurface`; the label always draws in the
+  /// Glyph ink. Defaults to `onSurfaceMuted`; the label always draws in the
   /// muted ink, a step below it, as in the design.
   final Color? color;
 
@@ -159,7 +159,7 @@ class _FlowThinkingIndicatorState extends State<FlowThinkingIndicator>
             child: CustomPaint(
               size: Size.square(widget.size),
               painter: _AsteriskPainter(
-                color: widget.color ?? colors.onSurface,
+                color: widget.color ?? colors.onSurfaceMuted,
                 // Proportional so the mark keeps its weight at any size.
                 strokeWidth: widget.size / 9,
               ),
@@ -213,6 +213,17 @@ class _AsteriskPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
+    // A translucent ink would composite twice where the strokes cross,
+    // darkening the hub against text in the same ink. Flatten the mark
+    // into one layer and apply the ink's alpha to the whole glyph once.
+    final translucent = color.a < 1;
+    if (translucent) {
+      canvas.saveLayer(
+        (Offset.zero & size).inflate(strokeWidth),
+        Paint()..color = const Color(0xFFFFFFFF).withValues(alpha: color.a),
+      );
+      paint.color = color.withValues(alpha: 1);
+    }
     final center = size.center(Offset.zero);
     final radius = (size.shortestSide - strokeWidth) / 2;
     for (var i = 0; i < 3; i++) {
@@ -222,6 +233,7 @@ class _AsteriskPainter extends CustomPainter {
       final delta = Offset(math.cos(angle), math.sin(angle)) * radius;
       canvas.drawLine(center - delta, center + delta, paint);
     }
+    if (translucent) canvas.restore();
   }
 
   @override

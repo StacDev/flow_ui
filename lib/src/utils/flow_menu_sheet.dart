@@ -14,11 +14,12 @@ const Duration _pageTransition = Duration(milliseconds: 180);
 const double _navHeight = 56;
 const double _navIconSize = 20;
 
-/// The design's sheet metrics: 24px top corners, the nav bar inset 12,
-/// 24 under the last row.
+/// The design's sheet metrics: 24px top corners, the nav bar inset 12 and
+/// nudged 4 off the corner, 48 under the last row.
 const Radius _sheetCornerRadius = Radius.circular(24);
 const double _navInset = 12;
-const double _bottomPadding = 24;
+const double _navTopInset = 4;
+const double _bottomPadding = 48;
 
 /// The rendered width of the leading nav button — derived, not a spec
 /// value, so resizing the icon or the disc keeps the title centered.
@@ -123,13 +124,14 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
         padding: const EdgeInsetsDirectional.only(
           start: _navInset,
           end: _navInset,
+          top: _navTopInset,
         ),
         child: Row(
           children: [
             FlowCircleButton(
               icon: atRoot ? Icons.close : Icons.arrow_back,
               background: Colors.transparent,
-              foreground: colors.onSurface,
+              foreground: colors.onSurfaceVariant,
               iconSize: _navIconSize,
               tooltip: atRoot
                   ? localizations.closeButtonTooltip
