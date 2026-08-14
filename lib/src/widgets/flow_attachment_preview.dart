@@ -62,6 +62,10 @@ Future<void> showFlowAttachmentPreview({
   // an id lookup that would land on the first duplicate.
   final resolved =
       initialIndex ?? snapshot.indexWhere((a) => a.id == initialId);
+  assert(
+    initialIndex != null || initialId == null || resolved >= 0,
+    'initialId "$initialId" does not match any attachment in the list',
+  );
 
   return Navigator.of(context).push<void>(
     PageRouteBuilder<void>(

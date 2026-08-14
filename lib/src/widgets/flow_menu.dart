@@ -73,6 +73,10 @@ class FlowMenuOption extends FlowMenuEntry {
 /// [entries] mixes [FlowMenuOption] rows with [FlowMenuDivider]s; an option
 /// with children becomes a submenu. [presentation] forces the anchored menu
 /// or the sheet, and [menuStyle] overrides the token-derived look.
+///
+/// The sheet rides the Material modal route, so a host not built on
+/// [MaterialApp] needs `DefaultMaterialLocalizations.delegate` among its
+/// `localizationsDelegates` for the phone presentation.
 class FlowMenu extends StatefulWidget {
   const FlowMenu({
     super.key,

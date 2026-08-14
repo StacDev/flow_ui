@@ -41,6 +41,11 @@ class FlowMenuSheetPage {
 }
 
 /// Opens [root] as a modal bottom sheet styled like the anchored menus.
+///
+/// Rides the Material modal-sheet route, which itself requires
+/// [MaterialLocalizations]: a host not built on [MaterialApp] must list
+/// `DefaultMaterialLocalizations.delegate` in its `localizationsDelegates`
+/// for the phone presentation. Nothing else in the package needs it.
 Future<void> showFlowMenuSheet({
   required BuildContext context,
   required FlowMenuSheetPage root,
@@ -116,7 +121,12 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : _pageTransition;
-    final localizations = MaterialLocalizations.of(context);
+    // Not MaterialLocalizations.of: like the preview's close button, a
+    // missing tooltip must not be the one thing that throws.
+    final localizations = Localizations.of<MaterialLocalizations>(
+      context,
+      MaterialLocalizations,
+    );
 
     final navBar = SizedBox(
       height: _navHeight,
@@ -134,8 +144,8 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
               foreground: colors.onSurfaceVariant,
               iconSize: _navIconSize,
               tooltip: atRoot
-                  ? localizations.closeButtonTooltip
-                  : localizations.backButtonTooltip,
+                  ? localizations?.closeButtonTooltip
+                  : localizations?.backButtonTooltip,
               onTap: atRoot ? close : _pop,
             ),
             Expanded(

@@ -71,7 +71,10 @@ FlowModelSelector(
 On desktop the selector anchors a menu at the trigger; on iOS and Android
 it presents a bottom sheet titled with `sheetTitle`. That's the `auto`
 default — `FlowMenuPresentation.menu` or `.sheet` force either. Effort and
-*More models* become pushed pages inside the sheet.
+*More models* become pushed pages inside the sheet. The sheet rides the
+Material modal route, so a host not built on `MaterialApp` needs
+`DefaultMaterialLocalizations.delegate` among its
+`localizationsDelegates`.
 
 ## Key API
 

@@ -76,7 +76,9 @@ flip your flag and rebuild with the new `selected` value.
 The `auto` default anchors a menu on desktop and presents a sheet titled
 with `sheetTitle` on iOS and Android; `FlowMenuPresentation.menu` /
 `.sheet` force either. Submenus become pushed pages inside the sheet, with
-a back affordance.
+a back affordance. The sheet rides the Material modal route, so a host not
+built on `MaterialApp` needs `DefaultMaterialLocalizations.delegate` among
+its `localizationsDelegates`.
 
 ## Restyling
 

@@ -63,6 +63,10 @@ class FlowEffortOption {
 /// [presentation] decides between the anchored menu and the sheet —
 /// automatic by platform unless forced — and [menuStyle] overrides the
 /// token-derived look.
+///
+/// The sheet rides the Material modal route, so a host not built on
+/// [MaterialApp] needs `DefaultMaterialLocalizations.delegate` among its
+/// `localizationsDelegates` for the phone presentation.
 class FlowModelSelector extends StatefulWidget {
   const FlowModelSelector({
     super.key,
