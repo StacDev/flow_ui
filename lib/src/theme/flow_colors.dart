@@ -18,6 +18,9 @@ import 'package:flutter/material.dart';
 ///   which only works if they composite.
 /// * **The surface ramp is opaque.** Backgrounds get drawn on, scrimmed and
 ///   layered over host images, so every `surface*` token is a flat color.
+///   The container ladder is the design's even ink tints — 2% / 4% / 6% /
+///   8% / 10% from `Lowest` to `Highest` — flattened over each theme's
+///   [surface] so the tokens stay opaque.
 @immutable
 class FlowColors {
   const FlowColors({
@@ -38,9 +41,11 @@ class FlowColors {
     required this.errorContainer,
     required this.onErrorContainer,
     required this.surface,
+    required this.surfaceBright,
     required this.onSurface,
     required this.onSurfaceVariant,
     required this.onSurfaceMuted,
+    required this.onSurfaceDisabled,
     required this.surfaceContainerLowest,
     required this.surfaceContainerLow,
     required this.surfaceContainer,
@@ -85,6 +90,11 @@ class FlowColors {
   /// The page.
   final Color surface;
 
+  /// The brightest surface: the floating card — menus and sheets. The one
+  /// surface that lifts *off* the page in both themes, sitting outside the
+  /// container tint ladder below.
+  final Color surfaceBright;
+
   /// Content ink at full strength: prose, the model name, an active label.
   final Color onSurface;
 
@@ -94,10 +104,12 @@ class FlowColors {
   /// Ink at 50% — muted chrome: placeholders, carets, message-action icons.
   final Color onSurfaceMuted;
 
-  /// The raised card: composer, menus, sheets, attachment tiles.
-  ///
-  /// The one surface that lifts off the page in *both* themes, which is why
-  /// it sits outside the tint ladder below rather than at the bottom of it.
+  /// Ink at 30% — disabled content, like the send button that can't send.
+  final Color onSurfaceDisabled;
+
+  /// The tint ladder's faintest rung — 2% ink over the page, as are the
+  /// rest of the containers at even steps up to 10%: the composer card and
+  /// attachment tiles.
   final Color surfaceContainerLowest;
 
   /// Faintest fill — a suggestion row at rest.
@@ -145,14 +157,16 @@ class FlowColors {
     errorContainer: Color(0xFFFEE2E2),
     onErrorContainer: Color(0xFF7F1D1D),
     surface: Color(0xFFF9F9F7),
+    surfaceBright: Color(0xFFFFFFFF),
     onSurface: Color(0xFF1A1A19),
     onSurfaceVariant: Color(0xBF1A1A19),
     onSurfaceMuted: Color(0x801A1A19),
-    surfaceContainerLowest: Color(0xFFFFFFFF),
-    surfaceContainerLow: Color(0xFFF5F5F3),
-    surfaceContainer: Color(0xFFF0F0EE),
+    onSurfaceDisabled: Color(0x4D1A1A19),
+    surfaceContainerLowest: Color(0xFFF5F5F3),
+    surfaceContainerLow: Color(0xFFF0F0EE),
+    surfaceContainer: Color(0xFFECECEA),
     surfaceContainerHigh: Color(0xFFE7E7E5),
-    surfaceContainerHighest: Color(0xFFDEDEDC),
+    surfaceContainerHighest: Color(0xFFE3E3E1),
     outline: Color(0x241A1A19),
     outlineVariant: Color(0x0F1A1A19),
     inverseSurface: Color(0xFF1E1E1E),
@@ -179,14 +193,16 @@ class FlowColors {
     errorContainer: Color(0xFF7F1D1D),
     onErrorContainer: Color(0xFFFECACA),
     surface: Color(0xFF171717),
+    surfaceBright: Color(0xFF1E1E1E),
     onSurface: Color(0xFFFFFFFF),
     onSurfaceVariant: Color(0xBFFFFFFF),
     onSurfaceMuted: Color(0x80FFFFFF),
-    surfaceContainerLowest: Color(0xFF1E1E1E),
-    surfaceContainerLow: Color(0xFF1C1C1C),
-    surfaceContainer: Color(0xFF202020),
+    onSurfaceDisabled: Color(0x4DFFFFFF),
+    surfaceContainerLowest: Color(0xFF1C1C1C),
+    surfaceContainerLow: Color(0xFF202020),
+    surfaceContainer: Color(0xFF252525),
     surfaceContainerHigh: Color(0xFF2A2A2A),
-    surfaceContainerHighest: Color(0xFF333333),
+    surfaceContainerHighest: Color(0xFF2E2E2E),
     outline: Color(0x33FFFFFF),
     outlineVariant: Color(0x0FFFFFFF),
     inverseSurface: Color(0xFFF9F9F7),
@@ -212,9 +228,11 @@ class FlowColors {
     Color? errorContainer,
     Color? onErrorContainer,
     Color? surface,
+    Color? surfaceBright,
     Color? onSurface,
     Color? onSurfaceVariant,
     Color? onSurfaceMuted,
+    Color? onSurfaceDisabled,
     Color? surfaceContainerLowest,
     Color? surfaceContainerLow,
     Color? surfaceContainer,
@@ -244,9 +262,11 @@ class FlowColors {
       errorContainer: errorContainer ?? this.errorContainer,
       onErrorContainer: onErrorContainer ?? this.onErrorContainer,
       surface: surface ?? this.surface,
+      surfaceBright: surfaceBright ?? this.surfaceBright,
       onSurface: onSurface ?? this.onSurface,
       onSurfaceVariant: onSurfaceVariant ?? this.onSurfaceVariant,
       onSurfaceMuted: onSurfaceMuted ?? this.onSurfaceMuted,
+      onSurfaceDisabled: onSurfaceDisabled ?? this.onSurfaceDisabled,
       surfaceContainerLowest:
           surfaceContainerLowest ?? this.surfaceContainerLowest,
       surfaceContainerLow: surfaceContainerLow ?? this.surfaceContainerLow,
@@ -310,6 +330,7 @@ class FlowColors {
         t,
       )!,
       surface: Color.lerp(surface, other.surface, t)!,
+      surfaceBright: Color.lerp(surfaceBright, other.surfaceBright, t)!,
       onSurface: Color.lerp(onSurface, other.onSurface, t)!,
       onSurfaceVariant: Color.lerp(
         onSurfaceVariant,
@@ -317,6 +338,11 @@ class FlowColors {
         t,
       )!,
       onSurfaceMuted: Color.lerp(onSurfaceMuted, other.onSurfaceMuted, t)!,
+      onSurfaceDisabled: Color.lerp(
+        onSurfaceDisabled,
+        other.onSurfaceDisabled,
+        t,
+      )!,
       surfaceContainerLowest: Color.lerp(
         surfaceContainerLowest,
         other.surfaceContainerLowest,
