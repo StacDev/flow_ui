@@ -55,6 +55,8 @@ FlowShimmerText(
 ## Key API
 
 - `text` — the label; the host owns the copy.
-- `enabled` — `false` holds the line still in the base ink.
-- `highlightColor`, `style`, `duration` — retheme the sweep without
-  touching the global tokens.
+- `enabled` — `false` holds the line still in the base ink, as does the
+  platform's reduced-motion setting.
+- `baseColor` (`onSurfaceMuted`), `highlightColor` (`onSurface`),
+  `style`, `duration`, `textAlign` — retheme the sweep without touching
+  the global tokens.

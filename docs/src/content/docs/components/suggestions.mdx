@@ -11,7 +11,10 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 plain rows in the secondary ink, and `outlined` rows on a faint fill in
 full ink. `FlowSuggestionGroup` arranges them in the layout the surface
 needs. Taps report back through each row's `onTap`; sending the prompt is
-the host's move. A row without a callback renders disabled.
+the host's move. A row without a callback renders disabled. On devices
+that hover, a row washes in the faintest container ink and lifts its
+content to full strength — and in a column on the web, a trailing arrow
+appears as the send affordance.
 
 ## Column
 
@@ -114,8 +117,16 @@ Column(
 ## Key API
 
 - `FlowSuggestion` — `label`, optional `icon`, `outlined`, `onTap`,
-  `tooltip`; no `onTap` → disabled.
-- `FlowSuggestionGroup` — `suggestions` + `layout`:
-  `FlowSuggestionLayout.scroll` (default), `.column`, `.wrap`.
+  `tooltip`; no `onTap` → disabled, as does `enabled: false`. `padding`
+  and `borderRadius` override the design's 36px row (10 inside, an 8px
+  corner).
+- `FlowSuggestionGroup` — `suggestions` + `layout`
+  (`FlowSuggestionLayout.scroll` default, `.column`, `.wrap`), plus
+  `spacing` (the design's 6 in a column, 10 otherwise) and `padding` —
+  which scrolls with the strip, so the first and last rows clear the
+  edge.
+- `FlowSuggestionColumnScope` — what the column layout wraps its rows in
+  so a hovered row shows the trailing arrow; public so a host laying out
+  its own full-width column can opt in.
 - `FlowChatScreen` places a column group in its zero state via the
   `suggestions:` slot.

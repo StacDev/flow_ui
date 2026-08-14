@@ -1,6 +1,6 @@
 ---
 title: Theming
-description: "The flow_ui token system: three levels of ink, opaque surfaces, and a color scheme shaped like Material 3."
+description: "The flow_ui token system: three levels of ink, translucent washes on opaque grounds, and a color scheme shaped like Material 3."
 sidebar:
   order: 2
 ---
@@ -33,24 +33,32 @@ three strengths, and M3 only names two:
 | `onSurfaceVariant` | 75% | Secondary content: row labels, icons at rest |
 | `onSurfaceMuted` | 50% | Muted chrome: placeholders, carets, action icons |
 
+Below the ramp sits `onSurfaceDisabled` (30%) — not a fourth content level
+but the drained state: the send disc with nothing to send.
+
 ## Two rules hold the palette together
 
-**The ink ramp and the outlines are translucent.** `onSurfaceVariant`,
-`onSurfaceMuted`, `outline` (14% ink in light, 20% in dark) and
-`outlineVariant` (6%) are the foreground ink at an alpha, not resolved
-colors — the same label and the same hairline read correctly on the page
-*and* on a raised card, because they composite.
+**The ink, the outlines, and the container ladder are translucent.**
+`onSurfaceVariant`, `onSurfaceMuted`, `outline` (14% ink in light, 20% in
+dark) and `outlineVariant` (6%) are the foreground ink at an alpha, not
+resolved colors — the same label and the same hairline read correctly on
+the page *and* on a raised card, because they composite. The
+`surfaceContainerLowest → Highest` ladder is cut from the same ink in even
+steps — 2, 4, 6, 8, 10% — so a fill picked for the page holds up anywhere.
 
-**Every `surface*` token is opaque.** Backgrounds get drawn on, scrimmed,
-and layered over host images, so they are flat colors.
+**The grounds are opaque.** `surface` — warm paper in light, `#171717` in
+dark — and `surfaceBright` are what everything else composites onto, so
+they are flat colors.
 
 ## The raised card
 
-`surfaceContainerLowest` is the composer, the menus, the sheets — the one
-surface that lifts off the page in *both* themes. That's why it sits outside
-the `surfaceContainerLow → Highest` tint ladder rather than at the bottom of
+`surfaceBright` is the composer, the menus, the sheets — the one surface
+that lifts off the page in *both* themes. That's why it sits outside the
+`surfaceContainerLowest → Highest` tint ladder rather than at the bottom of
 it: in light it's pure white above warm paper, in dark it's the lifted
-`#1E1E1E` above `#171717`.
+`#1E1E1E` above `#171717`. (`surfaceContainerLowest` is the ladder's
+faintest rung — a 2% wash — not the card; retheme the card through
+`surfaceBright`.)
 
 ## Overriding tokens
 
@@ -81,6 +89,33 @@ Text(
   style: typography.bodySmall.copyWith(color: colors.onSurfaceVariant),
 )
 ```
+
+## The type scale
+
+`FlowTypography.standard` follows the Material 3 scale — display, headline,
+title, body and label, each in large / medium / small — set in Figtree. Two
+habits of the design carry through the whole scale: no letter-spacing, and
+one of two line heights — 1.5 where text wraps into paragraphs, 1.3 where
+it sits on a single line in a control.
+
+Each body size also carries three weights of ink — `bodyLarge`,
+`bodyLargeEmphasised` (w500), `bodyLargeDark` (w600), and likewise for
+Medium and Small — so emphasis inside a message never needs an ad-hoc
+`copyWith`. Styles are colorless; components pair them with color tokens at
+draw time.
+
+To keep the scale and swap the face:
+
+```dart title="Your brand's typeface"
+FlowTheme(
+  colors: FlowColors.light,
+  typography: FlowTypography.standard.withFontFamily('Inter'),
+)
+```
+
+`withFontFamily` rebuilds every style from the four things the scale
+carries — size, weight, line height, tracking — and takes a `package:` for
+a font that ships inside one.
 
 ## Spacing and radii are not tokens
 

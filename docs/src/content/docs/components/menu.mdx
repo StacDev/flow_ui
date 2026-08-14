@@ -80,8 +80,12 @@ a back affordance.
 
 ## Restyling
 
-`FlowMenuStyle` overrides the menu's metrics and colors per instance —
-corner radius, paddings, inks — without touching the global tokens.
+`FlowMenuStyle` overrides the menu's colors and metrics per instance
+without touching the global tokens: `backgroundColor`, `borderColor`,
+`separatorColor`, `hoverColor`, `labelStyle`, `descriptionStyle`,
+`iconColor`, `checkColor`, `accentColor`, `menuRadius`, `sheetRadius`,
+`minWidth`, and `barrierColor`. Paddings are baked spec metrics, not style
+fields.
 
 ## Key API
 
@@ -89,6 +93,6 @@ corner radius, paddings, inks — without touching the global tokens.
   (`id`, `icon`, `label`, `selected`, `enabled`, `children`) and
   `FlowMenuDivider`.
 - `onSelected` — one callback, every level; receives the `id`.
-- `icon`, `tooltip` — the trigger.
+- `icon`, `tooltip` — the trigger; `enabled: false` mutes it.
 - `sheetTitle`, `presentation` — sheet form and when it's used.
-- `style` — a `FlowMenuStyle` for per-instance retheming.
+- `menuStyle` — a `FlowMenuStyle` for per-instance retheming.

@@ -268,8 +268,10 @@ FlowTheme(
 Spacing and corner radii are deliberately not tokens. Following Material's
 structure, each component bakes its own metrics from the Flow UI design file
 and exposes per-widget overrides (`padding:`, `borderRadius:`) where hosts
-retheme. Strings shown to the user (tooltips, placeholders, labels) are all
-host-supplied, so localization stays in your app.
+retheme. Strings shown to the user (tooltips, placeholders, labels) are
+host-supplied, so localization stays in your app — the one exception, the
+model selector's `effortLabel` and `moreModelsLabel` English defaults, is
+overridable the same way.
 
 ## Docs & playground
 

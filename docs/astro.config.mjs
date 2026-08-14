@@ -24,8 +24,7 @@ const playgroundDevIndex = {
 
 // https://astro.build/config
 export default defineConfig({
-	// Placeholder until a custom domain is decided.
-	site: 'https://flow-ui-docs.pages.dev',
+	site: 'https://flowui.stac.dev',
 	integrations: [
 		playgroundDevIndex,
 		starlight({

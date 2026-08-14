@@ -1,7 +1,5 @@
 name: flow_ui
-description: >-
-  Flow UI is an open-source Flutter UI library to build production-grade
-  Chat & AI assistant interfaces.
+description: Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.
 version: 0.1.0
 repository: https://github.com/StacDev/flow_ui
 issue_tracker: https://github.com/StacDev/flow_ui/issues
@@ -37,6 +35,8 @@ flutter:
   fonts:
     - family: Figtree
       fonts:
+        - asset: fonts/Figtree-Light.ttf
+          weight: 300
         - asset: fonts/Figtree-Regular.ttf
           weight: 400
         - asset: fonts/Figtree-Medium.ttf
@@ -45,3 +45,7 @@ flutter:
           weight: 600
         - asset: fonts/Figtree-Bold.ttf
           weight: 700
+        - asset: fonts/Figtree-ExtraBold.ttf
+          weight: 800
+        - asset: fonts/Figtree-Black.ttf
+          weight: 900

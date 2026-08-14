@@ -12,7 +12,9 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 `FlowAttachmentGroup` lays a set of them out for the composer or a
 message. A tile with an image opens the full-screen preview — zoom,
 paging — on tap; one without, a document, draws its ground and the pill
-and stays inert rather than opening an empty preview.
+and stays inert rather than opening an empty preview. Tiles stand at the
+design's 80px on a 16px corner — 64 and 12 on phones, resolved from the
+theme's platform.
 
 ## Scrolling row
 
@@ -74,7 +76,7 @@ FlowAttachmentGroup(
   // No onRemove → read-only. Tapping still opens the preview: pass onTap
   // only to replace it, and call showFlowAttachmentPreview yourself to
   // keep it alongside your own handling.
-  attachments: [...],
+  attachments: sent,
 )
 ```
 
@@ -123,10 +125,15 @@ FlowComposer(
 
 ## Key API
 
-- `FlowAttachment` — `id`, `thumbnail` (any `ImageProvider`), `kind`,
-  `label`.
+- `FlowAttachment` — `id`, `thumbnail` (any `ImageProvider`), `preview`
+  (a full-resolution image for the viewer; defaults to `thumbnail`),
+  `kind`, `label`, and `tooltip` (falls back to `label`).
 - `FlowAttachmentGroup` — `attachments`, `layout`
-  (`FlowAttachmentLayout.scroll` default / `.wrap`), `onRemove`,
-  `onTap`, and the host-supplied tooltips.
+  (`FlowAttachmentLayout.scroll` default / `.wrap`), `onRemove`, `onTap`,
+  and the host-supplied tooltips, plus the tile metrics: `size` (80; 64
+  on phones), `tileRadius` (16; 12), `spacing` (8), `padding`. Callbacks
+  report ids, never indexes, so ids must be unique within the group —
+  asserted in debug.
 - `showFlowAttachmentPreview` — the full-screen viewer, callable directly
-  when you override `onTap` or `onAttachmentTap`.
+  when you override `onTap` or `onAttachmentTap`. Escape closes it and
+  the arrow keys page.

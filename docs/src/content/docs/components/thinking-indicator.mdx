@@ -58,7 +58,12 @@ FlowThinkingIndicator(
 ## Key API
 
 - `label` — shimmer-treated while `active`, static once settled.
-- `active` — `false` freezes the asterisk and the label in place.
-- `size`, `color`, `semanticLabel` — the glyph-only form.
+- `active` — `false` freezes the asterisk and the label in place; the
+  platform's reduced-motion setting renders static too.
+- `size` (14) and `color` (`onSurfaceMuted`) — the glyph in any form; the
+  label always draws in the muted ink, a step below the glyph.
+- `duration` — one turn-and-breathe cycle (2400ms).
+- `semanticLabel` — keeps the glyph-only form announced to screen
+  readers.
 - In a thread: set message `status` to `pending` and pass `thinkingLabel:`
   — no manual wiring.

@@ -92,14 +92,21 @@ FlowMessage(
 Message content is typed parts, not strings: a sealed `FlowMessagePart`
 with `FlowTextPart`, `FlowAttachmentPart`, and `FlowCustomPart` subtypes.
 `FlowCustomPart` plus a `FlowCustomPartBuilder` on the message is the
-extension seam — the host injects its own content (a tool card, a chart)
-without the library knowing what it is.
+extension seam — it carries a `type` your builder switches on and an
+arbitrary `data` payload, so the host injects its own content (a tool
+card, a chart) without the library knowing what it is.
 
 ## Key classes
 
 - `FlowThread` — the scrolling conversation; give it a `ScrollController`
-  to pair with `FlowChatScreen`'s jump-to-latest.
-- `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder` and an
-  `onAttachmentTap` override.
-- `FlowMessageData` — `id`, `role`, `parts`, `status`; the `.text`
-  constructor covers the plain case.
+  to pair with `FlowChatScreen`'s jump-to-latest. `padding` (the design's
+  16) and `itemSpacing` (32) override the metrics; `messageBuilder`
+  swaps the default `FlowMessage` per turn; `thinkingLabel`,
+  `charactersPerSecond`, and `previewCloseTooltip` forward to every
+  message.
+- `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder`, an
+  `onAttachmentTap` override, `leading` and `footer` slots (an avatar,
+  the action row), a `textStyle`, and the user bubble's overrides —
+  `maxBubbleWidthFraction` (0.75), `bubbleRadius`, `bubblePadding`.
+- `FlowMessageData` — `id`, `role`, `parts`, `status`, and an optional
+  `timestamp`; the `.text` constructor covers the plain case.

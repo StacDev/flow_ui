@@ -7,20 +7,20 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-flow_ui is a plain Flutter package — no codegen, no transitive dependency
-tree. Its components draw the conversation state you hand them and report
-what the user did through callbacks; everything model-shaped stays in your
-app.
+Flow UI is an open-source Flutter UI library to build production-grade
+Chat & AI assistant interfaces — a plain Flutter package, no codegen, no
+transitive dependency tree. Its components draw the conversation state you
+hand them and report what the user did through callbacks; everything
+model-shaped stays in your app.
 
 ## Install
 
-The package isn't on pub.dev yet — depend on it straight from GitHub:
+One line in your pubspec — the package depends on nothing but the Flutter
+SDK:
 
 ```yaml title="pubspec.yaml"
 dependencies:
-  flow_ui:
-    git:
-      url: https://github.com/StacDev/flow_ui.git
+  flow_ui: ^0.1.0
 ```
 
 ## Wire the theme
@@ -75,21 +75,26 @@ Streaming is data, not streams: as chunks arrive, rebuild with the updated
 message list and a `status` of `FlowMessageStatus.streaming` — the thread
 animates the reveal.
 
-## Run the gallery
+## Run the playground
 
-The repo's `example/` app is an interactive gallery of every component in
-both themes:
+Every component has a live stage in the hosted
+[playground](https://flowui.stac.dev/playground) — variant pills and code
+snippets included. It is also in the repo to run locally:
 
 ```bash
-cd example && flutter run -d chrome
+cd playground && flutter run -d chrome
 ```
+
+For a minimal starting point, the repo's `example/` is the full chat screen
+from the README as a single-file app: generate platform runners once with
+`flutter create . --platforms=web`, then `flutter run -d chrome`.
 
 ## Next
 
 <CardGrid>
 	<LinkCard
 		title="Theming"
-		description="The token system: three levels of ink, opaque surfaces, and how the M3 mapping works."
+		description="The token system: three levels of ink, translucent washes on opaque grounds, and how the M3 mapping works."
 		href="/theming/"
 	/>
 	<LinkCard

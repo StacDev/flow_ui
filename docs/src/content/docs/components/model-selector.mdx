@@ -78,9 +78,14 @@ default — `FlowMenuPresentation.menu` or `.sheet` force either. Effort and
 - `models` / `selectedId` / `onSelected` — the primary list;
   `FlowModelOption` carries `id`, `label`, `description`, and `enabled`.
 - `efforts` / `selectedEffortId` / `onEffortSelected` — the optional
-  Effort section (`FlowEffortOption`, same shape).
+  Effort section (`FlowEffortOption`, same shape). When `efforts` is
+  non-empty, the other two are required — a debug assert fires otherwise.
 - `moreModels` — overflow options behind *More models*.
-- `sheetTitle`, `tooltip` — host-supplied strings; the package ships no
-  copy.
+- `sheetTitle`, `tooltip` — host-supplied strings.
+- `effortLabel` and `moreModelsLabel` — the widget's two pieces of shipped
+  copy (`'Effort'`, `'More models'`), shown on those rows and as their
+  sheet-page titles; override both to localize.
 - `presentation` — `FlowMenuPresentation.auto` (default) / `.menu` /
   `.sheet`.
+- `menuStyle` — a `FlowMenuStyle` for per-instance retheming; `enabled:
+  false` mutes the trigger.
