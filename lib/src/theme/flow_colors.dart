@@ -16,11 +16,11 @@ import 'package:flutter/material.dart';
 ///   the foreground ink at an alpha, not resolved colors. The design uses the
 ///   same label and the same hairline on the page *and* on the raised card,
 ///   which only works if they composite.
-/// * **The surface ramp is opaque.** Backgrounds get drawn on, scrimmed and
-///   layered over host images, so every `surface*` token is a flat color.
-///   The container ladder is the design's even ink tints — 2% / 4% / 6% /
-///   8% / 10% from `Lowest` to `Highest` — flattened over each theme's
-///   [surface] so the tokens stay opaque.
+/// * **The container ladder is translucent too.** `surfaceContainerLowest`
+///   through `Highest` are ink washes at rising alphas, so the same fill
+///   reads correctly on the page and on the raised card. Only [surface]
+///   and [surfaceBright] — the grounds everything else sits on — are
+///   opaque.
 @immutable
 class FlowColors {
   const FlowColors({
@@ -107,8 +107,8 @@ class FlowColors {
   /// Ink at 30% — disabled content, like the send button that can't send.
   final Color onSurfaceDisabled;
 
-  /// The tint ladder's faintest rung — 2% ink over the page, as are the
-  /// rest of the containers at even steps up to 10%.
+  /// The tint ladder's faintest rung — the ink at its lowest wash, rising
+  /// through the containers below.
   final Color surfaceContainerLowest;
 
   /// Faintest fill — a suggestion row at rest.
@@ -161,11 +161,11 @@ class FlowColors {
     onSurfaceVariant: Color(0xBF1A1A19),
     onSurfaceMuted: Color(0x801A1A19),
     onSurfaceDisabled: Color(0x4D1A1A19),
-    surfaceContainerLowest: Color(0xFFF5F5F3),
-    surfaceContainerLow: Color(0xFFF0F0EE),
-    surfaceContainer: Color(0xFFECECEA),
-    surfaceContainerHigh: Color(0xFFE7E7E5),
-    surfaceContainerHighest: Color(0xFFE3E3E1),
+    surfaceContainerLowest: Color(0x051A1A19),
+    surfaceContainerLow: Color(0x101A1A19),
+    surfaceContainer: Color(0x151A1A19),
+    surfaceContainerHigh: Color(0x201A1A19),
+    surfaceContainerHighest: Color(0x251A1A19),
     outline: Color(0x241A1A19),
     outlineVariant: Color(0x0F1A1A19),
     inverseSurface: Color(0xFF1E1E1E),
@@ -197,11 +197,11 @@ class FlowColors {
     onSurfaceVariant: Color(0xBFFFFFFF),
     onSurfaceMuted: Color(0x80FFFFFF),
     onSurfaceDisabled: Color(0x4DFFFFFF),
-    surfaceContainerLowest: Color(0xFF1C1C1C),
-    surfaceContainerLow: Color(0xFF202020),
-    surfaceContainer: Color(0xFF252525),
-    surfaceContainerHigh: Color(0xFF2A2A2A),
-    surfaceContainerHighest: Color(0xFF2E2E2E),
+    surfaceContainerLowest: Color(0x05FFFFFF),
+    surfaceContainerLow: Color(0x10FFFFFF),
+    surfaceContainer: Color(0x15FFFFFF),
+    surfaceContainerHigh: Color(0x20FFFFFF),
+    surfaceContainerHighest: Color(0x25FFFFFF),
     outline: Color(0x33FFFFFF),
     outlineVariant: Color(0x0FFFFFFF),
     inverseSurface: Color(0xFFF9F9F7),
