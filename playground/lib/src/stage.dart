@@ -55,6 +55,11 @@ class Stage extends StatelessWidget {
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(28, 56, 28, 52),
             child: _PhoneStage(
+              // Remount the phone when the component changes, so routes a
+              // demo pushed on the inner navigator (sheets, menus) don't
+              // linger over the next demo — a fresh stage per component,
+              // like the web canvas.
+              key: ObjectKey(item),
               // Keep the phone inside the pane on short windows.
               maxHeight: constraints.maxHeight - 108,
               // On the phone screen, object demos centre with room to
@@ -167,7 +172,7 @@ class _VariantPills extends StatelessWidget {
 /// status bar, "AI Chat" nav, dynamic island, side buttons and home
 /// indicator — the phone is chrome; the demo goes on the screen.
 class _PhoneStage extends StatelessWidget {
-  const _PhoneStage({required this.child, required this.maxHeight});
+  const _PhoneStage({super.key, required this.child, required this.maxHeight});
 
   final Widget child;
   final double maxHeight;
@@ -259,19 +264,33 @@ class _PhoneStage extends StatelessWidget {
                       data: Theme.of(
                         context,
                       ).copyWith(platform: TargetPlatform.iOS),
-                      child: Navigator(
-                        onGenerateRoute: (settings) => MaterialPageRoute<void>(
-                          settings: settings,
-                          builder: (_) => Material(
-                            color: shell.stageBg,
-                            child: Column(
-                              children: [
-                                const _StatusBar(),
-                                const _MobileNav(),
-                                Expanded(child: child),
-                              ],
-                            ),
-                          ),
+                      child: _PhoneScreenScope(
+                        demo: child,
+                        child: Navigator(
+                          onGenerateRoute: (settings) =>
+                              MaterialPageRoute<void>(
+                                settings: settings,
+                                // The navigator generates this route once and
+                                // keeps its builder for the route's lifetime,
+                                // so nothing per-build may be captured here:
+                                // the demo and palette are read through
+                                // `context` so component, variant, and theme
+                                // changes reach the screen.
+                                builder: (context) => Material(
+                                  color: ShellPalette.of(context).stageBg,
+                                  child: Column(
+                                    children: [
+                                      const _StatusBar(),
+                                      const _MobileNav(),
+                                      Expanded(
+                                        child: _PhoneScreenScope.demoOf(
+                                          context,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                         ),
                       ),
                     ),
@@ -318,6 +337,26 @@ class _PhoneStage extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Hands the stage's current demo through to the phone screen's route.
+///
+/// Rebuilding the [Navigator] widget never regenerates a live route, so the
+/// route content can't receive the demo as a closure capture — it would stay
+/// frozen at whatever was staged first. Instead the scope above the navigator
+/// carries the latest demo, and the route content depends on it, rebuilding
+/// whenever the stage stages something new.
+class _PhoneScreenScope extends InheritedWidget {
+  const _PhoneScreenScope({required this.demo, required super.child});
+
+  final Widget demo;
+
+  static Widget demoOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_PhoneScreenScope>()!.demo;
+
+  @override
+  bool updateShouldNotify(_PhoneScreenScope oldWidget) =>
+      demo != oldWidget.demo;
 }
 
 class _StatusBar extends StatelessWidget {
