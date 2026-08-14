@@ -1,0 +1,60 @@
+---
+title: Shimmer text
+description: A soft highlight sweeping through waiting text; static once settled.
+sidebar:
+  order: 4
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowShimmerText` sweeps a soft highlight through a label whose work is
+still in flight — "Searching the web…", "Reading files…". It is the
+waiting-state voice of the system, text only by design. The thinking
+indicator uses it for its label; tool and progress lines can take it
+directly.
+
+## Waiting
+
+<FlowDemo demo="shimmer-text" variant="active" height={180} title="Shimmering label" />
+
+```dart title="A label in flight"
+FlowShimmerText(text: 'Searching the web…')
+```
+
+## Settled
+
+The same widget can stay in place once the work finishes — `enabled: false`
+renders plain static text in the base ink, so the line doesn't jump when
+the state changes:
+
+<FlowDemo demo="shimmer-text" variant="settled" height={180} title="Settled label" />
+
+```dart title="The same line, settled"
+// enabled: false renders plain static text in the base ink —
+// the same widget can stay in place once the work settles.
+FlowShimmerText(
+  enabled: false,
+  text: 'Searched the web',
+)
+```
+
+## Customized
+
+The sweep's highlight color, the text style, and the cycle duration are
+all overridable:
+
+```dart title="Tuning the sweep"
+FlowShimmerText(
+  text: 'Generating a slide deck…',
+  highlightColor: context.flowColors.primary,
+  style: const TextStyle(fontSize: 18),
+  duration: const Duration(milliseconds: 1000),
+)
+```
+
+## Key API
+
+- `text` — the label; the host owns the copy.
+- `enabled` — `false` holds the line still in the base ink.
+- `highlightColor`, `style`, `duration` — retheme the sweep without
+  touching the global tokens.

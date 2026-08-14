@@ -1,0 +1,57 @@
+---
+title: Streaming text
+description: Animated reveal for text that is still arriving, at an adaptive speed.
+sidebar:
+  order: 3
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowStreamingText` animates the reveal of text that is still arriving.
+Drive it with the full text received *so far* — as the string grows, the
+widget reveals characters at an adaptive speed, catching up whenever the
+stream runs ahead, and fast-forwards the remainder the moment streaming
+completes. It is the same reveal `FlowMessage` uses for a streaming
+assistant turn, available on its own for custom layouts.
+
+## Streaming
+
+<FlowDemo demo="streaming-text" variant="animated" height={280} title="Streaming reveal" />
+
+```dart title="Reveal as chunks arrive"
+FlowStreamingText(
+  // The full text received so far — grows as chunks arrive.
+  text: streamedText,
+  // Animates the reveal while more text may arrive;
+  // flip to false to fast-forward the remainder.
+  isStreaming: true,
+)
+```
+
+There is no stream to wire: append each chunk to your string, rebuild,
+and the widget does the rest. When the model finishes, set
+`isStreaming: false` and the tail fast-forwards instead of crawling.
+
+## Static
+
+With `isStreaming: false` from the start, the text renders statically —
+history messages pay no animation cost:
+
+<FlowDemo demo="streaming-text" variant="instant" height={280} title="Static text" />
+
+```dart title="History renders statically"
+// History messages render statically, with no animation cost.
+FlowStreamingText(
+  text: fullText,
+  isStreaming: false,
+)
+```
+
+## Key API
+
+- `text` — the accumulated text; grow it as chunks arrive.
+- `isStreaming` — `true` animates the reveal, flipping to `false`
+  fast-forwards whatever hasn't been shown yet.
+- In a thread you rarely reach for this directly: give `FlowMessageData` a
+  `status` of `FlowMessageStatus.streaming` and `FlowMessage` applies the
+  same treatment.

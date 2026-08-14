@@ -1,0 +1,83 @@
+---
+title: Message composer
+description: The raised input card — multiline field, send and stop, and slots for host actions.
+sidebar:
+  order: 6
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowComposer` is the raised input card: a multiline field that grows with
+the draft, a send button that becomes **stop** while the model is
+generating, and slots for host actions on the design's rail. `onSend` is
+required — a composer needs somewhere to send to.
+
+## Composed
+
+The composer's slots take other flow_ui components directly — here the
+"+" menu in `leadingActions` and the model selector in `trailingActions`:
+
+<FlowDemo demo="composer" height={340} title="The composer" />
+
+```dart title="Send, stop, and the action slots"
+FlowComposer(
+  placeholder: 'Message flow_ui…',
+  isStreaming: generating,
+  onSend: (text) => startGeneration(text),
+  onStop: cancelGeneration,
+  leadingActions: [
+    FlowMenu(
+      icon: Icons.add,
+      tooltip: 'Add to chat',
+      entries: [
+        FlowMenuOption(
+          id: 'photos', icon: Icons.image_outlined, label: 'Photos'),
+        FlowMenuOption(
+          id: 'files', icon: Icons.upload_file_outlined, label: 'Files'),
+      ],
+      onSelected: (id) => pickAttachment(id),
+    ),
+  ],
+  trailingActions: [
+    FlowModelSelector(
+      models: [
+        FlowModelOption(id: 'sonnet', label: 'Sonnet 5'),
+        FlowModelOption(id: 'opus', label: 'Opus 5'),
+      ],
+      selectedId: modelId,
+      onSelected: (id) => setModel(id),
+      efforts: [
+        FlowEffortOption(id: 'medium', label: 'Medium'),
+        FlowEffortOption(id: 'high', label: 'High'),
+      ],
+      selectedEffortId: effortId,
+      onEffortSelected: (id) => setEffort(id),
+    ),
+  ],
+)
+```
+
+## Send and stop
+
+`isStreaming` drives the send button: `false` shows send, `true` swaps it
+for stop and routes taps to `onStop`. Flip it from your generation state
+and the composer stays honest about what a tap will do.
+
+<FlowDemo demo="composer" variant="streaming" height={300} title="The stop state" />
+
+## Attachments
+
+The composer renders a pending-attachments row above the field — pass
+`attachments:` and `onRemoveAttachment:`. The [Attachments](/components/attachments/)
+page shows the full flow, from the "+" menu to the sent message.
+
+## Key API
+
+- `onSend` — required; receives the draft text.
+- `isStreaming` + `onStop` — the send/stop swap.
+- `leadingActions` / `trailingActions` — widget slots on the input rail;
+  any widget works, the flow_ui menus just fit the design out of the box.
+- `attachments`, `onRemoveAttachment`, `removeAttachmentTooltip` — the
+  pending row.
+- `controller`, `placeholder` — the field itself; pass your own
+  `TextEditingController` to prefill or clear the draft.

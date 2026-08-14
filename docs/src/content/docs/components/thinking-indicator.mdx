@@ -1,0 +1,64 @@
+---
+title: Thinking indicator
+description: The turning, breathing asterisk with a shimmering label — active and settled.
+sidebar:
+  order: 5
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowThinkingIndicator` is the turning, breathing asterisk shown while a
+reply is pending, its host-supplied label shimmering beside it. You mostly
+get it for free: a message with `FlowMessageStatus.pending` renders it
+automatically — pass `thinkingLabel:` to `FlowMessage` or `FlowThread` and
+the library does the rest. It is also available standalone for custom
+waiting states.
+
+## Thinking
+
+<FlowDemo demo="thinking-indicator" variant="active" height={180} title="Thinking" />
+
+```dart title="Pending"
+FlowThinkingIndicator(label: 'Thinking…')
+```
+
+## Settled
+
+`active: false` is the settled state — the same line, holding still. Keep
+it on screen after thinking ends and swap the label you already own; the
+line becomes a quiet record of the work:
+
+<FlowDemo demo="thinking-indicator" variant="settled" height={180} title="Settled" />
+
+```dart title="The same line, settled"
+// active: false holds the line still — keep it on screen after
+// thinking ends and swap the label you already own.
+FlowThinkingIndicator(
+  active: false,
+  label: 'Thought about it',
+)
+```
+
+## Glyph only
+
+Without a label it is just the spinning mark, sized and colored to taste.
+`semanticLabel` keeps it announced to screen readers — the package ships
+no strings of its own:
+
+```dart title="Just the mark"
+// No label: just the spinning mark. semanticLabel keeps it
+// announced; the package ships no strings.
+FlowThinkingIndicator(
+  size: 24,
+  color: context.flowColors.primary,
+  semanticLabel: 'Thinking',
+)
+```
+
+## Key API
+
+- `label` — shimmer-treated while `active`, static once settled.
+- `active` — `false` freezes the asterisk and the label in place.
+- `size`, `color`, `semanticLabel` — the glyph-only form.
+- In a thread: set message `status` to `pending` and pass `thinkingLabel:`
+  — no manual wiring.

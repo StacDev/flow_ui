@@ -1,0 +1,132 @@
+---
+title: Attachments
+description: Attachment tiles for the composer and sent messages, with a full-screen preview.
+sidebar:
+  order: 9
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowAttachment` models one attachment — its `id`, an optional
+`thumbnail`, the file `kind` shown in the type pill, and a `label`.
+`FlowAttachmentGroup` lays a set of them out for the composer or a
+message. A tile with an image opens the full-screen preview — zoom,
+paging — on tap; one without, a document, draws its ground and the pill
+and stays inert rather than opening an empty preview.
+
+## Scrolling row
+
+The default layout is one row that scrolls, no scrollbar. With `onRemove`
+each tile grows a remove button — it fades in on hover and stays visible
+on touch:
+
+<FlowDemo demo="attachments" variant="tiles" height={300} title="Attachment tiles" />
+
+```dart title="The composer's pending row"
+FlowAttachmentGroup(
+  // The default: one row that scrolls, no scrollbar.
+  attachments: [
+    for (final picked in pending)
+      FlowAttachment(
+        id: picked.id,
+        thumbnail: FileImage(picked.file),
+        kind: picked.extension,
+        label: picked.name,
+      ),
+  ],
+  onRemove: (id) => detach(id),
+  removeTooltip: 'Remove attachment',
+)
+```
+
+## Documents
+
+No `thumbnail` means no preview — the pill identifies the file:
+
+```dart title="Documents beside a photo"
+FlowAttachmentGroup(
+  layout: FlowAttachmentLayout.wrap,
+  attachments: [
+    // No thumbnail: the tile draws its ground and the type pill, and
+    // stays inert rather than opening an empty preview.
+    FlowAttachment(id: 'c', kind: 'PDF', label: 'contract.pdf'),
+    FlowAttachment(id: 'n', kind: 'DOCX', label: 'notes.docx'),
+    FlowAttachment(
+      id: 'd',
+      thumbnail: AssetImage('assets/dusk.png'),
+      kind: 'PNG',
+      label: 'dusk-ridge.png',
+    ),
+  ],
+)
+```
+
+## Read-only
+
+Without an `onRemove` callback the tiles are read-only. Tapping an image
+still opens the preview — pass `onTap` only to *replace* that, and call
+`showFlowAttachmentPreview` yourself if you want the preview alongside
+your own handling:
+
+```dart title="Wrap layout, no remove"
+FlowAttachmentGroup(
+  layout: FlowAttachmentLayout.wrap,
+  // No onRemove → read-only. Tapping still opens the preview: pass onTap
+  // only to replace it, and call showFlowAttachmentPreview yourself to
+  // keep it alongside your own handling.
+  attachments: [...],
+)
+```
+
+## In a message
+
+Attachments travel as message parts: `FlowAttachmentPart` in
+`FlowMessageData.parts`. Nothing to wire — tapping a sent attachment
+opens the preview:
+
+```dart title="An attachment part"
+FlowMessage(
+  FlowMessageData(
+    id: 'm1',
+    role: FlowMessageRole.user,
+    parts: [
+      FlowAttachmentPart([
+        FlowAttachment(id: 'a', thumbnail: NetworkImage(url), kind: 'JPG'),
+      ]),
+      FlowTextPart('What is the peak on the left?'),
+    ],
+  ),
+  // Nothing to wire: tapping a sent attachment opens the preview.
+)
+```
+
+## In a composer
+
+The composer renders the pending row above its field from the same model:
+
+<FlowDemo demo="attachments" variant="composer" height={360} title="Attachments in the composer" />
+
+```dart title="Pending attachments"
+FlowComposer(
+  attachments: attachments,
+  onRemoveAttachment: (id) => setState(
+    () => attachments = attachments.where((a) => a.id != id).toList(),
+  ),
+  removeAttachmentTooltip: 'Remove attachment',
+  onSend: send,
+  leadingActions: [
+    FlowMenu(icon: Icons.add, entries: addOptions,
+        onSelected: pickAttachment),
+  ],
+)
+```
+
+## Key API
+
+- `FlowAttachment` — `id`, `thumbnail` (any `ImageProvider`), `kind`,
+  `label`.
+- `FlowAttachmentGroup` — `attachments`, `layout`
+  (`FlowAttachmentLayout.scroll` default / `.wrap`), `onRemove`,
+  `onTap`, and the host-supplied tooltips.
+- `showFlowAttachmentPreview` — the full-screen viewer, callable directly
+  when you override `onTap` or `onAttachmentTap`.
