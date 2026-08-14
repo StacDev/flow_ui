@@ -1,0 +1,72 @@
+---
+title: Chat UI components for Flutter
+description: flow_ui renders the conversation and reports intent back — streaming, composer, attachments, suggestions — with zero third-party dependencies and nothing model-facing.
+template: splash
+editUrl: false
+hero:
+  tagline: flow_ui is the presentation layer for AI assistants in Flutter — components render the state you pass in and report intent back out. Zero third-party dependencies, nothing model-facing.
+  actions:
+    - text: Get started
+      link: /getting-started/
+      variant: primary
+    - text: Browse components
+      link: /components/message-thread/
+      icon: right-arrow
+      variant: minimal
+---
+
+<div class="landing not-content">
+	<div class="chat-mock" aria-hidden="true">
+		<div class="chat-mock__thread">
+			<div class="chat-mock__bubble">Ship the new assistant screen in both themes?</div>
+			<div class="chat-mock__reply">
+				<span class="chat-mock__spark">&#x2733;&#xFE0E;</span>
+				<p>Done — thread, composer and attachments are wired, and every color comes from <code>context.flowColors</code>, so dark mode is already handled.</p>
+			</div>
+			<div class="chat-mock__shimmer">Running flutter analyze…</div>
+		</div>
+		<div class="chat-mock__composer">
+			<span>Message the assistant…</span>
+			<span class="chat-mock__send">↑</span>
+		</div>
+	</div>
+	<section>
+		<h2>Built on two constraints</h2>
+		<p class="section-sub">Everything in the library follows from what it refuses to do.</p>
+		<div class="feature-grid">
+			<div class="feature">
+				<h3>Zero dependencies</h3>
+				<p><code>dependencies:</code> is the Flutter SDK and nothing else. Figtree, the face the design is set in, ships inside the package as a bundled asset.</p>
+			</div>
+			<div class="feature">
+				<h3>Nothing model-facing</h3>
+				<p>No prompts, no schemas, no provider calls. Wire the callbacks to any backend — the components never know which model is on the other side.</p>
+			</div>
+			<div class="feature">
+				<h3>Streaming-first</h3>
+				<p>Streaming text, a thinking indicator, shimmer labels, message status — the in-between states an assistant UI actually spends its time in.</p>
+			</div>
+			<div class="feature">
+				<h3>Yours to theme</h3>
+				<p>Color roles follow Material&nbsp;3's <code>ColorScheme</code>, installed as a <code>ThemeExtension</code>. Map an existing scheme straight across, or ship the Flow presets untouched.</p>
+			</div>
+		</div>
+	</section>
+	<section>
+		<h2>Start here</h2>
+		<div class="tile-grid">
+			<a class="tile" href="/getting-started/">
+				<strong>Getting started</strong>
+				<span>Install from GitHub, wire the theme, render your first conversation.</span>
+			</a>
+			<a class="tile" href="/theming/">
+				<strong>Theming</strong>
+				<span>Three levels of ink, opaque surfaces, and the Material 3 mapping.</span>
+			</a>
+			<a class="tile" href="/components/chat-screen/">
+				<strong>Chat screen</strong>
+				<span>The assembled surface — thread, composer, zero state, jump to latest.</span>
+			</a>
+		</div>
+	</section>
+</div>

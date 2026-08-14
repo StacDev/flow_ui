@@ -1,0 +1,87 @@
+---
+title: Theming
+description: "The flow_ui token system: three levels of ink, opaque surfaces, and a color scheme shaped like Material 3."
+sidebar:
+  order: 2
+---
+
+Every flow_ui component draws from two token sets — **colors** and
+**typography** — installed as a `ThemeExtension`:
+
+```dart title="main.dart"
+MaterialApp(
+  theme: ThemeData(extensions: [FlowTheme.light()]),
+  darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+)
+```
+
+No component hardcodes a color or a text style, so restyling the whole
+library is a matter of overriding tokens.
+
+## Three levels of ink
+
+Color role names follow Material 3's `ColorScheme`, so an existing M3 scheme
+maps straight across — with one addition. The Flow design draws content at
+three strengths, and M3 only names two:
+
+| Token | Strength | Used for |
+| --- | --- | --- |
+| `onSurface` | 100% | Prose, the model name, an active label |
+| `onSurfaceVariant` | 75% | Secondary content: row labels, icons at rest |
+| `onSurfaceMuted` | 50% | Muted chrome: placeholders, carets, action icons |
+
+## Two rules hold the palette together
+
+**The ink ramp and the outlines are translucent.** `onSurfaceVariant`,
+`onSurfaceMuted`, `outline` (14% ink in light, 20% in dark) and
+`outlineVariant` (6%) are the foreground ink at an alpha, not resolved
+colors — the same label and the same hairline read correctly on the page
+*and* on a raised card, because they composite.
+
+**Every `surface*` token is opaque.** Backgrounds get drawn on, scrimmed,
+and layered over host images, so they are flat colors.
+
+## The raised card
+
+`surfaceContainerLowest` is the composer, the menus, the sheets — the one
+surface that lifts off the page in *both* themes. That's why it sits outside
+the `surfaceContainerLow → Highest` tint ladder rather than at the bottom of
+it: in light it's pure white above warm paper, in dark it's the lifted
+`#1E1E1E` above `#171717`.
+
+## Overriding tokens
+
+Start from a preset and replace what your brand needs:
+
+```dart title="Override the accent"
+MaterialApp(
+  theme: ThemeData(
+    extensions: [
+      FlowTheme(
+        colors: FlowColors.light.copyWith(
+          primary: const Color(0xFF6750A4),
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+Your own widgets can read the same tokens the components use:
+
+```dart title="Read tokens in your own widgets"
+final colors = context.flowColors;
+final typography = context.flowTypography;
+
+Text(
+  'Caption',
+  style: typography.bodySmall.copyWith(color: colors.onSurfaceVariant),
+)
+```
+
+## Spacing and radii are not tokens
+
+Following Material's structure, each component bakes its own metrics from
+the design file and exposes per-widget overrides (`padding:`,
+`borderRadius:`) where hosts retheme. There is deliberately no global
+spacing scale to fight with.

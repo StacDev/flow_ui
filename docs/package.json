@@ -1,0 +1,22 @@
+{
+  "name": "flow-ui-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "predev": "bash scripts/sync-fonts.sh",
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "bash scripts/sync-fonts.sh",
+    "build": "astro build",
+    "playground": "bash scripts/build-playground.sh",
+    "build:site": "npm run playground && npm run build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.7",
+    "astro": "^7.1.6",
+    "sharp": "^0.35.3"
+  }
+}

@@ -1,0 +1,77 @@
+---
+/**
+ * Overrides Starlight's PageTitle: large title with a "Copy page" button on
+ * the same row (the modern docs pattern for LLM-ready pages), and the
+ * frontmatter `description` as a lede underneath. The `_top` id must stay:
+ * the ToC's "Overview" link and the skip link target it.
+ *
+ * The copy button copies the page as markdown — title, lede, then the raw
+ * content source — JSON-embedded in a script tag (with `<` escaped so the
+ * source can never close the tag). Falls back to the rendered text if the
+ * raw body is unavailable.
+ */
+const { entry } = Astro.locals.starlightRoute;
+const { title, description } = entry.data;
+const source = `# ${title}\n\n${description ? `${description}\n\n` : ''}${entry.body ?? ''}`;
+const encoded = JSON.stringify(source).replace(/</g, '\\u003c');
+---
+
+<div class="page-header">
+	<div class="page-header__row">
+		<h1 id="_top">{title}</h1>
+		<copy-page-button>
+			<button type="button" aria-label={`Copy ${title} page as markdown`}>
+				<svg
+					aria-hidden="true"
+					width="15"
+					height="15"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<rect x="9" y="9" width="12" height="12" rx="2.5"></rect>
+					<path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"></path>
+				</svg>
+				<span>Copy page</span>
+			</button>
+			<script type="application/json" set:html={encoded} />
+		</copy-page-button>
+	</div>
+	{description && <p class="lede">{description}</p>}
+</div>
+
+<script>
+	customElements.define(
+		'copy-page-button',
+		class CopyPageButton extends HTMLElement {
+			constructor() {
+				super();
+				const button = this.querySelector('button');
+				const label = this.querySelector('span');
+				const data = this.querySelector('script[type="application/json"]');
+				button?.addEventListener('click', async () => {
+					let text = '';
+					try {
+						text = JSON.parse(data?.textContent ?? '""');
+					} catch {}
+					if (!text.trim()) {
+						text =
+							document.querySelector('.sl-markdown-content')?.textContent ?? '';
+					}
+					try {
+						await navigator.clipboard.writeText(text);
+						if (label) {
+							label.textContent = 'Copied';
+							setTimeout(() => {
+								label.textContent = 'Copy page';
+							}, 1600);
+						}
+					} catch {}
+				});
+			}
+		}
+	);
+</script>

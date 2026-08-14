@@ -1,0 +1,97 @@
+---
+title: Getting started
+description: Install flow_ui, wire the theme, and render your first conversation.
+sidebar:
+  order: 1
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+flow_ui is a plain Flutter package — no codegen, no transitive dependency
+tree. Its components draw the conversation state you hand them and report
+what the user did through callbacks; everything model-shaped stays in your
+app.
+
+## Install
+
+The package isn't on pub.dev yet — depend on it straight from GitHub:
+
+```yaml title="pubspec.yaml"
+dependencies:
+  flow_ui:
+    git:
+      url: https://github.com/StacDev/flow_ui.git
+```
+
+## Wire the theme
+
+The design tokens — colors and typography — install as a `ThemeExtension`:
+
+```dart title="main.dart"
+MaterialApp(
+  theme: ThemeData(extensions: [FlowTheme.light()]),
+  darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+)
+```
+
+<Aside type="tip">
+	Zero setup also works: when no `FlowTheme` is installed, components fall
+	back to a preset matched to the ambient `ThemeData.brightness`.
+</Aside>
+
+Figtree — the face the design system is set in — ships inside the package,
+so there is nothing to add to your own `pubspec.yaml` fonts section.
+
+## Render a conversation
+
+Messages are plain data; `FlowThread` draws them:
+
+```dart title="A three-role conversation"
+FlowThread(
+  messages: [
+    FlowMessageData.text(
+      id: '1',
+      role: FlowMessageRole.user,
+      text: 'What is flow_ui?',
+    ),
+    FlowMessageData.text(
+      id: '2',
+      role: FlowMessageRole.assistant,
+      text: 'An assistant UI component library for Flutter...',
+    ),
+    FlowMessageData.text(
+      id: '3',
+      role: FlowMessageRole.system,
+      text: 'Model changed to Sonnet',
+    ),
+  ],
+)
+```
+
+Streaming is data, not streams: as chunks arrive, rebuild with the updated
+message list and a `status` of `FlowMessageStatus.streaming` — the thread
+animates the reveal.
+
+## Run the gallery
+
+The repo's `example/` app is an interactive gallery of every component in
+both themes:
+
+```bash
+cd example && flutter run -d chrome
+```
+
+## Next
+
+<CardGrid>
+	<LinkCard
+		title="Theming"
+		description="The token system: three levels of ink, opaque surfaces, and how the M3 mapping works."
+		href="/theming/"
+	/>
+	<LinkCard
+		title="Message & Thread"
+		description="Conversation rendering — roles, streaming, pending and error states."
+		href="/components/message-thread/"
+	/>
+</CardGrid>

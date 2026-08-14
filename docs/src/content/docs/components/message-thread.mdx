@@ -1,0 +1,105 @@
+---
+title: Message & Thread
+description: Conversation rendering from plain message data — roles, streaming, and the pending and error states.
+sidebar:
+  order: 1
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowThread` renders a conversation from plain message data — user,
+assistant, and system roles — and `FlowMessage` renders a single turn: an
+ink-wash bubble for the user, plain text on the page for the assistant.
+Neither knows where the messages came from.
+
+## A conversation
+
+<FlowDemo demo="thread" height={380} title="A FlowThread conversation" />
+
+```dart title="A three-role conversation"
+FlowThread(
+  messages: [
+    FlowMessageData.text(
+      id: '1',
+      role: FlowMessageRole.user,
+      text: 'What is flow_ui?',
+    ),
+    FlowMessageData.text(
+      id: '2',
+      role: FlowMessageRole.assistant,
+      text: 'An assistant UI component library for Flutter...',
+    ),
+    FlowMessageData.text(
+      id: '3',
+      role: FlowMessageRole.system,
+      text: 'Model changed to Sonnet',
+    ),
+  ],
+)
+```
+
+## Streaming
+
+Streaming is data, not streams: as chunks arrive, rebuild with the updated
+message list and the thread animates the reveal. Status walks
+`pending → streaming → complete`.
+
+<FlowDemo demo="thread" variant="streaming" height={380} title="Streaming in a thread" />
+
+```dart title="Stream by rebuilding"
+FlowThread(
+  messages: [
+    ...history,
+    FlowMessageData(
+      id: 'reply',
+      role: FlowMessageRole.assistant,
+      parts: [FlowTextPart(streamedSoFar)],
+      status: FlowMessageStatus.streaming,
+    ),
+  ],
+)
+```
+
+## Pending and error states
+
+A `pending` assistant message shows the thinking indicator until the first
+token arrives; an `error` status wraps the content in an error bubble.
+
+```dart title="Pending and error states"
+// Pending: the thinking indicator until the first token arrives.
+FlowMessage(
+  FlowMessageData(
+    id: 'p',
+    role: FlowMessageRole.assistant,
+    status: FlowMessageStatus.pending,
+  ),
+  thinkingLabel: 'Thinking…',
+)
+
+// Error: content in an error bubble.
+FlowMessage(
+  FlowMessageData.text(
+    id: 'e',
+    role: FlowMessageRole.assistant,
+    text: 'Something went wrong while generating a response.',
+    status: FlowMessageStatus.error,
+  ),
+)
+```
+
+## Message parts
+
+Message content is typed parts, not strings: a sealed `FlowMessagePart`
+with `FlowTextPart`, `FlowAttachmentPart`, and `FlowCustomPart` subtypes.
+`FlowCustomPart` plus a `FlowCustomPartBuilder` on the message is the
+extension seam — the host injects its own content (a tool card, a chart)
+without the library knowing what it is.
+
+## Key classes
+
+- `FlowThread` — the scrolling conversation; give it a `ScrollController`
+  to pair with `FlowChatScreen`'s jump-to-latest.
+- `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder` and an
+  `onAttachmentTap` override.
+- `FlowMessageData` — `id`, `role`, `parts`, `status`; the `.text`
+  constructor covers the plain case.
