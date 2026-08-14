@@ -18,7 +18,10 @@ you've scrolled back through history.
 FlowChatScreen(
   empty: messages.isEmpty,
   greeting: FlowGreeting(icon: Icons.wb_twilight, text: 'Good afternoon'),
-  suggestions: FlowSuggestionGroup(...),
+  suggestions: FlowSuggestionGroup(
+    layout: FlowSuggestionLayout.column,
+    suggestions: starters,
+  ),
   thread: FlowThread(messages: messages, controller: controller),
   composer: FlowComposer(onSend: send),
   threadController: controller,
@@ -46,3 +49,19 @@ transcript.
 Pass the **same** `ScrollController` to the thread and to
 `threadController:` — taking finished widgets means the screen can't
 reach in and attach its own. Null leaves the button out entirely.
+
+## Key API
+
+- `thread` — usually a `FlowThread`, given the bounded height it needs.
+  Null renders an empty thread: a conversation nobody has spoken in yet is
+  a real state of a chat, so the surface stands up on its own.
+- `composer` — null renders no input: a read-only surface.
+- `empty` + `greeting` + `suggestions` — the zero state; the host flips
+  `empty` (typically `messages.isEmpty`).
+- `header` — optional full-bleed bar above the thread; `aboveComposer`
+  pins a strip between the thread and the input.
+- `threadController`, `jumpToLatestTooltip` — the jump-to-latest button
+  and its host-localized label.
+- `maxContentWidth` (760), `emptyComposerWidth` (640),
+  `emptySuggestionsWidth` (480), `padding` — the rail and the zero
+  state's width caps.

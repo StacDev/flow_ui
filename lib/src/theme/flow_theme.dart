@@ -9,7 +9,10 @@ import 'flow_typography.dart';
 /// ```dart
 /// MaterialApp(
 ///   theme: ThemeData(extensions: [FlowTheme.light()]),
-///   darkTheme: ThemeData(extensions: [FlowTheme.dark()]),
+///   darkTheme: ThemeData(
+///     brightness: Brightness.dark,
+///     extensions: [FlowTheme.dark()],
+///   ),
 /// )
 /// ```
 ///
@@ -54,7 +57,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   }
 }
 
-/// Token access for widgets: `context.flowColors.accent`,
+/// Token access for widgets: `context.flowColors.primary`,
 /// `context.flowTypography.bodyLarge`, …
 extension FlowThemeContext on BuildContext {
   /// The installed [FlowTheme], or a brightness-matched preset if none is.

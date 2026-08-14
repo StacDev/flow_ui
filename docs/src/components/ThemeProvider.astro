@@ -1,0 +1,41 @@
+---
+/**
+ * Starlight's stock ThemeProvider, with one change: the auto case queries
+ * `(prefers-color-scheme: dark)` instead of `light`, so a browser that
+ * doesn't support the media feature resolves to light rather than dark.
+ * The default stays "follow the OS scheme"; a stored pick always wins.
+ *
+ * The stock `#theme-icons` template is dropped: it only feeds Starlight's
+ * built-in theme select, which this site replaces with `ThemeSelect.astro`
+ * (`updatePickers` no-ops without either).
+ */
+---
+
+{/* This is intentionally inlined to avoid FOUC. */}
+<script is:inline>
+	window.StarlightThemeProvider = (() => {
+		const storedTheme =
+			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+		const theme =
+			storedTheme ||
+			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+		document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+		return {
+			updatePickers(theme = storedTheme || 'auto') {
+				document.querySelectorAll('starlight-theme-select').forEach((picker) => {
+					const select = picker.querySelector('select');
+					if (select) select.value = theme;
+					/** @type {HTMLTemplateElement | null} */
+					const tmpl = document.querySelector(`#theme-icons`);
+					const newIcon = tmpl && tmpl.content.querySelector('.' + theme);
+					if (newIcon) {
+						const oldIcon = picker.querySelector('svg.label-icon');
+						if (oldIcon) {
+							oldIcon.replaceChildren(...newIcon.cloneNode(true).childNodes);
+						}
+					}
+				});
+			},
+		};
+	})();
+</script>

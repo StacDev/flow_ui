@@ -1,4 +1,5 @@
-/// Assistant UI component library for Flutter.
+/// [Flow UI](https://flowui.stac.dev/) is an open-source Flutter UI library
+/// to build production-grade Chat & AI assistant interfaces.
 ///
 /// flow_ui renders state and reports intent through callbacks — it contains
 /// nothing model-facing and depends only on the Flutter SDK.

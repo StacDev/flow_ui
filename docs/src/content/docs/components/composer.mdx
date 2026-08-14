@@ -10,7 +10,10 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 `FlowComposer` is the raised input card: a multiline field that grows with
 the draft, a send button that becomes **stop** while the model is
 generating, and slots for host actions on the design's rail. `onSend` is
-required — a composer needs somewhere to send to.
+required — a composer needs somewhere to send to. The card sits on
+`surfaceBright` behind a gradient hairline that firms on hover and focus,
+standing at the design's 116px with an empty draft — which also drains the
+send disc to the disabled ink.
 
 ## Composed
 
@@ -65,6 +68,15 @@ and the composer stays honest about what a tap will do.
 
 <FlowDemo demo="composer" variant="streaming" height={300} title="The stop state" />
 
+## Typing
+
+On hardware keyboards **Enter sends** and **Shift+Enter** inserts a
+newline — `submitOnEnter: false` opts out; mobile soft keyboards keep
+their newline key and send from the button. The field grows with the draft
+to `maxLines` (6) and scrolls beyond it, and `clearOnSend` empties it
+after a successful send. `onSend` receives the trimmed text and never
+fires empty.
+
 ## Attachments
 
 The composer renders a pending-attachments row above the field — pass
@@ -73,11 +85,16 @@ page shows the full flow, from the "+" menu to the sent message.
 
 ## Key API
 
-- `onSend` — required; receives the draft text.
+- `onSend` — required; receives the trimmed draft, never empty text.
 - `isStreaming` + `onStop` — the send/stop swap.
+- `enabled`, `submitOnEnter`, `clearOnSend`, `maxLines` — field behavior;
+  all default on, with a 6-line growth cap.
 - `leadingActions` / `trailingActions` — widget slots on the input rail;
   any widget works, the flow_ui menus just fit the design out of the box.
 - `attachments`, `onRemoveAttachment`, `removeAttachmentTooltip` — the
-  pending row.
-- `controller`, `placeholder` — the field itself; pass your own
-  `TextEditingController` to prefill or clear the draft.
+  pending row. `onAttachmentTap` *replaces* the built-in full-screen
+  preview; `previewCloseTooltip` labels the preview's close button.
+- `controller`, `focusNode`, `placeholder` — the field itself; pass your
+  own `TextEditingController` to prefill or clear the draft.
+- `padding`, `borderRadius` — the card's metric overrides (the design's
+  24px corner by default).

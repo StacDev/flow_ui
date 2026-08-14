@@ -48,16 +48,18 @@ class FlowMenuStyle {
     this.barrierColor,
   });
 
-  /// The menu card and the sheet. Defaults to `surfaceContainerLowest`.
+  /// The menu card and the sheet. Defaults to `surfaceBright`.
   final Color? backgroundColor;
 
-  /// Hairline around the card and the sheet. Defaults to ink at 20%.
+  /// Hairline around the card and the sheet. The card's default is a
+  /// gradient from ink at 20% to ink at 12%; setting this flattens it to
+  /// one solid color. The sheet's default is ink at 20%.
   final Color? borderColor;
 
   /// Rule between sections. Defaults to ink at 10%.
   final Color? separatorColor;
 
-  /// Row fill on hover and focus. Defaults to `surfaceContainerHigh`.
+  /// Row fill on hover and focus. Defaults to `surfaceContainer`.
   final Color? hoverColor;
 
   /// Merged over the default row label style (`labelLarge` at weight 500 in
@@ -68,7 +70,7 @@ class FlowMenuStyle {
   /// `onSurfaceMuted`).
   final TextStyle? descriptionStyle;
 
-  /// Leading row icons. Defaults to `onSurface`.
+  /// Leading row icons. Defaults to `onSurfaceVariant`.
   final Color? iconColor;
 
   /// The selected check. Defaults to `primary`.

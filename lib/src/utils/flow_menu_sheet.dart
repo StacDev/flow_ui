@@ -14,11 +14,12 @@ const Duration _pageTransition = Duration(milliseconds: 180);
 const double _navHeight = 56;
 const double _navIconSize = 20;
 
-/// The design's sheet metrics: 24px top corners, the nav bar inset 12,
-/// 24 under the last row.
+/// The design's sheet metrics: 24px top corners, the nav bar inset 12 and
+/// nudged 4 off the corner, 48 under the last row.
 const Radius _sheetCornerRadius = Radius.circular(24);
 const double _navInset = 12;
-const double _bottomPadding = 24;
+const double _navTopInset = 4;
+const double _bottomPadding = 48;
 
 /// The rendered width of the leading nav button — derived, not a spec
 /// value, so resizing the icon or the disc keeps the title centered.
@@ -40,6 +41,11 @@ class FlowMenuSheetPage {
 }
 
 /// Opens [root] as a modal bottom sheet styled like the anchored menus.
+///
+/// Rides the Material modal-sheet route, which itself requires
+/// [MaterialLocalizations]: a host not built on [MaterialApp] must list
+/// `DefaultMaterialLocalizations.delegate` in its `localizationsDelegates`
+/// for the phone presentation. Nothing else in the package needs it.
 Future<void> showFlowMenuSheet({
   required BuildContext context,
   required FlowMenuSheetPage root,
@@ -115,7 +121,12 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : _pageTransition;
-    final localizations = MaterialLocalizations.of(context);
+    // Not MaterialLocalizations.of: like the preview's close button, a
+    // missing tooltip must not be the one thing that throws.
+    final localizations = Localizations.of<MaterialLocalizations>(
+      context,
+      MaterialLocalizations,
+    );
 
     final navBar = SizedBox(
       height: _navHeight,
@@ -123,17 +134,18 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
         padding: const EdgeInsetsDirectional.only(
           start: _navInset,
           end: _navInset,
+          top: _navTopInset,
         ),
         child: Row(
           children: [
             FlowCircleButton(
               icon: atRoot ? Icons.close : Icons.arrow_back,
               background: Colors.transparent,
-              foreground: colors.onSurface,
+              foreground: colors.onSurfaceVariant,
               iconSize: _navIconSize,
               tooltip: atRoot
-                  ? localizations.closeButtonTooltip
-                  : localizations.backButtonTooltip,
+                  ? localizations?.closeButtonTooltip
+                  : localizations?.backButtonTooltip,
               onTap: atRoot ? close : _pop,
             ),
             Expanded(

@@ -49,9 +49,15 @@ FlowStreamingText(
 
 ## Key API
 
-- `text` — the accumulated text; grow it as chunks arrive.
+- `text` — the accumulated text; grow it as chunks arrive. A new value
+  that doesn't extend the old one — a regenerate, a branch switch —
+  restarts the reveal.
 - `isStreaming` — `true` animates the reveal, flipping to `false`
   fast-forwards whatever hasn't been shown yet.
+- `charactersPerSecond` — the baseline speed (300); the widget adapts
+  above it whenever the stream runs ahead.
+- `style`, `textAlign` — merged over the default `bodyLarge` in
+  `onSurface`.
 - In a thread you rarely reach for this directly: give `FlowMessageData` a
   `status` of `FlowMessageStatus.streaming` and `FlowMessage` applies the
   same treatment.

@@ -24,14 +24,13 @@ const playgroundDevIndex = {
 
 // https://astro.build/config
 export default defineConfig({
-	// Placeholder until a custom domain is decided.
-	site: 'https://flow-ui-docs.pages.dev',
+	site: 'https://flowui.stac.dev',
 	integrations: [
 		playgroundDevIndex,
 		starlight({
 			title: 'Flow UI',
 			description:
-				'Chat and assistant UI components for Flutter. Renders state, reports intent, zero third-party dependencies.',
+				'Flow UI is an open-source Flutter UI library to build production-grade Chat & AI assistant interfaces.',
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
 			components: {
@@ -39,6 +38,9 @@ export default defineConfig({
 				ThemeSelect: './src/components/ThemeSelect.astro',
 				SiteTitle: './src/components/SiteTitle.astro',
 				SocialIcons: './src/components/SocialIcons.astro',
+				// Stock provider with the auto fallback flipped to light for
+				// browsers that don't support prefers-color-scheme.
+				ThemeProvider: './src/components/ThemeProvider.astro',
 			},
 			expressiveCode: {
 				styleOverrides: {

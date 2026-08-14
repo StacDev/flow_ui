@@ -8,10 +8,11 @@ sidebar:
 import FlowDemo from '../../../components/FlowDemo.astro';
 
 `FlowMessageActions` is the muted icon row that lives under an assistant
-turn. Each `FlowMessageAction` comes from a named constructor — `.copy`,
-`.regenerate`, `.edit`, `.thumbUp`, `.thumbDown` — and carries its tooltip
-and callback. The row lays them out at the design's rhythm and reports the
-taps; what they do is entirely the host's business.
+turn. The five shipped actions come as named constructors — `.copy`,
+`.regenerate`, `.edit`, `.thumbUp`, `.thumbDown` — each carrying its
+tooltip and callback, and the default constructor takes any `icon` for
+actions of your own. The row lays them out at the design's rhythm and
+reports the taps; what they do is entirely the host's business.
 
 ## Action row
 
@@ -63,6 +64,9 @@ FlowMessage(
 - `FlowMessageAction.copy / .regenerate / .edit / .thumbUp / .thumbDown` —
   the shipped actions; every one takes `tooltip`, `onPressed`, and
   `selected` where it applies.
+- `FlowMessageAction(icon: …)` — a custom action (share, retry,
+  bookmark): your `icon`, an optional `selectedIcon`, and the same
+  `tooltip` / `onPressed` / `selected`.
 - No `onPressed` → the action renders muted and ignores taps.
 - Tooltips are host-supplied strings — the package ships no copy, so
   localization stays yours.
