@@ -6,6 +6,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "docs", "run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "playground",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd playground && flutter run -d web-server --web-port=8123"
+      ],
+      "port": 8123
     }
   ]
 }
