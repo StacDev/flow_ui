@@ -7,7 +7,6 @@ import '../models/flow_attachment.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_error.dart';
 import '../utils/flow_circle_button.dart';
-import '../utils/flow_state_colors.dart';
 import 'flow_attachment_preview.dart';
 
 /// How a [FlowAttachmentGroup] arranges its tiles.
@@ -57,11 +56,11 @@ class FlowAttachmentGroup extends StatefulWidget {
     this.removeTooltip,
     this.previewCloseTooltip,
     this.layout = FlowAttachmentLayout.scroll,
-    this.size = 80,
+    this.size,
     this.tileRadius,
     this.spacing,
     this.padding,
-  }) : assert(size > 0, 'size must be positive');
+  }) : assert(size == null || size > 0, 'size must be positive');
 
   /// Rendered in order; ids must be unique within the list.
   final List<FlowAttachment> attachments;
@@ -83,10 +82,13 @@ class FlowAttachmentGroup extends StatefulWidget {
 
   final FlowAttachmentLayout layout;
 
-  /// Edge length of each square tile.
-  final double size;
+  /// Edge length of each square tile. Defaults to the design's 80 — 64 on
+  /// phones, resolved from the theme's platform so hosts and tests can
+  /// steer it without a device.
+  final double? size;
 
-  /// Corner radius of each tile. Defaults to the design's 16.
+  /// Corner radius of each tile. Defaults to the design's 16 — 12 on
+  /// phones, alongside [size].
   final BorderRadius? tileRadius;
 
   /// Gap between tiles, and between lines when wrapping. Defaults to the
@@ -163,6 +165,12 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
   Widget _tile(int index) {
     final attachment = widget.attachments[index];
     final onRemove = widget.onRemove;
+    // The phone tile is a step smaller and tighter, per the design; the
+    // theme's platform rather than the real one, like the menus' sheet
+    // resolution.
+    final platform = Theme.of(context).platform;
+    final mobile =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.android;
     // Without a host handler the tap opens the built-in preview, which needs
     // something to show — so an attachment with no image of its own, like a
     // document, is inert rather than opening an empty viewer.
@@ -173,8 +181,8 @@ class _FlowAttachmentGroupState extends State<FlowAttachmentGroup> {
       // image stream — onto its neighbour.
       key: ValueKey(attachment.id),
       attachment: attachment,
-      size: widget.size,
-      radius: widget.tileRadius ?? _tileRadius,
+      size: widget.size ?? (mobile ? _mobileTileSize : _tileSize),
+      radius: widget.tileRadius ?? (mobile ? _mobileTileRadius : _tileRadius),
       removeTooltip: widget.removeTooltip,
       alwaysShowRemove: !_hoverCapable,
       onTap: tappable ? () => _handleTap(index) : null,
@@ -228,9 +236,13 @@ bool _idsAreUnique(List<FlowAttachment> attachments) =>
 /// The reveal is short enough to feel like part of the hover itself.
 const Duration _revealDuration = Duration(milliseconds: 120);
 
-/// The design's tile: 16px corners, an 8px gap between tiles, the remove
-/// disc inset 4 from its corner, and the type pill inset 8 from its own.
+/// The design's tile: 80 on 16px corners — 64 on 12 on phones — an 8px gap
+/// between tiles, the remove disc inset 4 from its corner, and the type
+/// pill inset 8 from its own.
+const double _tileSize = 80;
+const double _mobileTileSize = 64;
 const BorderRadius _tileRadius = BorderRadius.all(Radius.circular(16));
+const BorderRadius _mobileTileRadius = BorderRadius.all(Radius.circular(12));
 const double _defaultGap = 8;
 const double _removeInset = 4;
 
@@ -238,7 +250,7 @@ const double _removeInset = 4;
 /// decision: retuning the disc's position must not resize it.
 const double _removeDiscPadding = 4;
 const double _pillInset = 8;
-const BorderRadius _pillRadius = BorderRadius.all(Radius.circular(8));
+const BorderRadius _pillRadius = BorderRadius.all(Radius.circular(6));
 const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
   horizontal: 4,
   vertical: 1,
@@ -408,13 +420,11 @@ class _AttachmentTileState extends State<_AttachmentTile> {
                         : _revealDuration,
                     child: FlowCircleButton(
                       icon: Icons.close,
-                      // A scrim rather than a flat token: the disc sits over
-                      // host pixels the package can't see. The ink tint stays
-                      // the ambient one so hovering doesn't snap it opaque.
-                      background: flowScrimColor(
-                        colors.surfaceContainerHighest,
-                      ),
-                      foreground: colors.onSurface,
+                      // The type pill's dress: 75% ink over host pixels the
+                      // package can't see, the glyph cut from the card
+                      // surface.
+                      background: colors.onSurfaceVariant,
+                      foreground: colors.surfaceBright,
                       iconSize: 16,
                       padding: _removeDiscPadding,
                       tooltip: widget.removeTooltip,
@@ -464,15 +474,15 @@ class _TypePill extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: _pillBlur, sigmaY: _pillBlur),
           child: ColoredBox(
-            // A scrim, like the remove disc: the chip sits over host pixels
-            // the package can't see.
-            color: flowScrimColor(colors.surfaceContainerHighest),
+            // The design's dark chip: the 75% ink over host pixels the
+            // package can't see, its label cut from the card surface.
+            color: colors.onSurfaceVariant,
             child: Padding(
               padding: _pillPadding,
               child: Text(
                 kind,
                 style: context.flowTypography.labelMedium.copyWith(
-                  color: colors.onSurface,
+                  color: colors.surfaceBright,
                   fontWeight: FontWeight.w600,
                 ),
               ),
