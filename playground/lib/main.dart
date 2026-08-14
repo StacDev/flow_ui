@@ -53,7 +53,6 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
         extensions: [FlowTheme.dark()],
       ),
       home: PlaygroundShell(
-        themeMode: _mode,
         onThemeModeChanged: (mode) => setState(() => _mode = mode),
       ),
     );
