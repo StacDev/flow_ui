@@ -16,7 +16,7 @@ The theme, the conversation components (message, thread, streaming text, actions
 ## Layout
 
 - Package at the repo root: `lib/`, `test/`, `pubspec.yaml`.
-- `example/` — a full Flutter app depending on the package via `path: ../`. Use it to demo and manually exercise components.
+- `playground/` — the Flow UI Playground: a full Flutter app depending on the package via `path: ../`. Use it to demo and manually exercise components (every component has a stage demo, with variant pills and code snippets).
 
 ## Commands
 
@@ -30,10 +30,10 @@ flutter analyze
 dart format .
 ```
 
-Example app:
+Playground app:
 
 ```bash
-cd example
+cd playground
 flutter pub get
 flutter run -d chrome    # or any device
 ```

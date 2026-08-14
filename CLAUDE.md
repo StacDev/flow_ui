@@ -16,11 +16,11 @@ The theme, the conversation components (message, thread, streaming text, actions
 ## Layout
 
 - Package at the repo root: `lib/`, `test/`, `fonts/`, `pubspec.yaml`.
-- `example/` — a full Flutter app depending on the package via `path: ../`. Use it to demo and manually exercise components.
+- `playground/` — the Flow UI Playground: a full Flutter app depending on the package via `path: ../`. Use it to demo and manually exercise components (every component has a stage demo, with variant pills and code snippets).
 
 ## Commands
 
-**Don't write tests for now.** `test/` is deliberately empty — the component surface is still being reshaped design-first, so tests written now would mostly encode values about to change. Verify a change with `flutter analyze` and by exercising it in the `example/` gallery, not by adding a test file. If something seems to genuinely need one, say so and let the user decide.
+**Don't write tests for now.** `test/` is deliberately empty — the component surface is still being reshaped design-first, so tests written now would mostly encode values about to change. Verify a change with `flutter analyze` and by exercising it in the `playground/` app, not by adding a test file. If something seems to genuinely need one, say so and let the user decide.
 
 From the repo root:
 
@@ -30,10 +30,10 @@ dart format .
 flutter test                                  # all tests (see above — none yet)
 ```
 
-Example app:
+Playground app:
 
 ```bash
-cd example
+cd playground
 flutter pub get
 flutter run -d chrome    # or any device
 ```
