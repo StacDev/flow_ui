@@ -115,7 +115,8 @@ class FlowMenu extends StatefulWidget {
 }
 
 class _FlowMenuState extends State<FlowMenu> {
-  /// The design's trigger: an 18px glyph centered on a 32px disc.
+  /// The design's trigger: an 18px glyph centered on a 32px disc, washed
+  /// with the ladder's 6% `surfaceContainer` rung on hover.
   static const double _triggerIconSize = 18;
   static const double _triggerPadding = 7;
 
@@ -143,13 +144,16 @@ class _FlowMenuState extends State<FlowMenu> {
         switch (entry) {
           FlowMenuDivider() => FlowMenuRule(style: style),
           FlowMenuOption(children: []) => _optionRow(entry, large: false),
-          FlowMenuOption() => SubmenuButton(
-            menuStyle: flowMenuStyle(context, style: style),
-            style: flowSubmenuRowStyle(context, style: style),
-            submenuIcon: flowSubmenuChevron(context),
+          FlowMenuOption() => FlowSubmenuRow(
+            style: style,
             menuChildren: [
-              for (final child in entry.children)
-                _optionRow(child, large: false),
+              FlowMenuCard(
+                style: style,
+                children: [
+                  for (final child in entry.children)
+                    _optionRow(child, large: false),
+                ],
+              ),
             ],
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -234,7 +238,14 @@ class _FlowMenuState extends State<FlowMenu> {
 
     return MenuAnchor(
       style: flowMenuStyle(context, style: widget.menuStyle),
-      menuChildren: asSheet ? const [] : _menuChildren(context),
+      menuChildren: asSheet
+          ? const []
+          : [
+              FlowMenuCard(
+                style: widget.menuStyle,
+                children: _menuChildren(context),
+              ),
+            ],
       builder: (context, controller, _) {
         Widget trigger = Material(
           type: MaterialType.transparency,
@@ -250,7 +261,7 @@ class _FlowMenuState extends State<FlowMenu> {
                 ? (value) => setState(() => _hovered = value)
                 : null,
             customBorder: const CircleBorder(),
-            hoverColor: colors.surfaceContainerHigh,
+            hoverColor: colors.surfaceContainer,
             child: Padding(
               padding: const EdgeInsets.all(_triggerPadding),
               child: Icon(

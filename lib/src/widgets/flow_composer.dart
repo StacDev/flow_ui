@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../models/flow_attachment.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
-import '../utils/flow_state_colors.dart';
+import '../utils/flow_gradient_outline.dart';
 import 'flow_attachment_group.dart';
 
 /// The message input area: an auto-growing text field with an action bar
@@ -266,7 +266,9 @@ class _FlowComposerState extends State<FlowComposer> {
           context,
           active: canSend,
           disc: Material(
-            color: canSend ? colors.primary : colors.surfaceContainerHigh,
+            // Disabled keeps the arrow's ink and only drains the disc:
+            // primary gives way to the 30% disabled wash.
+            color: canSend ? colors.primary : colors.onSurfaceDisabled,
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -275,11 +277,7 @@ class _FlowComposerState extends State<FlowComposer> {
               child: CustomPaint(
                 // The design's arrow is a thin stroke, not the chunky
                 // Material glyph.
-                painter: _ArrowUpPainter(
-                  color: canSend
-                      ? colors.onPrimary
-                      : flowDisabledColor(colors.onSurfaceVariant),
-                ),
+                painter: _ArrowUpPainter(color: colors.onPrimary),
               ),
             ),
           ),
@@ -302,7 +300,7 @@ class _FlowComposerState extends State<FlowComposer> {
       child: CustomPaint(
         // The outline is painted rather than a layout border so the card
         // never shifts as it swaps between its rest and active gradients.
-        foregroundPainter: _OutlinePainter(
+        foregroundPainter: FlowGradientOutlinePainter(
           radius: radius,
           start: colors.onSurface.withValues(
             alpha: active ? _outlineActiveAlpha : _outlineRestAlpha,
@@ -403,41 +401,6 @@ class _FlowComposerState extends State<FlowComposer> {
       ),
     );
   }
-}
-
-/// The card's hairline: a 1px stroke centered on the card's edge, shaded by
-/// the design's ink gradient — strongest at the top-left, thinning toward
-/// the bottom-right.
-class _OutlinePainter extends CustomPainter {
-  const _OutlinePainter({
-    required this.radius,
-    required this.start,
-    required this.end,
-  });
-
-  final BorderRadius radius;
-  final Color start;
-  final Color end;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [start, end],
-      ).createShader(rect);
-    canvas.drawRRect(radius.toRRect(rect).deflate(0.5), paint);
-  }
-
-  @override
-  bool shouldRepaint(_OutlinePainter oldDelegate) =>
-      oldDelegate.start != start ||
-      oldDelegate.end != end ||
-      oldDelegate.radius != radius;
 }
 
 /// The send arrow: a thin rounded stroke, matching the design's 1.5-weight
