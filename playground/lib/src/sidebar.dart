@@ -1,10 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
+import 'open_docs.dart';
 import 'playground_item.dart';
 import 'shell_palette.dart';
 
 /// The 214px navigation rail: an Examples section, then the component
-/// list. The active row gets the tinted ground and the accent icon.
+/// list, and — on the web, where the docs share the origin — a Docs link
+/// pinned at the bottom.
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key, required this.selected, required this.onSelect});
 
@@ -23,24 +27,126 @@ class Sidebar extends StatelessWidget {
         color: shell.sidebarBg,
         border: Border(right: BorderSide(color: shell.border)),
       ),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionLabel('Examples', first: true),
-          for (final item in examples)
-            _NavRow(
-              item: item,
-              active: item == selected,
-              onTap: () => onSelect(item),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+              children: [
+                const _SectionLabel('Examples', first: true),
+                for (final item in examples)
+                  _NavRow(
+                    item: item,
+                    active: item == selected,
+                    onTap: () => onSelect(item),
+                  ),
+                const _SectionLabel('Components'),
+                for (final item in components)
+                  _NavRow(
+                    item: item,
+                    active: item == selected,
+                    onTap: () => onSelect(item),
+                  ),
+              ],
             ),
-          const _SectionLabel('Components'),
-          for (final item in components)
-            _NavRow(
-              item: item,
-              active: item == selected,
-              onTap: () => onSelect(item),
+          ),
+          // The playground is served from /playground/ on the docs origin;
+          // off the web there is no docs site (or browser tab) to go to.
+          if (kIsWeb)
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: shell.border)),
+              ),
+              padding: const EdgeInsets.fromLTRB(10, 9, 10, 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _FooterLink(
+                    icon: PhosphorIconsRegular.bookOpen,
+                    label: 'Docs',
+                    onTap: openDocs,
+                  ),
+                  const SizedBox(height: 1),
+                  _FooterLink(
+                    icon: PhosphorIconsRegular.package,
+                    label: 'pub.dev',
+                    onTap: () =>
+                        openExternal('https://pub.dev/packages/flow_ui'),
+                  ),
+                ],
+              ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// A pinned footer row: same rhythm as a nav row, with the outbound
+/// arrow that marks it as leaving the playground.
+class _FooterLink extends StatefulWidget {
+  const _FooterLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  State<_FooterLink> createState() => _FooterLinkState();
+}
+
+class _FooterLinkState extends State<_FooterLink> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = ShellPalette.of(context);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: _hovered ? shell.navHover : Colors.transparent,
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                widget.icon,
+                size: 15,
+                color: _hovered ? shellAccent : shell.iconRest,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: shellText(
+                    size: 13.5,
+                    weight: FontWeight.w500,
+                    color: _hovered ? shell.text : shell.navText,
+                  ),
+                ),
+              ),
+              Icon(
+                PhosphorIconsRegular.arrowUpRight,
+                size: 13,
+                color: shell.iconRest,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
