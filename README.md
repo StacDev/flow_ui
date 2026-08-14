@@ -19,45 +19,38 @@
 </p>
 
 <p align="center">
-Chat &amp; AI assistant UI components for Flutter — the presentation layer
-for assistant interfaces: message threads, streaming text, a composer with
-attachments and menus, suggestions, and a complete chat surface.
+flow_ui is a Flutter UI library for AI assistant interfaces — thoughtfully
+designed chat components that render the state you pass in and report
+intent back out. Zero third-party dependencies, nothing model-facing,
+light and dark out of the box.
 </p>
 
-![flow_ui — chat UI components for Flutter, in light and dark](doc/hero.png)
+![The flow_ui chat surface](doc/chat_zero_light.png)
 
 > [!IMPORTANT]
 > flow_ui is pre-1.0. The API is still settling, and minor releases may
 > carry breaking changes — pin a minor version and read the
 > [changelog](CHANGELOG.md) when upgrading.
 
-Two commitments shape the package:
-
-- **Zero third-party dependencies.** `flow_ui` depends on the Flutter SDK and
-  nothing else. Adding it to an app adds no transitive baggage.
-- **Nothing model-facing.** Components render the state you pass in and report
-  intent back through callbacks. There are no prompts, no schemas, no network
-  calls, and no LLM awareness — wire it to any backend (or none).
-
 ## What's in the box
 
 | Component | What it does |
 |---|---|
-| `FlowChatScreen` | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
-| `FlowThread` | Scrollable conversation anchored to the newest message |
-| `FlowMessage` | One turn — ink-wash user bubble, plain assistant, error bubble, typed content parts |
-| `FlowStreamingText` | Animated text reveal while a reply arrives |
-| `FlowThinkingIndicator` | Turning, breathing asterisk with a shimmering label |
-| `FlowShimmerText` | Sweeping text highlight, static once settled |
-| `FlowMessageActions` | Copy / regenerate / edit / feedback row under a message |
-| `FlowComposer` | Multiline input with send/stop, attachments strip, and leading/trailing action slots |
-| `FlowMenu` | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |
-| `FlowModelSelector` | Model picker with effort and overflow submenus, sheet on phones |
-| `FlowAttachmentGroup` | Image and file tiles with a type pill |
-| `FlowAttachmentPreview` | Full-screen image viewer with zoom and paging |
-| `FlowSuggestion` / `FlowSuggestionGroup` | Prompt starters — plain or outlined; scroll, wrap, or column layouts |
-| `FlowGreeting` | Zero-state headline |
-| `FlowTheme` | Design tokens (colors and typography) as a `ThemeExtension`, with light and dark presets |
+| [`FlowChatScreen`](https://flowui.stac.dev/components/chat-screen) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
+| [`FlowThread`](https://flowui.stac.dev/components/message-thread) | Scrollable conversation anchored to the newest message |
+| [`FlowMessage`](https://flowui.stac.dev/components/message-thread) | One turn — ink-wash user bubble, plain assistant, error bubble, typed content parts |
+| [`FlowStreamingText`](https://flowui.stac.dev/components/streaming-text) | Animated text reveal while a reply arrives |
+| [`FlowThinkingIndicator`](https://flowui.stac.dev/components/thinking-indicator) | Turning, breathing asterisk with a shimmering label |
+| [`FlowShimmerText`](https://flowui.stac.dev/components/shimmer-text) | Sweeping text highlight, static once settled |
+| [`FlowMessageActions`](https://flowui.stac.dev/components/message-actions) | Copy / regenerate / edit / feedback row under a message |
+| [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, and leading/trailing action slots |
+| [`FlowMenu`](https://flowui.stac.dev/components/menu) | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |
+| [`FlowModelSelector`](https://flowui.stac.dev/components/model-selector) | Model picker with effort and overflow submenus, sheet on phones |
+| [`FlowAttachmentGroup`](https://flowui.stac.dev/components/attachments) | Image and file tiles with a type pill |
+| [`FlowAttachmentPreview`](https://flowui.stac.dev/components/attachments) | Full-screen image viewer with zoom and paging |
+| [`FlowSuggestion`](https://flowui.stac.dev/components/suggestions) / [`FlowSuggestionGroup`](https://flowui.stac.dev/components/suggestions) | Prompt starters — plain or outlined; scroll, wrap, or column layouts |
+| [`FlowGreeting`](https://flowui.stac.dev/components/greeting) | Zero-state headline |
+| [`FlowTheme`](https://flowui.stac.dev/theming) | Design tokens (colors and typography) as a `ThemeExtension`, with light and dark presets |
 
 ## Getting started
 
