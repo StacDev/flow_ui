@@ -1,17 +1,35 @@
-# flow_ui
+<p align="center">
+  <img src="doc/flow_ui_logo.svg" width="76" alt="Flow UI logo">
+</p>
 
-[![pub package](https://img.shields.io/pub/v/flow_ui.svg)](https://pub.dev/packages/flow_ui)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/StacDev/flow_ui/blob/main/LICENSE)
+<h1 align="center">flow_ui</h1>
 
-Chat & AI assistant UI components for Flutter — the presentation layer for
-assistant interfaces: message threads, streaming text, a composer with
+<p align="center">
+  <a href="https://pub.dev/packages/flow_ui"><img src="https://img.shields.io/pub/v/flow_ui.svg" alt="pub package"></a>
+  <a href="https://pub.dev/packages/flow_ui/score"><img src="https://img.shields.io/pub/points/flow_ui" alt="pub points"></a>
+  <a href="https://github.com/StacDev/flow_ui"><img src="https://img.shields.io/github/stars/StacDev/flow_ui?style=flat&logo=github&color=8250df" alt="github stars"></a>
+  <a href="https://github.com/StacDev/flow_ui/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license: MIT"></a>
+</p>
+
+<p align="center">
+  📚 <a href="https://flowui.stac.dev/">Documentation</a>
+  · 🧩 <a href="https://flowui.stac.dev/playground">Playground</a>
+  · 🤓 <a href="https://pub.dev/documentation/flow_ui/latest/">API Reference</a>
+  · 🗺️ <a href="https://flowui.stac.dev/roadmap">Roadmap</a>
+</p>
+
+<p align="center">
+Chat &amp; AI assistant UI components for Flutter — the presentation layer
+for assistant interfaces: message threads, streaming text, a composer with
 attachments and menus, suggestions, and a complete chat surface.
+</p>
 
-**[Documentation](https://flowui.stac.dev/) · [Live playground](https://flowui.stac.dev/playground)**
+![flow_ui — chat UI components for Flutter, in light and dark](doc/hero.png)
 
-![The chat surface zero state, light theme](doc/chat_zero_light.png)
-
-![A conversation thread, dark theme](doc/chat_thread_dark.png)
+> [!IMPORTANT]
+> flow_ui is pre-1.0. The API is still settling, and minor releases may
+> carry breaking changes — pin a minor version and read the
+> [changelog](CHANGELOG.md) when upgrading.
 
 Two commitments shape the package:
 
