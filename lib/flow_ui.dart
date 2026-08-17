@@ -2,7 +2,8 @@
 /// to build production-grade Chat & AI assistant interfaces.
 ///
 /// flow_ui renders state and reports intent through callbacks — it contains
-/// nothing model-facing and depends only on the Flutter SDK.
+/// nothing model-facing and builds only on Flutter's own first-party
+/// packages.
 library;
 
 export 'src/models/flow_attachment.dart';

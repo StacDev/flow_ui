@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
@@ -64,7 +64,7 @@ class FlowEffortOption {
 /// automatic by platform unless forced — and [menuStyle] overrides the
 /// token-derived look.
 ///
-/// The sheet rides the Material modal route, so a host not built on
+/// The sheet rides material_ui's modal route, so a host not built on
 /// [MaterialApp] needs `DefaultMaterialLocalizations.delegate` among its
 /// `localizationsDelegates` for the phone presentation.
 class FlowModelSelector extends StatefulWidget {

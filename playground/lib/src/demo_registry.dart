@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'demos/add_to_chat_demo.dart';
 import 'demos/attachments_demo.dart';

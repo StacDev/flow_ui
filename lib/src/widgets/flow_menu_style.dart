@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// How a flow_ui menu presents when its trigger is tapped.
 enum FlowMenuPresentation {

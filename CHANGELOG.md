@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- **Breaking**: migrated from `package:flutter/material.dart` to
+  `package:material_ui` (Material's home since Flutter 3.47) — no API
+  changes, but the two Materials are distinct types, so the host app must
+  migrate too: `dart fix --apply --code=migrate_design_widgets` on
+  Flutter 3.44+, or pin flow_ui 0.1.x.
+
 ## 0.1.0
 
 First public release — the assistant UI component library for Flutter, with

@@ -1,7 +1,7 @@
 import 'dart:ui' show ImageFilter;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_attachment.dart';
 import '../theme/flow_theme.dart';
@@ -116,7 +116,7 @@ class FlowAttachmentPreview extends StatefulWidget {
   /// Which one opens first.
   final int initialIndex;
 
-  /// Host-localized; defaults to the framework's own close-button label when
+  /// Host-localized; defaults to material_ui's own close-button label when
   /// [MaterialLocalizations] is available, so the package still ships no
   /// strings of its own.
   final String? closeTooltip;

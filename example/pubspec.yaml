@@ -5,10 +5,12 @@ version: 0.1.0
 
 environment:
   sdk: ^3.12.2
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.0.0
   flow_ui:
     path: ../
 

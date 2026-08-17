@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The typeface the presets are drawn in, bundled with this package under
 /// `fonts/` (SIL Open Font License — see `fonts/OFL.txt`).
