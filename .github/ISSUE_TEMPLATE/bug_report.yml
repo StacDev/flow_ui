@@ -1,0 +1,99 @@
+name: 🐛 Bug report
+description: A component renders or behaves incorrectly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file this. If you can, reproduce it in the
+        [playground](https://flowui.stac.dev/playground) first — it runs the
+        latest build, so it tells us quickly whether the bug is still there.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and where.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        The smallest widget tree that shows the problem — ideally something we
+        can drop into a fresh app and run. Include the steps if it only appears
+        after an interaction.
+      render: dart
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - FlowChatScreen
+        - FlowThread / FlowMessage
+        - FlowStreamingText
+        - FlowThinkingIndicator / FlowShimmerText
+        - FlowMessageActions
+        - FlowComposer
+        - FlowMenu / FlowModelSelector
+        - FlowAttachmentGroup / FlowAttachmentPreview
+        - FlowSuggestion / FlowSuggestionGroup
+        - FlowGreeting
+        - FlowTheme (colors, typography, dark mode)
+        - Playground app
+        - Something else / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: flow_ui version
+      description: The resolved version from your `pubspec.lock`, e.g. 0.2.0.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Platforms
+      description: Where you see it. Pick every one you have checked.
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Web
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or recording
+      description: |
+        For anything visual — spacing, colour, animation, layout — this is the
+        fastest way to show us. Drag images in; they upload automatically.
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: flutter doctor -v
+      description: Paste the full output. It captures the Flutter and Dart versions we need.
+      render: text
+    validations:
+      required: true

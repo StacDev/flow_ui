@@ -1,0 +1,55 @@
+name: ✨ Feature or component request
+description: A new component, a variant, or an API that isn't there yet.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [roadmap](https://flowui.stac.dev/roadmap) first — several
+        components are already planned, and a 👍 on an existing issue helps us
+        order them.
+
+        Two constraints shape what can land here, so it's worth knowing them
+        before you write:
+
+        - **No third-party dependencies.** The package depends on the Flutter
+          SDK and Flutter's own first-party packages, nothing else.
+        - **Nothing model-facing.** Components render state passed in and report
+          intent through callbacks — no prompts, schemas, or provider calls.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of request is this
+      options:
+        - A new component
+        - A variant or option on an existing component
+        - A new API, callback, or parameter
+        - A theming or design-token change
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to build, and where does flow_ui get in the way today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you'd like
+      description: |
+        Sketch the API or the behaviour. Dart, a screenshot of the interface you
+        have in mind, or a link to a design all work.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you're doing instead
+      description: Workarounds you've tried, or how other libraries handle it.
