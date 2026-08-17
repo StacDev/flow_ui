@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Two hard constraints shape everything here:
 
-- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree (`fonts/`, SIL OFL) because the design system is set in it, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
+- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree and Geist Mono (`fonts/`, SIL OFL) because the design system is set in them, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
 The theme, the conversation components (message, thread, streaming text, actions, loading), the composer and its menus, attachments with their preview, suggestions, and the chat surface are implemented; the roadmap below tracks the rest. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.
@@ -87,7 +87,7 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 | 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
-| 21 | Code block | | ⬜ |
+| 21 | Code block | built-in synchronous highlighter; languages host-extensible | ✅ |
 | 22 | Thinking indicator | turning, breathing asterisk + shimmer label; active & settled | ✅ |
 | 23 | Shimmer | text only; sweeping highlight, static when settled | ✅ |
 

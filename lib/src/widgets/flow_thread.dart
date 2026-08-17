@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
+import '../models/flow_message_part.dart';
 import 'flow_message.dart';
 
 /// The scrollable conversation: a bottom-anchored list of [FlowMessageData]s.
@@ -16,6 +17,9 @@ class FlowThread extends StatelessWidget {
     this.customPartBuilder,
     this.onAttachmentTap,
     this.previewCloseTooltip,
+    this.onCodeCopy,
+    this.copiedCodePart,
+    this.codeCopyTooltip,
     this.controller,
     this.padding,
     this.itemSpacing,
@@ -41,6 +45,17 @@ class FlowThread extends StatelessWidget {
 
   /// Host-localized label for the built-in preview's close button.
   final String? previewCloseTooltip;
+
+  /// Copy intent from any code block in the thread, handed the tapped
+  /// [FlowCodePart]. Forwarded to each [FlowMessage].
+  final ValueChanged<FlowCodePart>? onCodeCopy;
+
+  /// The part whose block shows the copied check — the instance received
+  /// from [onCodeCopy], passed back while the host's confirmation lasts.
+  final FlowCodePart? copiedCodePart;
+
+  /// Host-localized label for the code blocks' copy affordance.
+  final String? codeCopyTooltip;
 
   /// Optional external scroll controller.
   final ScrollController? controller;
@@ -94,6 +109,9 @@ class FlowThread extends StatelessWidget {
                     ? null
                     : (attachmentId) => onAttachmentTap(message, attachmentId),
                 previewCloseTooltip: previewCloseTooltip,
+                onCodeCopy: onCodeCopy,
+                copiedCodePart: copiedCodePart,
+                codeCopyTooltip: codeCopyTooltip,
                 charactersPerSecond: charactersPerSecond,
                 thinkingLabel: thinkingLabel,
               ),

@@ -28,6 +28,7 @@ enum PlaygroundItem {
     PhosphorIconsRegular.chatCircleDots,
     'flow_streaming_message.dart',
   ),
+  codeBlock('Code Block', PhosphorIconsRegular.code, 'flow_code_block.dart'),
   addToChat(
     'Add to Chat',
     PhosphorIconsRegular.plus,

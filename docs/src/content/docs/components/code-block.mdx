@@ -1,0 +1,146 @@
+---
+title: Code block
+description: Fenced code on its own ground — built-in synchronous highlighting, a header label, and a copy affordance that reports intent.
+sidebar:
+  order: 13
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowCodeBlock` renders a fenced snippet on its own washed ground, under a
+header that names the content and offers copy. Highlighting is built in
+and synchronous — no setup call, no assets, nothing async. `language`
+picks a rule table (Dart, JSON, JavaScript/TypeScript, Python and shell
+ship in the box); unknown ids render plain, never an error. Token inks
+come from the theme's `FlowSyntaxColors`, so code recolors with the rest
+of the palette in both themes.
+
+In a message, code arrives as a `FlowCodePart` and `FlowMessage` renders
+the block for you — copy intent surfaces on `FlowThread.onCodeCopy` with
+the part in hand.
+
+## Dart
+
+<FlowDemo demo="codeBlock" variant="dart" height={620} title="Dart" />
+
+```dart title="The block reports intent; the host owns the clipboard"
+FlowCodeBlock(
+  code: source,
+  language: 'dart',
+  filename: 'point.dart',
+  copyTooltip: 'Copy code',
+  copied: copied,
+  onCopy: () async {
+    await Clipboard.setData(ClipboardData(text: source));
+    setState(() => copied = true);
+    // Hold `copied` for a beat, then clear it — the affordance shows a
+    // primary-tinted check for as long as the host says so.
+  },
+)
+```
+
+## JSON
+
+Keys read apart from string values, and long lines scroll horizontally
+inside the block (`wrap: true` wraps them instead):
+
+<FlowDemo demo="codeBlock" variant="json" height={420} title="JSON" />
+
+```dart title="A payload with a long line"
+FlowCodeBlock(
+  code: payload,
+  language: 'json',
+  filename: 'screen.json',
+  copyTooltip: 'Copy code',
+  onCopy: () => copy(payload),
+)
+```
+
+## Plain
+
+No `language` — or one the registry doesn't know — renders plain ink;
+the header can still carry a filename:
+
+<FlowDemo demo="codeBlock" variant="plain" height={300} title="Plain" />
+
+```dart title="Logs, output, anything unhighlightable"
+FlowCodeBlock(
+  code: log,
+  filename: 'build.log',
+  copyTooltip: 'Copy',
+  onCopy: () => copy(log),
+)
+```
+
+## Streaming
+
+While `isStreaming` is true the copy affordance hides — there is nothing
+complete to copy — and each delivery renders whole, with no per-character
+reveal (streamed code arrives re-highlighted as often as appended, which
+a reveal would restart on). In a thread this is automatic while the
+message streams:
+
+<FlowDemo demo="codeBlock" variant="streaming" height={620} title="Streaming" />
+
+```dart title="Code parts in a streaming thread"
+FlowThread(
+  messages: messages,
+  codeCopyTooltip: 'Copy code',
+  copiedCodePart: copiedPart,
+  onCodeCopy: (part) async {
+    await Clipboard.setData(ClipboardData(text: part.code));
+    setState(() => copiedPart = part);
+  },
+)
+```
+
+## Languages
+
+The registry is host-extensible. `FlowCodeLanguage` is an ordered rule
+table — earlier rules win, so comments and strings come first — and
+`register` makes it resolvable from every block:
+
+```dart title="Registering a language"
+FlowCodeLanguage.register(
+  const FlowCodeLanguage(
+    id: 'lisp',
+    rules: [
+      FlowSyntaxRule(FlowSyntaxToken.comment, r';[^\n]*'),
+      FlowSyntaxRule(FlowSyntaxToken.string, r'"(?:\\.|[^"\\])*"'),
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[()]+'),
+    ],
+  ),
+);
+```
+
+## Theming
+
+Token inks are theme tokens. Install a `FlowSyntaxColors` on the theme to
+recolor them; the code face is Geist Mono, bundled with the package, and
+swaps via the typography:
+
+```dart title="Custom syntax palette and mono face"
+FlowTheme(
+  colors: FlowColors.light,
+  syntax: FlowSyntaxColors.light.copyWith(keyword: myBrandAccent),
+  typography: FlowTypography.standard.withCodeFontFamily('JetBrainsMono'),
+)
+```
+
+## Key API
+
+- `FlowCodeBlock` — `code`, `language` (id or alias, case-insensitive),
+  `filename` (header label; falls back to `language`), `onCopy` /
+  `copied` / `copyTooltip` (intent out, host-owned confirmation),
+  `isStreaming`, `wrap`, plus `padding` and `borderRadius` over the
+  design's 16/12 inset and 12px corner.
+- `FlowCodePart` — `code`, `language`, `filename`; rendered by
+  `FlowMessage`, skipped in system messages.
+- `FlowThread` / `FlowMessage` — `onCodeCopy` (handed the tapped part),
+  `copiedCodePart` (pass the instance back while the confirmation lasts),
+  `codeCopyTooltip`.
+- `FlowCodeLanguage` — `find`, `register`, and the built-ins (`dart`,
+  `json`, `javascript`, `python`, `bash`, `plain`); `FlowSyntaxRule`
+  pairs a regex with a `FlowSyntaxToken`.
+- `FlowSyntaxColors` — eight token roles with light and dark presets, on
+  `FlowTheme.syntax`.

@@ -4,6 +4,7 @@ import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import '../theme/flow_theme.dart';
 import 'flow_attachment_group.dart';
+import 'flow_code_block.dart';
 import 'flow_thinking_indicator.dart';
 import 'flow_streaming_text.dart';
 
@@ -35,6 +36,9 @@ class FlowMessage extends StatelessWidget {
     this.customPartBuilder,
     this.onAttachmentTap,
     this.previewCloseTooltip,
+    this.onCodeCopy,
+    this.copiedCodePart,
+    this.codeCopyTooltip,
     this.leading,
     this.footer,
     this.maxBubbleWidthFraction = 0.75,
@@ -63,6 +67,19 @@ class FlowMessage extends StatelessWidget {
 
   /// Host-localized label for the built-in preview's close button.
   final String? previewCloseTooltip;
+
+  /// Copy intent from a [FlowCodePart]'s block, handed the part so the
+  /// host knows which code to write to the clipboard. Null hides every
+  /// block's copy affordance.
+  final ValueChanged<FlowCodePart>? onCodeCopy;
+
+  /// The part whose block shows the copied check — pass back the instance
+  /// received from [onCodeCopy] for as long as the confirmation should
+  /// last; the host owns the timing.
+  final FlowCodePart? copiedCodePart;
+
+  /// Host-localized label for each code block's copy affordance.
+  final String? codeCopyTooltip;
 
   /// Slot beside the content, e.g. an avatar.
   final Widget? leading;
@@ -257,9 +274,9 @@ class FlowMessage extends StatelessWidget {
                 style: style,
                 textAlign: TextAlign.center,
               ),
-              // System messages are centered notices; attachments belong to
-              // user and assistant turns.
-              FlowAttachmentPart() => const SizedBox.shrink(),
+              // System messages are centered notices; attachments and code
+              // belong to user and assistant turns.
+              FlowAttachmentPart() || FlowCodePart() => const SizedBox.shrink(),
               FlowCustomPart() =>
                 customPartBuilder?.call(context, message, part) ??
                     const SizedBox.shrink(),
@@ -276,7 +293,11 @@ class FlowMessage extends StatelessWidget {
     final style = typography.bodyLarge
         .copyWith(color: foreground, height: height)
         .merge(textStyle);
+    final onCodeCopy = this.onCodeCopy;
 
+    // Only text parts get the streaming reveal; a message that ends in a
+    // code part streams its code without one (FlowCodeBlock renders each
+    // delivery whole).
     final lastTextIndex = message.parts.lastIndexWhere(
       (part) => part is FlowTextPart,
     );
@@ -306,6 +327,20 @@ class FlowMessage extends StatelessWidget {
                   onTap: onAttachmentTap,
                   previewCloseTooltip: previewCloseTooltip,
                 ),
+        FlowCodePart(:final code, :final language, :final filename) =>
+          FlowCodeBlock(
+            code: code,
+            language: language,
+            filename: filename,
+            onCopy: onCodeCopy == null ? null : () => onCodeCopy(part),
+            copyTooltip: codeCopyTooltip,
+            copied: identical(part, copiedCodePart),
+            // Streaming only while it's the growing tail — a part with
+            // content after it is already complete.
+            isStreaming:
+                message.status == FlowMessageStatus.streaming &&
+                i == message.parts.length - 1,
+          ),
         FlowCustomPart() => customPartBuilder?.call(context, message, part),
       };
       if (child == null) continue;

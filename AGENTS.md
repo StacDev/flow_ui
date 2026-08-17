@@ -85,7 +85,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |
 | 19 | Confirmation | default, approved, rejected | ⬜ |
 | 20 | Error state | | ⬜ |
-| 21 | Code block | | ⬜ |
+| 21 | Code block | built-in synchronous highlighter; languages host-extensible | ✅ |
 | 22 | Thinking indicator | turning, breathing asterisk + shimmer label; active & settled | ✅ |
 | 23 | Shimmer | text only; sweeping highlight, static when settled | ✅ |
 

@@ -40,7 +40,7 @@ elements and the remaining AI states are on the way.
 | Suggestions | <span class="badge-done">Shipped</span> |
 | Confirmation | <span class="badge-todo">Planned</span> |
 | Error state | <span class="badge-todo">Planned</span> |
-| Code block | <span class="badge-todo">Planned</span> |
+| Code block | <span class="badge-done">Shipped</span> |
 | Thinking indicator | <span class="badge-done">Shipped</span> |
 | Shimmer | <span class="badge-done">Shipped</span> |
 
