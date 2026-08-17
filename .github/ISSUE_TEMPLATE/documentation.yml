@@ -1,0 +1,26 @@
+name: 📚 Documentation
+description: Something on flowui.stac.dev, in the README, or in the API docs is wrong, unclear, or missing.
+labels: [documentation]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The page URL, or the file if it's the README or a dartdoc comment.
+      placeholder: https://flowui.stac.dev/components/composer
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong
+      description: What the docs say (or don't say), and what tripped you up.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: What would help
+      description: The correction, the missing example, or the section you expected to find.

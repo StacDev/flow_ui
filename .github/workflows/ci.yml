@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A new push to the same ref supersedes the run already in flight.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed .
+
+      # Scoped to lib/: from the repo root the analyzer also walks into
+      # example/ and playground/, which resolve their own dependencies and
+      # are analysed in the `apps` job instead.
+      - name: Analyze
+        run: flutter analyze lib
+
+      # test/ is deliberately empty while the component surface is still being
+      # reshaped design-first; this runs the day the first test lands.
+      - name: Test
+        run: |
+          if find test -name '*_test.dart' 2>/dev/null | grep -q .; then
+            flutter test
+          else
+            echo "No tests yet — skipping."
+          fi
+
+      # Catches packaging mistakes (a stale .pubignore, a missing asset, a
+      # broken README link) before a release tag, not after.
+      - name: Publish dry run
+        run: flutter pub publish --dry-run
+
+  apps:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [example, playground]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+        working-directory: ${{ matrix.app }}
+
+      - run: flutter analyze
+        working-directory: ${{ matrix.app }}
+
+  docs:
+    name: Docs site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # `build:site` compiles the playground to wasm before Astro builds, so
+      # this job needs both toolchains.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - run: npm ci
+        working-directory: docs
+
+      # The same build the deploy runs: playground → public/playground, then
+      # the site. Keeps a broken playground from reaching flowui.stac.dev.
+      - run: npm run build:site
+        working-directory: docs
