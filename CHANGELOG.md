@@ -2,16 +2,15 @@
 
 ## 0.2.0 (unreleased)
 
-flow_ui now builds on `package:material_ui` — Material's home since
-Flutter 3.47 moved the design libraries out of the SDK. Every widget keeps
-its name and shape: the change is the foundation, not the API.
-
-It does mean the app must be on material_ui too. The legacy
-`package:flutter/material.dart` and material_ui are distinct types — a
-legacy `ThemeData(extensions:)` won't accept `FlowTheme`, and the compiler
-says so out loud. Migrate the app with
-`dart fix --apply --code=migrate_design_widgets` (Flutter 3.44 or newer);
-apps staying on the legacy import should pin flow_ui 0.1.x.
+- Migrated from `package:flutter/material.dart` to `package:material_ui` —
+  Material's home since Flutter 3.47. No API changes: every widget keeps
+  its name and shape.
+- **Breaking**: the host app must be on material_ui too. The legacy and
+  packaged Material are distinct types, so a legacy `ThemeData(extensions:)`
+  no longer accepts `FlowTheme`. Migrate the app with
+  `dart fix --apply --code=migrate_design_widgets`, or pin flow_ui 0.1.x.
+- Requires Flutter 3.44 or newer, with `material_ui: ^1.0.0` alongside
+  flow_ui in the app's pubspec.
 
 ## 0.1.0
 
