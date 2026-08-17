@@ -1,0 +1,18 @@
+# Publishes to pub.dev when a version tag is pushed, e.g.
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# Authentication is OIDC — no token lives in this repo. It requires automated
+# publishing to be enabled once on pub.dev (flow_ui → Admin → Automated
+# publishing) for StacDev/flow_ui with the tag pattern `v{{version}}`.
+name: Publish
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required to mint the OIDC token pub.dev verifies.
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
