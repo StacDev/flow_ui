@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Two hard constraints shape everything here:
 
-- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree (`fonts/`, SIL OFL) because the design system is set in it, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
+- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree (`fonts/`, SIL OFL) because the design system is set in it, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
 The theme, the conversation components (message, thread, streaming text, actions, loading), the composer and its menus, attachments with their preview, suggestions, and the chat surface are implemented; the roadmap below tracks the rest. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.

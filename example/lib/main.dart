@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flow_ui/flow_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => runApp(const ExampleApp());
 

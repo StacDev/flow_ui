@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The playground's accent — the design's pink, drawn on the logo tile and
 /// the active sidebar icon.

@@ -20,6 +20,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.12.2
+  flutter: ">=3.44.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,12 +31,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.0.0
   # The component library under demo — also supplies Figtree, the face the
   # playground chrome is set in.
   flow_ui:
     path: ../
-  # Renders the logo's SVG asset. App-only: flow_ui itself stays
-  # dependency-free.
+  # Renders the logo's SVG asset — app-only.
   flutter_svg: ^2.0.10
   # The icon set the design is drawn in.
   phosphoricons_flutter: ^1.0.0

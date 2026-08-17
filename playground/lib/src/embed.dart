@@ -1,5 +1,5 @@
 import 'package:flow_ui/flow_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'demo_registry.dart';
 import 'playground_item.dart';

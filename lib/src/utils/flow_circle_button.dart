@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Internal chrome shared by the composer, the attachment tiles and the
 // attachment preview. Not exported from the package barrel.

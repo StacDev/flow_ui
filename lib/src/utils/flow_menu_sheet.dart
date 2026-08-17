@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/flow_theme.dart';
 import '../widgets/flow_menu_style.dart';
@@ -42,10 +42,13 @@ class FlowMenuSheetPage {
 
 /// Opens [root] as a modal bottom sheet styled like the anchored menus.
 ///
-/// Rides the Material modal-sheet route, which itself requires
+/// Rides material_ui's modal-sheet route, which itself requires its
 /// [MaterialLocalizations]: a host not built on [MaterialApp] must list
 /// `DefaultMaterialLocalizations.delegate` in its `localizationsDelegates`
-/// for the phone presentation. Nothing else in the package needs it.
+/// for the phone presentation — localized apps get it through
+/// `GlobalMaterialLocalizations.delegates`, which since the material_ui
+/// move also bundles the widgets and Cupertino delegates. Nothing else in
+/// the package needs it.
 Future<void> showFlowMenuSheet({
   required BuildContext context,
   required FlowMenuSheetPage root,
