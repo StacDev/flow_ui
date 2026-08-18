@@ -79,6 +79,83 @@ const String _jsonSample = r'''
   }
 }''';
 
+/// Keys against strings and booleans — and `on:` reading as a key, not
+/// a boolean.
+const String _yamlSample = r'''
+# Deploy the playground on push.
+name: deploy
+on:
+  push:
+    branches: [main]
+
+env:
+  FLUTTER_VERSION: "3.44"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: flutter build web --release
+      - run: firebase deploy --only hosting
+        if: startsWith(github.ref, 'refs/heads/main')''';
+
+/// Tags, attributes and entities; quoted prose in text content stays
+/// plain.
+const String _htmlSample = r'''
+<!doctype html>
+<!-- The playground's shell. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Flow UI</title>
+  </head>
+  <body>
+    <div id="output" class="stage dark">
+      <p>Rendering &amp; ready.</p>
+    </div>
+    <script src="main.dart.js" defer></script>
+  </body>
+</html>''';
+
+/// Selectors, custom properties, units and value functions.
+const String _cssSample = r'''
+/* The stage's ground. */
+:root {
+  --stage-ink: #1e1e1e;
+  --stage-gap: 1.5rem;
+}
+
+.stage {
+  display: grid;
+  gap: var(--stage-gap);
+  padding: 24px 16px;
+  color: var(--stage-ink);
+}
+
+.stage:hover > .pill {
+  opacity: 0.75;
+  transition: opacity 200ms ease;
+}
+
+@media (max-width: 760px) {
+  .stage { padding: 12px; }
+}''';
+
+/// Keywords in either case, quoted strings, bind-style aliases.
+const String _sqlSample = r'''
+-- Threads with their newest message.
+SELECT t.id, t.title, m.body AS latest
+FROM threads AS t
+JOIN messages AS m ON m.thread_id = t.id
+WHERE m.created_at = (
+  SELECT MAX(created_at) FROM messages
+  WHERE thread_id = t.id
+)
+  AND t.visibility = 'public'
+ORDER BY m.created_at DESC
+LIMIT 20;''';
+
 /// No language: plain ink, header from the filename alone.
 const String _plainSample = r'''
 $ flutter build web --release
@@ -154,6 +231,10 @@ class _CodeBlockDemoState extends State<CodeBlockDemo> {
   Widget build(BuildContext context) {
     final (code, language, filename) = switch (widget.variant) {
       'json' => (_jsonSample, 'json', 'screen.json'),
+      'yaml' => (_yamlSample, 'yaml', 'deploy.yml'),
+      'html' => (_htmlSample, 'html', 'index.html'),
+      'css' => (_cssSample, 'css', 'stage.css'),
+      'sql' => (_sqlSample, 'sql', 'threads.sql'),
       'plain' => (_plainSample, null, 'build.log'),
       'streaming' => (_dartSample.substring(0, _fed), 'dart', 'point.dart'),
       _ => (_dartSample, 'dart', 'point.dart'),

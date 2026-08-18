@@ -70,6 +70,10 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.codeBlock => const [
       ('dart', 'Dart'),
       ('json', 'JSON'),
+      ('yaml', 'YAML'),
+      ('html', 'HTML'),
+      ('css', 'CSS'),
+      ('sql', 'SQL'),
       ('plain', 'Plain'),
       ('streaming', 'Streaming'),
     ],

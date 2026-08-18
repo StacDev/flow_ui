@@ -60,7 +60,8 @@ class FlowSyntaxRule {
 /// ordered rule table.
 ///
 /// The built-ins cover the fences an assistant most often emits — Dart,
-/// JSON, JavaScript/TypeScript, Python and shell. Hosts extend the set:
+/// JSON, JavaScript/TypeScript, Python, shell, YAML, HTML, CSS and SQL.
+/// Hosts extend the set:
 ///
 /// ```dart
 /// FlowCodeLanguage.register(
@@ -79,6 +80,7 @@ class FlowCodeLanguage {
     required this.id,
     this.aliases = const [],
     required this.rules,
+    this.caseSensitive = true,
   });
 
   /// Canonical name, lowercase by convention — what a fence info string
@@ -91,9 +93,25 @@ class FlowCodeLanguage {
   /// Ordered by precedence.
   final List<FlowSyntaxRule> rules;
 
+  /// False compiles the whole table case-insensitively — for languages
+  /// like SQL whose keywords come in either case (Dart regexes have no
+  /// inline `(?i)`).
+  final bool caseSensitive;
+
   static final Map<String, FlowCodeLanguage> _registry = () {
     final map = <String, FlowCodeLanguage>{};
-    for (final language in [dart, json, javascript, python, bash, plain]) {
+    for (final language in [
+      dart,
+      json,
+      javascript,
+      python,
+      bash,
+      yaml,
+      html,
+      css,
+      sql,
+      plain,
+    ]) {
       _add(map, language);
     }
     return map;
@@ -308,6 +326,123 @@ class FlowCodeLanguage {
       FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[|&;<>(){}\[\]=]+'),
     ],
   );
+
+  static const FlowCodeLanguage yaml = FlowCodeLanguage(
+    id: 'yaml',
+    aliases: ['yml'],
+    rules: [
+      // Line-start or whitespace before the #, so a fragment mid-word
+      // (an URL) doesn't comment the rest of the line. The consumed
+      // space is invisible in the comment ink.
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'(?:^|[ \t])#[^\n]*'),
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'^(?:---|\.\.\.)'),
+      // Quoted and plain keys, ahead of the string and keyword rules so
+      // `on:` (GitHub Actions) reads as a key, not a boolean.
+      FlowSyntaxRule(FlowSyntaxToken.type, r'"(?:\\.|[^"\\\n])*"(?=\s*:)'),
+      FlowSyntaxRule(FlowSyntaxToken.type, r"'[^'\n]*'(?=\s*:)"),
+      FlowSyntaxRule(
+        FlowSyntaxToken.type,
+        r'[A-Za-z_][\w./$-]*(?=:(?:[ \t]|$))',
+      ),
+      FlowSyntaxRule(FlowSyntaxToken.string, r'"(?:\\.|[^"\\\n])*"'),
+      FlowSyntaxRule(FlowSyntaxToken.string, r"'[^'\n]*'"),
+      // Anchors, aliases and tags.
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'[&*][\w-]+|!!?[\w/-]+'),
+      FlowSyntaxRule(
+        FlowSyntaxToken.keyword,
+        r'\b(?:true|True|TRUE|false|False|FALSE|null|Null|NULL|yes|Yes|YES|'
+        r'no|No|NO|on|On|ON|off|Off|OFF)\b|~',
+      ),
+      FlowSyntaxRule(
+        FlowSyntaxToken.number,
+        r'\b\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?\b',
+      ),
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[\[\]{}:,>|-]+'),
+    ],
+  );
+
+  static const FlowCodeLanguage html = FlowCodeLanguage(
+    id: 'html',
+    aliases: ['xml'],
+    rules: [
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'<!--[\s\S]*?-->'),
+      // Doctype, CDATA and processing instructions.
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'<![^>]*>|<\?[\s\S]*?\?>'),
+      // Attribute values only — anchored on the =, so quoted prose in
+      // text content stays plain.
+      FlowSyntaxRule(FlowSyntaxToken.string, r'=\s*"[^"]*"'),
+      FlowSyntaxRule(FlowSyntaxToken.string, r"=\s*'[^']*'"),
+      FlowSyntaxRule(FlowSyntaxToken.keyword, r'</?[A-Za-z][\w-]*'),
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'[A-Za-z-]+(?==)'),
+      // Entities.
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'&[a-zA-Z]+;|&#\d+;'),
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[<>/=]+'),
+    ],
+  );
+
+  static const FlowCodeLanguage css = FlowCodeLanguage(
+    id: 'css',
+    aliases: ['scss', 'less'],
+    rules: [
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'/\*[\s\S]*?\*/'),
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'//[^\n]*'),
+      FlowSyntaxRule(FlowSyntaxToken.string, r'"(?:\\.|[^"\\\n])*"'),
+      FlowSyntaxRule(FlowSyntaxToken.string, r"'(?:\\.|[^'\\\n])*'"),
+      FlowSyntaxRule(FlowSyntaxToken.keyword, r'@[\w-]+'),
+      FlowSyntaxRule(FlowSyntaxToken.keyword, r'!important\b'),
+      // Hex colors before the class/id selector rule — at the same `#`
+      // they win, and `#bada55` is a color even when it spells a word.
+      FlowSyntaxRule(FlowSyntaxToken.number, r'#[0-9a-fA-F]{3,8}\b'),
+      FlowSyntaxRule(FlowSyntaxToken.function, r'[.#][A-Za-z_][\w-]*'),
+      FlowSyntaxRule(
+        FlowSyntaxToken.number,
+        r'\b\d+(?:\.\d+)?(?:px|em|rem|vh|vw|vmin|vmax|ms|s|fr|deg|ch|pt|%)?',
+      ),
+      // Property names — also custom properties (`--ink`).
+      FlowSyntaxRule(FlowSyntaxToken.type, r'[-a-zA-Z][-\w]*(?=\s*:)'),
+      // Value functions: rgb(), var(), calc().
+      FlowSyntaxRule(FlowSyntaxToken.function, r'[a-zA-Z-]+(?=\()'),
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[{}();:,>+~*]+'),
+    ],
+  );
+
+  static const FlowCodeLanguage sql = FlowCodeLanguage(
+    id: 'sql',
+    aliases: ['mysql', 'postgres', 'postgresql', 'sqlite'],
+    // SQL keywords come uppercase and lowercase; one flag beats listing
+    // both cases through the whole table.
+    caseSensitive: false,
+    rules: [
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'--[^\n]*'),
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'/\*[\s\S]*?\*/'),
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'#[^\n]*'),
+      // Doubled '' is the escape; " and ` quote identifiers.
+      FlowSyntaxRule(FlowSyntaxToken.string, r"'(?:''|[^'\n])*'"),
+      FlowSyntaxRule(FlowSyntaxToken.type, r'"[^"\n]*"|`[^`\n]*`'),
+      // Bind parameters and session variables.
+      FlowSyntaxRule(FlowSyntaxToken.meta, r'@\w+|:\w+|\$\d+'),
+      FlowSyntaxRule(
+        FlowSyntaxToken.keyword,
+        r'\b(?:select|from|where|insert|into|values|update|set|delete|create|'
+        r'table|view|index|drop|alter|add|column|primary|key|foreign|'
+        r'references|constraint|unique|not|null|default|and|or|in|is|like|'
+        r'between|exists|case|when|then|else|end|join|inner|left|right|full|'
+        r'outer|cross|on|as|group|by|having|order|asc|desc|limit|offset|'
+        r'union|all|distinct|with|returning|begin|commit|rollback|'
+        r'transaction|if|replace|temporary|cascade|check|database|schema|'
+        r'grant|revoke|true|false)\b',
+      ),
+      FlowSyntaxRule(
+        FlowSyntaxToken.type,
+        r'\b(?:int|integer|bigint|smallint|serial|decimal|numeric|real|float|'
+        r'double|precision|boolean|bool|char|varchar|text|date|time|'
+        r'timestamp|timestamptz|interval|blob|bytea|json|jsonb|uuid)\b',
+      ),
+      FlowSyntaxRule(FlowSyntaxToken.number, r'\b\d+(?:\.\d+)?\b'),
+      FlowSyntaxRule(FlowSyntaxToken.function, r'[a-z_]\w*(?=\s*\()'),
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[();,.=<>!:+*/-]+'),
+    ],
+  );
 }
 
 /// Colors source through a language's rule table — synchronously: no
@@ -328,7 +463,11 @@ abstract final class FlowSyntaxHighlighter {
         for (var i = 0; i < language.rules.length; i++)
           '(?<g$i>${language.rules[i].pattern})',
       ].join('|');
-      return RegExp(source, multiLine: true);
+      return RegExp(
+        source,
+        multiLine: true,
+        caseSensitive: language.caseSensitive,
+      );
     });
   }
 

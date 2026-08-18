@@ -10,10 +10,10 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 `FlowCodeBlock` renders a fenced snippet on its own washed ground, under a
 header that names the content and offers copy. Highlighting is built in
 and synchronous — no setup call, no assets, nothing async. `language`
-picks a rule table (Dart, JSON, JavaScript/TypeScript, Python and shell
-ship in the box); unknown ids render plain, never an error. Token inks
-come from the theme's `FlowSyntaxColors`, so code recolors with the rest
-of the palette in both themes.
+picks a rule table (Dart, JSON, JavaScript/TypeScript, Python, shell,
+YAML, HTML, CSS and SQL ship in the box); unknown ids render plain,
+never an error. Token inks come from the theme's `FlowSyntaxColors`, so
+code recolors with the rest of the palette in both themes.
 
 In a message, code arrives as a `FlowCodePart` and `FlowMessage` renders
 the block for you — copy intent surfaces on `FlowThread.onCodeCopy` with
@@ -96,9 +96,30 @@ FlowThread(
 
 ## Languages
 
+Resolution is by id or alias, case-insensitive, and anything unknown
+renders plain — a `rust` fence degrades gracefully rather than erroring:
+
+| Language | id | Aliases |
+|---|---|---|
+| Dart | `dart` | — |
+| JSON | `json` | `jsonc` |
+| JavaScript / TypeScript | `javascript` | `js`, `jsx`, `typescript`, `ts`, `tsx` |
+| Python | `python` | `py` |
+| Shell | `bash` | `sh`, `shell`, `zsh` |
+| YAML | `yaml` | `yml` |
+| HTML | `html` | `xml` |
+| CSS | `css` | `scss`, `less` |
+| SQL | `sql` | `mysql`, `postgres`, `postgresql`, `sqlite` |
+| Plain | `plain` | `text`, `txt` |
+
+YAML, for one, knows that `on:` is a key before it is a boolean:
+
+<FlowDemo demo="codeBlock" variant="yaml" height={520} title="YAML" />
+
 The registry is host-extensible. `FlowCodeLanguage` is an ordered rule
 table — earlier rules win, so comments and strings come first — and
-`register` makes it resolvable from every block:
+`register` makes it resolvable from every block. A table like SQL's,
+whose keywords come in either case, sets `caseSensitive: false`:
 
 ```dart title="Registering a language"
 FlowCodeLanguage.register(
@@ -139,8 +160,9 @@ FlowTheme(
 - `FlowThread` / `FlowMessage` — `onCodeCopy` (handed the tapped part),
   `copiedCodePart` (pass the instance back while the confirmation lasts),
   `codeCopyTooltip`.
-- `FlowCodeLanguage` — `find`, `register`, and the built-ins (`dart`,
-  `json`, `javascript`, `python`, `bash`, `plain`); `FlowSyntaxRule`
-  pairs a regex with a `FlowSyntaxToken`.
+- `FlowCodeLanguage` — `find`, `register`, `caseSensitive`, and the
+  built-ins (`dart`, `json`, `javascript`, `python`, `bash`, `yaml`,
+  `html`, `css`, `sql`, `plain`); `FlowSyntaxRule` pairs a regex with a
+  `FlowSyntaxToken`.
 - `FlowSyntaxColors` — eight token roles with light and dark presets, on
   `FlowTheme.syntax`.
