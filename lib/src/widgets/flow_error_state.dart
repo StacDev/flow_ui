@@ -1,0 +1,251 @@
+import 'package:material_ui/material_ui.dart';
+
+import '../theme/flow_theme.dart';
+
+/// A failure surface: an error glyph and a host-written explanation on a
+/// hairline card, with an optional retry pill.
+///
+/// ```dart
+/// FlowErrorState(
+///   title: 'Connection error',
+///   message: 'The API is overloaded right now. Retry in a moment.',
+///   retryLabel: 'Retry',
+///   onRetry: resend,
+/// )
+/// ```
+///
+/// In a thread this renders on its own: a `FlowErrorPart` in any turn
+/// becomes this card, and a failed assistant turn closes with a default
+/// one even when the host supplies no part. Standalone it serves the
+/// other failure surfaces — a thread that failed to load, a connection
+/// notice pinned in `FlowChatScreen.aboveComposer`, a failed send below
+/// the composer.
+///
+/// Retry reports intent; what it means — re-run the turn, refetch,
+/// reconnect — is the host's business. The affordance is a visible pill
+/// rather than a hover-revealed action, because hover does not exist on
+/// touch. The package ships no strings: [title], [message] and
+/// [retryLabel] are host-localized, and [retryLabel] doubles as the
+/// pill's accessible name.
+class FlowErrorState extends StatelessWidget {
+  const FlowErrorState({
+    super.key,
+    this.title,
+    this.message,
+    this.onRetry,
+    this.retryLabel,
+    this.padding,
+    this.borderRadius,
+  });
+
+  /// Host-localized headline, e.g. 'Connection error'. Null lets
+  /// [message] take the glyph row.
+  final String? title;
+
+  /// The failure, host-written and sentence-case. Announced to assistive
+  /// tech as a live region, since failures arrive unprompted.
+  final String? message;
+
+  /// Retry intent. Null hides the pill.
+  final VoidCallback? onRetry;
+
+  /// Host-localized pill label and accessible name; null renders the
+  /// glyph alone.
+  final String? retryLabel;
+
+  /// Inside the card. Defaults to the design's 16/14.
+  final EdgeInsetsGeometry? padding;
+
+  /// The card's corner. Defaults to the design's 12.
+  final BorderRadius? borderRadius;
+
+  /// The card: the message bubble's 12px corner over the outlined
+  /// suggestion's 2% ink wash, edged in the error ink at 40% — a
+  /// translucent hairline composites correctly on the page and on a
+  /// raised card, like the rest of the outline ramp.
+  static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
+  static const EdgeInsetsGeometry _cardPadding = EdgeInsets.fromLTRB(
+    16,
+    14,
+    16,
+    14,
+  );
+  static const double _groundOpacity = 0.02;
+  static const double _borderOpacity = 0.4;
+
+  /// The glyph, and the indent that hangs the message and the pill under
+  /// the text rather than under the glyph.
+  static const double _iconSize = 20;
+  static const double _iconGap = 10;
+
+  /// Gaps: glyph row to message, content to the retry pill.
+  static const double _messageGap = 4;
+  static const double _retryGap = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.flowColors;
+    final typography = context.flowTypography;
+
+    final title = this.title;
+    final message = this.message;
+    final onRetry = this.onRetry;
+
+    // The title takes the glyph row when present and the message hangs
+    // below; without one the message moves up beside the glyph.
+    final rowText = title ?? message;
+    final below = title == null ? null : message;
+
+    Widget? rowLabel;
+    if (rowText != null) {
+      rowLabel = Text(
+        rowText,
+        style: title != null
+            ? typography.labelLarge.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+              )
+            : typography.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+      );
+      if (title == null) {
+        // The row text IS the message here — announce it.
+        rowLabel = Semantics(liveRegion: true, child: rowLabel);
+      }
+    }
+
+    return Container(
+      padding: padding ?? _cardPadding,
+      decoration: BoxDecoration(
+        color: colors.onSurface.withValues(alpha: _groundOpacity),
+        borderRadius: borderRadius ?? _radius,
+        border: Border.all(
+          color: colors.error.withValues(alpha: _borderOpacity),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.error_outline, size: _iconSize, color: colors.error),
+              if (rowLabel != null) ...[
+                const SizedBox(width: _iconGap),
+                Flexible(child: rowLabel),
+              ],
+            ],
+          ),
+          if (below != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: _iconSize + _iconGap,
+                top: _messageGap,
+              ),
+              child: Semantics(
+                liveRegion: true,
+                child: Text(
+                  below,
+                  style: typography.bodyMedium.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          if (onRetry != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: _iconSize + _iconGap,
+                top: _retryGap,
+              ),
+              child: _RetryButton(onTap: onRetry, label: retryLabel),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The retry pill: a hairline border with no fill, the refresh glyph and
+/// a semibold label — the failure surfaces' shared affordance, private
+/// until the design system's Button lands and absorbs it.
+class _RetryButton extends StatefulWidget {
+  const _RetryButton({required this.onTap, this.label});
+
+  final VoidCallback onTap;
+  final String? label;
+
+  @override
+  State<_RetryButton> createState() => _RetryButtonState();
+}
+
+class _RetryButtonState extends State<_RetryButton> {
+  /// The design's pill: 32 tall on an 8px corner, padded 12, a 14px
+  /// glyph a 6px gap from the label.
+  static const double _height = 32;
+  static const BorderRadius _radius = BorderRadius.all(Radius.circular(8));
+  static const EdgeInsetsGeometry _padding = EdgeInsets.symmetric(
+    horizontal: 12,
+  );
+  static const double _glyphSize = 14;
+  static const double _glyphGap = 6;
+
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.flowColors;
+    final typography = context.flowTypography;
+
+    // Rest at the secondary ink, lifting to full on hover — the
+    // suggestion row's ladder on a control-sized frame.
+    final foreground = _hovered ? colors.onSurface : colors.onSurfaceVariant;
+    final shape = RoundedRectangleBorder(
+      borderRadius: _radius,
+      side: BorderSide(color: colors.outline),
+    );
+
+    final label = widget.label;
+    final button = Material(
+      color: Colors.transparent,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: widget.onTap,
+        onHover: (value) => setState(() => _hovered = value),
+        customBorder: shape,
+        hoverColor: colors.surfaceContainerLow,
+        child: SizedBox(
+          height: _height,
+          child: Padding(
+            padding: _padding,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.refresh, size: _glyphSize, color: foreground),
+                if (label != null) ...[
+                  const SizedBox(width: _glyphGap),
+                  Text(
+                    label,
+                    style: typography.labelLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: foreground,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: label != null,
+      child: button,
+    );
+  }
+}

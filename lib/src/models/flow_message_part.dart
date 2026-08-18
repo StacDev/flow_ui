@@ -26,6 +26,19 @@ class FlowAttachmentPart extends FlowMessagePart {
   final List<FlowAttachment> attachments;
 }
 
+/// A failure surfaced in the turn, rendered by a `FlowErrorState`.
+class FlowErrorPart extends FlowMessagePart {
+  const FlowErrorPart({this.message, this.retryable = true});
+
+  /// Host-written and sentence-case. Null renders the card without one —
+  /// the package ships no strings.
+  final String? message;
+
+  /// False suppresses the retry affordance even when the host wires
+  /// retry — for failures retrying can't fix.
+  final bool retryable;
+}
+
 /// Host-defined content, rendered through a `FlowCustomPartBuilder`.
 class FlowCustomPart extends FlowMessagePart {
   const FlowCustomPart({required this.type, this.data});

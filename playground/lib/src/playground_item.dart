@@ -28,6 +28,11 @@ enum PlaygroundItem {
     PhosphorIconsRegular.chatCircleDots,
     'flow_streaming_message.dart',
   ),
+  errorState(
+    'Error State',
+    PhosphorIconsRegular.warningCircle,
+    'flow_error_state.dart',
+  ),
   addToChat(
     'Add to Chat',
     PhosphorIconsRegular.plus,

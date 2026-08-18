@@ -16,6 +16,9 @@ class FlowThread extends StatelessWidget {
     this.customPartBuilder,
     this.onAttachmentTap,
     this.previewCloseTooltip,
+    this.onRetry,
+    this.errorTitle,
+    this.retryLabel,
     this.controller,
     this.padding,
     this.itemSpacing,
@@ -41,6 +44,18 @@ class FlowThread extends StatelessWidget {
 
   /// Host-localized label for the built-in preview's close button.
   final String? previewCloseTooltip;
+
+  /// Retry intent from a failed turn's error card, handed the message so
+  /// the host can re-run it. Forwarded to each [FlowMessage].
+  final void Function(FlowMessageData message)? onRetry;
+
+  /// Host-localized headline for the thread's error cards, e.g.
+  /// 'Connection error'.
+  final String? errorTitle;
+
+  /// Host-localized label for the error cards' retry pill; null renders
+  /// the pill glyph-only.
+  final String? retryLabel;
 
   /// Optional external scroll controller.
   final ScrollController? controller;
@@ -72,6 +87,7 @@ class FlowThread extends StatelessWidget {
   Widget build(BuildContext context) {
     final gap = itemSpacing ?? _defaultGap;
     final onAttachmentTap = this.onAttachmentTap;
+    final onRetry = this.onRetry;
 
     return ListView.builder(
       controller: controller,
@@ -94,6 +110,9 @@ class FlowThread extends StatelessWidget {
                     ? null
                     : (attachmentId) => onAttachmentTap(message, attachmentId),
                 previewCloseTooltip: previewCloseTooltip,
+                onRetry: onRetry == null ? null : () => onRetry(message),
+                errorTitle: errorTitle,
+                retryLabel: retryLabel,
                 charactersPerSecond: charactersPerSecond,
                 thinkingLabel: thinkingLabel,
               ),
