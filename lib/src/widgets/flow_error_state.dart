@@ -243,10 +243,14 @@ class _RetryButtonState extends State<_RetryButton> {
       ),
     );
 
+    // Excluding the subtree keeps the label from reading twice, but it
+    // drops the InkWell's tap action with it — the node re-owns
+    // activation or assistive tech can announce the pill yet not tap it.
     return Semantics(
       button: true,
       label: label,
       excludeSemantics: label != null,
+      onTap: label == null ? null : widget.onTap,
       child: button,
     );
   }
