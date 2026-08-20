@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'flow_colors.dart';
+import 'flow_syntax_colors.dart';
 import 'flow_typography.dart';
 
 /// The flow_ui design tokens — colors and typography — installed as a
@@ -28,22 +29,36 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   const FlowTheme({
     required this.colors,
     this.typography = FlowTypography.standard,
+    this.syntax,
   });
 
   /// Light preset.
-  factory FlowTheme.light() => const FlowTheme(colors: FlowColors.light);
+  factory FlowTheme.light() =>
+      const FlowTheme(colors: FlowColors.light, syntax: FlowSyntaxColors.light);
 
   /// Dark preset.
-  factory FlowTheme.dark() => const FlowTheme(colors: FlowColors.dark);
+  factory FlowTheme.dark() =>
+      const FlowTheme(colors: FlowColors.dark, syntax: FlowSyntaxColors.dark);
 
   final FlowColors colors;
   final FlowTypography typography;
 
+  /// Syntax token colors for code blocks. Null resolves to the preset
+  /// matching the ambient brightness — unlike [typography], the right
+  /// default depends on which way the theme leans, which a constructor
+  /// default can't see.
+  final FlowSyntaxColors? syntax;
+
   @override
-  FlowTheme copyWith({FlowColors? colors, FlowTypography? typography}) {
+  FlowTheme copyWith({
+    FlowColors? colors,
+    FlowTypography? typography,
+    FlowSyntaxColors? syntax,
+  }) {
     return FlowTheme(
       colors: colors ?? this.colors,
       typography: typography ?? this.typography,
+      syntax: syntax ?? this.syntax,
     );
   }
 
@@ -53,6 +68,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     return FlowTheme(
       colors: colors.lerp(other.colors, t),
       typography: typography.lerp(other.typography, t),
+      syntax: syntax == null ? other.syntax : syntax!.lerp(other.syntax, t),
     );
   }
 }
@@ -71,4 +87,14 @@ extension FlowThemeContext on BuildContext {
 
   FlowColors get flowColors => flowTheme.colors;
   FlowTypography get flowTypography => flowTheme.typography;
+
+  /// Syntax colors: the installed set, or the preset matching the ambient
+  /// brightness when the theme carries none.
+  FlowSyntaxColors get flowSyntaxColors {
+    final syntax = flowTheme.syntax;
+    if (syntax != null) return syntax;
+    return Theme.of(this).brightness == Brightness.dark
+        ? FlowSyntaxColors.dark
+        : FlowSyntaxColors.light;
+  }
 }

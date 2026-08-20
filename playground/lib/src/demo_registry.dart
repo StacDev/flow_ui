@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'demos/add_to_chat_demo.dart';
 import 'demos/attachments_demo.dart';
+import 'demos/code_block_demo.dart';
 import 'demos/composer_demo.dart';
 import 'demos/error_state_demo.dart';
 import 'demos/full_chat_demo.dart';
@@ -31,6 +32,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
       key: key,
       variant: variant,
     ),
+    PlaygroundItem.codeBlock => CodeBlockDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
@@ -66,6 +68,16 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.streamingMessage => const [
       ('animated', 'Animated'),
       ('static', 'Static'),
+    ],
+    PlaygroundItem.codeBlock => const [
+      ('dart', 'Dart'),
+      ('json', 'JSON'),
+      ('yaml', 'YAML'),
+      ('html', 'HTML'),
+      ('css', 'CSS'),
+      ('sql', 'SQL'),
+      ('plain', 'Plain'),
+      ('streaming', 'Streaming'),
     ],
     PlaygroundItem.errorState => const [
       ('card', 'Card'),
@@ -118,6 +130,7 @@ String snippetFor(PlaygroundItem item) {
     PlaygroundItem.modalSelector => modelSelectorSnippet,
     PlaygroundItem.message => messageSnippet,
     PlaygroundItem.streamingMessage => streamingMessageSnippet,
+    PlaygroundItem.codeBlock => codeBlockSnippet,
     PlaygroundItem.errorState => errorStateSnippet,
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.attachments => attachmentsSnippet,

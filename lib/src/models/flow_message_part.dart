@@ -4,7 +4,7 @@ import 'flow_attachment.dart';
 
 /// One piece of content inside a `FlowMessageData`.
 ///
-/// Sealed so renderers can switch exhaustively. More part types (code, tool)
+/// Sealed so renderers can switch exhaustively. More part types (tool)
 /// arrive alongside their components; [FlowCustomPart] is how hosts inject
 /// arbitrary content today.
 @immutable
@@ -24,6 +24,22 @@ class FlowAttachmentPart extends FlowMessagePart {
   const FlowAttachmentPart(this.attachments);
 
   final List<FlowAttachment> attachments;
+}
+
+/// Fenced code, rendered by a `FlowCodeBlock`.
+class FlowCodePart extends FlowMessagePart {
+  const FlowCodePart(this.code, {this.language, this.filename});
+
+  /// The source, verbatim.
+  final String code;
+
+  /// `FlowCodeLanguage` id or alias — usually the fence info string, e.g.
+  /// `'dart'`. Null or unknown renders plain.
+  final String? language;
+
+  /// The block's header label, e.g. a file hint beside the fence. Null
+  /// falls back to [language].
+  final String? filename;
 }
 
 /// A failure surfaced in the turn, rendered by a `FlowErrorState`.
