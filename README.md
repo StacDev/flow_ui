@@ -45,6 +45,7 @@
 | [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, and leading/trailing action slots |
 | [`FlowMenu`](https://flowui.stac.dev/components/menu) | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |
 | [`FlowModelSelector`](https://flowui.stac.dev/components/model-selector) | Model picker with effort and overflow submenus, sheet on phones |
+| [`FlowPill`](https://flowui.stac.dev/components/pill) | Removable pill for an enabled tool or mode in the composer's action row — label auto-drops on phones |
 | [`FlowAttachmentGroup`](https://flowui.stac.dev/components/attachments) | Image and file tiles with a type pill |
 | [`FlowAttachmentPreview`](https://flowui.stac.dev/components/attachments) | Full-screen image viewer with zoom and paging |
 | [`FlowSuggestion`](https://flowui.stac.dev/components/suggestions) / [`FlowSuggestionGroup`](https://flowui.stac.dev/components/suggestions) | Prompt starters — plain or outlined; scroll, wrap, or column layouts |

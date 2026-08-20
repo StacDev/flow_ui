@@ -15,6 +15,10 @@
   retry pill) and a `FlowErrorPart` message part, with
   `onRetry`/`errorTitle`/`retryLabel` threaded through `FlowMessage` and
   `FlowThread`.
+- **Pill** — `FlowPill`, a removable pill showing an enabled tool or mode
+  in the composer's action row: host-passed icon, label and tooltips,
+  removal intent on `onRemove`, and a label that auto-drops to the
+  icon-only form on phones (`showLabel` forces either).
 - **Breaking**: `FlowChatScreen` is renamed to `FlowChatView`. The widget
   was never a screen — it is body-only and embeddable, and upcoming
   surfaces (side panel, modal) will host it — so the name now follows

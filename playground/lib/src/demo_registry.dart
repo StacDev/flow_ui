@@ -10,6 +10,7 @@ import 'demos/greeting_demo.dart';
 import 'demos/message_actions_demo.dart';
 import 'demos/message_demo.dart';
 import 'demos/model_selector_demo.dart';
+import 'demos/pill_demo.dart';
 import 'demos/shimmer_text_demo.dart';
 import 'demos/streaming_message_demo.dart';
 import 'demos/streaming_text_demo.dart';
@@ -35,6 +36,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.codeBlock => CodeBlockDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
+    PlaygroundItem.pill => PillDemo(key: key, variant: variant),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
     PlaygroundItem.thread => ThreadDemo(key: key, variant: variant),
     PlaygroundItem.messageActions => MessageActionsDemo(key: key),
@@ -83,6 +85,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('card', 'Card'),
       ('minimal', 'Minimal'),
       ('thread', 'Failed turn'),
+    ],
+    PlaygroundItem.pill => const [
+      ('default', 'Default'),
+      ('icon', 'Icon only'),
+      ('static', 'No remove'),
+      ('composer', 'In composer'),
     ],
     PlaygroundItem.attachments => const [
       ('composer', 'In composer'),
@@ -133,6 +141,7 @@ String snippetFor(PlaygroundItem item) {
     PlaygroundItem.codeBlock => codeBlockSnippet,
     PlaygroundItem.errorState => errorStateSnippet,
     PlaygroundItem.addToChat => addToChatSnippet,
+    PlaygroundItem.pill => pillSnippet,
     PlaygroundItem.attachments => attachmentsSnippet,
     PlaygroundItem.thread => threadSnippet,
     PlaygroundItem.messageActions => messageActionsSnippet,
@@ -182,6 +191,13 @@ FlowChatView(
         entries: [...],
         onSelected: toggleTool,
       ),
+      if (researchOn)
+        FlowPill(
+          icon: PhosphorIconsRegular.graduationCap,
+          label: 'Research',
+          removeTooltip: 'Turn off Research',
+          onRemove: () => setResearch(false),
+        ),
     ],
     trailingActions: [
       FlowModelSelector(
