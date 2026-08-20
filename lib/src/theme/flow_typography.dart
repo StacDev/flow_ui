@@ -1,12 +1,33 @@
 import 'package:material_ui/material_ui.dart';
 
-/// The typeface the presets are drawn in, bundled with this package under
-/// `fonts/` (SIL Open Font License — see `fonts/OFL.txt`).
+/// The typefaces the presets are drawn in, bundled with this package under
+/// `fonts/` (SIL Open Font License — see `fonts/OFL.txt` and
+/// `fonts/OFL-GeistMono.txt`): Figtree for prose, Geist Mono for code.
 ///
-/// Declared with `package:` so the family resolves to `packages/flow_ui/…`
-/// and a host gets the design's typeface without adding a font of their own.
+/// Declared with `package:` so the families resolve to `packages/flow_ui/…`
+/// and a host gets the design's typefaces without adding a font of their
+/// own.
 const String _fontFamily = 'Figtree';
+const String _monoFontFamily = 'GeistMono';
 const String _fontPackage = 'flow_ui';
+
+/// The mono roles' standard cuts — file-level so they can double as the
+/// constructor defaults, which keeps [FlowTypography]'s pre-code
+/// constructor calls compiling unchanged.
+const TextStyle _standardCode = TextStyle(
+  fontFamily: _monoFontFamily,
+  package: _fontPackage,
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  height: 1.6,
+);
+const TextStyle _standardCodeInline = TextStyle(
+  fontFamily: _monoFontFamily,
+  package: _fontPackage,
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  height: 1.5,
+);
 
 /// Text style tokens for flow_ui components.
 ///
@@ -44,6 +65,8 @@ class FlowTypography {
     required this.labelLarge,
     required this.labelMedium,
     required this.labelSmall,
+    this.code = _standardCode,
+    this.codeInline = _standardCodeInline,
   });
 
   final TextStyle displayLarge;
@@ -74,7 +97,15 @@ class FlowTypography {
   final TextStyle labelMedium;
   final TextStyle labelSmall;
 
-  /// The Flow type scale, in Figtree.
+  /// Code, set in the bundled Geist Mono — the code block's body. A step
+  /// under prose (13) on a taller line (1.6), so a block reads as inset
+  /// material rather than continuing the paragraph.
+  final TextStyle code;
+
+  /// The mono face at prose size, for future inline code spans.
+  final TextStyle codeInline;
+
+  /// The Flow type scale: Figtree, with the code roles in Geist Mono.
   static const FlowTypography standard = FlowTypography(
     displayLarge: TextStyle(
       fontFamily: _fontFamily,
@@ -228,6 +259,8 @@ class FlowTypography {
   );
 
   /// The same scale set in [fontFamily] instead of the bundled Figtree.
+  /// The mono roles keep their own face — swap those with
+  /// [withCodeFontFamily].
   ///
   /// Pass [package] when the font ships inside a package rather than the app.
   /// Each style is rebuilt from the four things the scale carries — size,
@@ -265,7 +298,26 @@ class FlowTypography {
       labelLarge: reface(labelLarge),
       labelMedium: reface(labelMedium),
       labelSmall: reface(labelSmall),
+      code: code,
+      codeInline: codeInline,
     );
+  }
+
+  /// The same scale with only [code] and [codeInline] set in [fontFamily] —
+  /// for hosts swapping the mono face while keeping the prose one.
+  ///
+  /// Rebuilt from size, weight and line height, like [withFontFamily].
+  FlowTypography withCodeFontFamily(String fontFamily, {String? package}) {
+    TextStyle reface(TextStyle style) => TextStyle(
+      fontFamily: fontFamily,
+      package: package,
+      fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      height: style.height,
+      letterSpacing: style.letterSpacing,
+    );
+
+    return copyWith(code: reface(code), codeInline: reface(codeInline));
   }
 
   FlowTypography copyWith({
@@ -290,6 +342,8 @@ class FlowTypography {
     TextStyle? labelLarge,
     TextStyle? labelMedium,
     TextStyle? labelSmall,
+    TextStyle? code,
+    TextStyle? codeInline,
   }) {
     return FlowTypography(
       displayLarge: displayLarge ?? this.displayLarge,
@@ -313,6 +367,8 @@ class FlowTypography {
       labelLarge: labelLarge ?? this.labelLarge,
       labelMedium: labelMedium ?? this.labelMedium,
       labelSmall: labelSmall ?? this.labelSmall,
+      code: code ?? this.code,
+      codeInline: codeInline ?? this.codeInline,
     );
   }
 
@@ -352,6 +408,8 @@ class FlowTypography {
       labelLarge: TextStyle.lerp(labelLarge, other.labelLarge, t)!,
       labelMedium: TextStyle.lerp(labelMedium, other.labelMedium, t)!,
       labelSmall: TextStyle.lerp(labelSmall, other.labelSmall, t)!,
+      code: TextStyle.lerp(code, other.code, t)!,
+      codeInline: TextStyle.lerp(codeInline, other.codeInline, t)!,
     );
   }
 }

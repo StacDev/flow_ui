@@ -27,13 +27,16 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
-  # Figtree is the typeface of the Flow UI design file. It ships with the
-  # package (SIL Open Font License, see fonts/OFL.txt) so the default theme
-  # renders as designed without the host bundling a font — and without a
-  # font dependency.
+  # Figtree is the typeface of the Flow UI design file, and Geist Mono its
+  # code face. Both ship with the package (SIL Open Font License, see
+  # fonts/OFL.txt and fonts/OFL-GeistMono.txt) so the default theme renders
+  # as designed without the host bundling a font — and without a font
+  # dependency.
   #
-  # Static instances rather than the variable TTF: Flutter maps FontWeight to
-  # the nearest declared weight, so a weight axis would not be interpolated.
+  # Static instances rather than the variable TTFs: Flutter maps FontWeight
+  # to the nearest declared weight, so a weight axis would not be
+  # interpolated. Geist Mono carries only the three weights the mono roles
+  # reach for, to keep what every host app inherits small.
   fonts:
     - family: Figtree
       fonts:
@@ -51,3 +54,11 @@ flutter:
           weight: 800
         - asset: fonts/Figtree-Black.ttf
           weight: 900
+    - family: GeistMono
+      fonts:
+        - asset: fonts/GeistMono-Regular.ttf
+          weight: 400
+        - asset: fonts/GeistMono-Medium.ttf
+          weight: 500
+        - asset: fonts/GeistMono-SemiBold.ttf
+          weight: 600
