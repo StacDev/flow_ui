@@ -43,6 +43,7 @@ elements and the remaining AI states are on the way.
 | Code block | <span class="badge-done">Shipped</span> |
 | Thinking indicator | <span class="badge-done">Shipped</span> |
 | Shimmer | <span class="badge-done">Shipped</span> |
+| Pill | <span class="badge-done">Shipped</span> |
 
 ## Surfaces
 

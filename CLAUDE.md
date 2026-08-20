@@ -90,11 +90,12 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 | 21 | Code block | built-in synchronous highlighter; languages host-extensible | ✅ |
 | 22 | Thinking indicator | turning, breathing asterisk + shimmer label; active & settled | ✅ |
 | 23 | Shimmer | text only; sweeping highlight, static when settled | ✅ |
+| 24 | Pill | removable tool/mode pill for the composer's action row; label auto-drops on phones | ✅ |
 
 ### Surfaces
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 24 | Chat View | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
-| 25 | SidePanel | | ⬜ |
-| 26 | Modal | | ⬜ |
+| 25 | Chat View | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
+| 26 | SidePanel | | ⬜ |
+| 27 | Modal | | ⬜ |

@@ -1,0 +1,97 @@
+---
+title: Pill
+description: A removable pill for an enabled tool or mode — icon, label, and an X that reports removal.
+sidebar:
+  order: 15
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowPill` is the composer's tool token: while the host has Research or
+Web Search switched on, a pill says so — an icon and label on the faint
+fill, with an X that reports removal through `onRemove`. Presence *is*
+the state: render a pill while its tool is on, and actually turning the
+tool off is the host's move. The package ships no strings, so `label`
+and both tooltips are host-localized.
+
+## Removable
+
+<FlowDemo demo="pill" variant="default" height={180} title="Removable pills" />
+
+```dart title="A pill per enabled tool"
+FlowComposer(
+  onSend: send,
+  leadingActions: [
+    FlowMenu(...),
+    if (researchOn)
+      FlowPill(
+        icon: Icons.school_outlined,
+        label: 'Research',
+        removeTooltip: 'Turn off Research',
+        onRemove: () => setResearch(false),
+      ),
+  ],
+)
+```
+
+Pass a `removeTooltip` whenever `onRemove` is set — it is the X's
+tooltip *and* its accessible name, so without one assistive tech
+announces an unnamed button.
+
+## Icon-only on phones
+
+On iOS and Android the label drops away to the design's compact form —
+icon and X alone. The check reads the theme's platform rather than the
+real one, like the menus' sheet resolution, so hosts and tests can steer
+it without a device. `showLabel` forces either form outright; a host
+forcing icon-only on a hovering device can pass `tooltip` so the tool's
+name survives as a hover:
+
+<FlowDemo demo="pill" variant="icon" height={180} title="The compact form" />
+
+```dart title="Forcing the compact form"
+FlowPill(
+  icon: Icons.language,
+  label: 'Web Search', // still the accessible name
+  showLabel: false,
+  tooltip: 'Web Search',
+  removeTooltip: 'Turn off Web Search',
+  onRemove: () => setWebSearch(false),
+)
+```
+
+## Static and disabled
+
+A pill without `onRemove` is a static status token in full ink — not a
+disabled control, which is a deliberate difference from the suggestion
+row, where a null tap reads disabled. Disabling here is explicit:
+`enabled: false` fades the ink and inerts the targets, keeping the fill
+and hairline in place:
+
+<FlowDemo demo="pill" variant="static" height={180} title="Static, and disabled" />
+
+## In the composer
+
+The pill is drawn 32 tall to sit flush in `FlowComposer.leadingActions`,
+next to the add menu that toggles it. The action row doesn't scroll, so
+keep concurrent pills few:
+
+<FlowDemo demo="pill" variant="composer" height={260} title="Toggled from the add menu" />
+
+## Key API
+
+- `icon` — always drawn; the pill's whole identity in the icon-only
+  form.
+- `label` — always the pill's accessible name, painted only in the
+  labeled form.
+- `onRemove` — removal intent from the X; null leaves the X off
+  entirely.
+- `onTap` — optional tap on the pill's body, e.g. reopening the tool's
+  options; null leaves the body inert.
+- `removeTooltip`, `tooltip` — host-localized; the X's name, and the
+  body's hover.
+- `showLabel` — null resolves by platform; `true`/`false` forces.
+- `enabled` — explicit disabling; static and disabled are different
+  states.
+- `padding` (the design's 8 horizontally) and `borderRadius` (8)
+  override the metrics.

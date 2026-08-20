@@ -39,6 +39,7 @@ enum PlaygroundItem {
     PhosphorIconsRegular.plus,
     'flow_add_to_chat_menu.dart',
   ),
+  pill('Pill', PhosphorIconsRegular.pill, 'flow_pill.dart'),
   attachments(
     'Attachments',
     PhosphorIconsRegular.paperclip,

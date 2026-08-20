@@ -189,6 +189,20 @@ class _FullChatDemoState extends State<FullChatDemo> {
               }
             },
           ),
+          if (_researchOn)
+            FlowPill(
+              icon: PhosphorIconsRegular.graduationCap,
+              label: 'Research',
+              removeTooltip: 'Turn off Research',
+              onRemove: () => setState(() => _researchOn = false),
+            ),
+          if (_webSearchOn)
+            FlowPill(
+              icon: PhosphorIconsRegular.globe,
+              label: 'Web Search',
+              removeTooltip: 'Turn off Web Search',
+              onRemove: () => setState(() => _webSearchOn = false),
+            ),
         ],
         trailingActions: [
           FlowModelSelector(
