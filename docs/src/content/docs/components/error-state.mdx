@@ -89,11 +89,11 @@ FlowMessageData(
 
 Standalone, the same card serves the other failure surfaces — a thread
 that failed to load, a failed send below the composer, or a connection
-notice pinned above the input via `FlowChatScreen.aboveComposer`, the
+notice pinned above the input via `FlowChatView.aboveComposer`, the
 slot that already exists for exactly this:
 
 ```dart title="A connection notice above the composer"
-FlowChatScreen(
+FlowChatView(
   thread: FlowThread(messages: messages),
   aboveComposer: offline
       ? FlowErrorState(

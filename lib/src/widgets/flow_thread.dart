@@ -93,7 +93,7 @@ class FlowThread extends StatelessWidget {
   final String? thinkingLabel;
 
   /// The design's thread metrics: edge padding and the gap between turns.
-  /// The edge 16 is mirrored by `FlowChatScreen`'s composer-block padding,
+  /// The edge 16 is mirrored by `FlowChatView`'s composer-block padding,
   /// which promises its edges line up with the thread's.
   static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.all(16);
   static const double _defaultGap = 32;

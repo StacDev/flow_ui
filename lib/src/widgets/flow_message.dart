@@ -11,7 +11,7 @@ import 'flow_streaming_text.dart';
 
 /// Renders a [FlowCustomPart]; return null to skip it.
 ///
-/// A full renderer registry waits for the Chat Screen surface — this
+/// A full renderer registry waits for the Chat View surface — this
 /// callback is the extension seam until then.
 typedef FlowCustomPartBuilder =
     Widget? Function(

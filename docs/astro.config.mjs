@@ -25,6 +25,10 @@ const playgroundDevIndex = {
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://flowui.stac.dev',
+	// FlowChatScreen became FlowChatView in 0.2.0; keep the old page URL alive.
+	redirects: {
+		'/components/chat-screen': '/components/chat-view',
+	},
 	integrations: [
 		playgroundDevIndex,
 		starlight({

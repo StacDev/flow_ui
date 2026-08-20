@@ -115,7 +115,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.flowColors.surface,
-      body: FlowChatScreen(
+      body: FlowChatView(
         empty: _messages.isEmpty,
         greeting: const FlowGreeting(
           icon: Icons.wb_twilight,

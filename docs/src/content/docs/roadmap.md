@@ -48,6 +48,6 @@ elements and the remaining AI states are on the way.
 
 | Component | Status |
 | --- | --- |
-| Chat screen | <span class="badge-done">Shipped</span> |
+| Chat view | <span class="badge-done">Shipped</span> |
 | Side panel | <span class="badge-todo">Planned</span> |
 | Modal | <span class="badge-todo">Planned</span> |

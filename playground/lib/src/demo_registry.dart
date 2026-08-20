@@ -145,7 +145,7 @@ String snippetFor(PlaygroundItem item) {
 }
 
 const String _fullChatSnippet = '''
-FlowChatScreen(
+FlowChatView(
   empty: messages.isEmpty,
   greeting: const FlowGreeting(
     icon: PhosphorIconsRegular.sunHorizon,

@@ -33,7 +33,7 @@
 
 | Component | What it does |
 |---|---|
-| [`FlowChatScreen`](https://flowui.stac.dev/components/chat-screen) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
+| [`FlowChatView`](https://flowui.stac.dev/components/chat-view) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
 | [`FlowThread`](https://flowui.stac.dev/components/message-thread) | Scrollable conversation anchored to the newest message |
 | [`FlowMessage`](https://flowui.stac.dev/components/message-thread) | One turn — ink-wash user bubble, plain assistant, error bubble, typed content parts |
 | [`FlowStreamingText`](https://flowui.stac.dev/components/streaming-text) | Animated text reveal while a reply arrives |
@@ -136,7 +136,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlowChatScreen(
+      body: FlowChatView(
         empty: _messages.isEmpty,
         greeting: const FlowGreeting(
           icon: Icons.wb_twilight,
@@ -176,7 +176,7 @@ class _ChatPageState extends State<ChatPage> {
 }
 ```
 
-`FlowChatScreen` is body-only — it builds no `Scaffold` and no app bar, so
+`FlowChatView` is body-only — it builds no `Scaffold` and no app bar, so
 your app keeps the chrome, the background, and the keyboard inset. See
 [`example/lib/main.dart`](example/lib/main.dart) for a complete runnable
 version of this page, and the [live playground](https://flowui.stac.dev/playground)

@@ -24,7 +24,7 @@ const List<(IconData, String)> _starters = [
   (PhosphorIconsRegular.magnifyingGlass, 'Suggest a new venture for me'),
 ];
 
-/// The Full Chat example: a whole conversation surface on [FlowChatScreen],
+/// The Full Chat example: a whole conversation surface on [FlowChatView],
 /// live — starts in the zero state, sends for real, streams a canned reply
 /// behind the thinking indicator, and carries the add and model menus.
 class FullChatDemo extends StatefulWidget {
@@ -115,7 +115,7 @@ class _FullChatDemoState extends State<FullChatDemo> {
 
   @override
   Widget build(BuildContext context) {
-    return FlowChatScreen(
+    return FlowChatView(
       empty: _messages.isEmpty,
       greeting: const FlowGreeting(
         icon: PhosphorIconsRegular.sunHorizon,
