@@ -16,7 +16,8 @@ enum FlowMessageStatus {
   /// Settled; renders statically.
   complete,
 
-  /// Failed; content renders in an error bubble.
+  /// Failed. An assistant turn keeps its parts in normal ink and closes
+  /// with an error card; a user bubble recolors to the error container.
   error,
 }
 

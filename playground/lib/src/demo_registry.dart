@@ -4,6 +4,7 @@ import 'demos/add_to_chat_demo.dart';
 import 'demos/attachments_demo.dart';
 import 'demos/code_block_demo.dart';
 import 'demos/composer_demo.dart';
+import 'demos/error_state_demo.dart';
 import 'demos/full_chat_demo.dart';
 import 'demos/greeting_demo.dart';
 import 'demos/message_actions_demo.dart';
@@ -32,6 +33,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
       variant: variant,
     ),
     PlaygroundItem.codeBlock => CodeBlockDemo(key: key, variant: variant),
+    PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
     PlaygroundItem.thread => ThreadDemo(key: key, variant: variant),
@@ -76,6 +78,11 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('sql', 'SQL'),
       ('plain', 'Plain'),
       ('streaming', 'Streaming'),
+    ],
+    PlaygroundItem.errorState => const [
+      ('card', 'Card'),
+      ('minimal', 'Minimal'),
+      ('thread', 'Failed turn'),
     ],
     PlaygroundItem.attachments => const [
       ('composer', 'In composer'),
@@ -124,6 +131,7 @@ String snippetFor(PlaygroundItem item) {
     PlaygroundItem.message => messageSnippet,
     PlaygroundItem.streamingMessage => streamingMessageSnippet,
     PlaygroundItem.codeBlock => codeBlockSnippet,
+    PlaygroundItem.errorState => errorStateSnippet,
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.attachments => attachmentsSnippet,
     PlaygroundItem.thread => threadSnippet,

@@ -40,6 +40,7 @@
 | [`FlowThinkingIndicator`](https://flowui.stac.dev/components/thinking-indicator) | Turning, breathing asterisk with a shimmering label |
 | [`FlowShimmerText`](https://flowui.stac.dev/components/shimmer-text) | Sweeping text highlight, static once settled |
 | [`FlowCodeBlock`](https://flowui.stac.dev/components/code-block) | Fenced code with built-in synchronous highlighting, a header label, and a copy affordance — languages host-extensible |
+| [`FlowErrorState`](https://flowui.stac.dev/components/error-state) | Failure card with a host-written message and retry pill — failed turns render it automatically |
 | [`FlowMessageActions`](https://flowui.stac.dev/components/message-actions) | Copy / regenerate / edit / feedback row under a message |
 | [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, and leading/trailing action slots |
 | [`FlowMenu`](https://flowui.stac.dev/components/menu) | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |

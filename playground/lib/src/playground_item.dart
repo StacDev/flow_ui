@@ -29,6 +29,11 @@ enum PlaygroundItem {
     'flow_streaming_message.dart',
   ),
   codeBlock('Code Block', PhosphorIconsRegular.code, 'flow_code_block.dart'),
+  errorState(
+    'Error State',
+    PhosphorIconsRegular.warningCircle,
+    'flow_error_state.dart',
+  ),
   addToChat(
     'Add to Chat',
     PhosphorIconsRegular.plus,

@@ -5,6 +5,7 @@ import '../models/flow_message_part.dart';
 import '../theme/flow_theme.dart';
 import 'flow_attachment_group.dart';
 import 'flow_code_block.dart';
+import 'flow_error_state.dart';
 import 'flow_thinking_indicator.dart';
 import 'flow_streaming_text.dart';
 
@@ -26,9 +27,11 @@ typedef FlowCustomPartBuilder =
 /// - **system** — centered muted text (notices, dividers).
 ///
 /// [FlowMessageStatus.pending] assistant messages show a
-/// [FlowThinkingIndicator]; [FlowMessageStatus.error] content renders in an
-/// `errorContainer` bubble; [FlowMessageStatus.streaming] animates the last
-/// text part via [FlowStreamingText].
+/// [FlowThinkingIndicator]; [FlowMessageStatus.streaming] animates the last
+/// text part via [FlowStreamingText]. A [FlowMessageStatus.error] assistant
+/// turn keeps its parts in normal ink and closes with a [FlowErrorState]
+/// card — the message's own [FlowErrorPart], or a default one when the host
+/// supplies none; an error user bubble recolors to the error container.
 class FlowMessage extends StatelessWidget {
   const FlowMessage(
     this.message, {
@@ -39,6 +42,9 @@ class FlowMessage extends StatelessWidget {
     this.onCodeCopy,
     this.copiedCodePart,
     this.codeCopyTooltip,
+    this.onRetry,
+    this.errorTitle,
+    this.retryLabel,
     this.leading,
     this.footer,
     this.maxBubbleWidthFraction = 0.75,
@@ -81,6 +87,19 @@ class FlowMessage extends StatelessWidget {
   /// Host-localized label for each code block's copy affordance.
   final String? codeCopyTooltip;
 
+  /// Retry intent from the turn's error card — the default card a failed
+  /// assistant turn renders, or any [FlowErrorPart]'s (unless the part
+  /// says `retryable: false`). Null hides every retry affordance.
+  final VoidCallback? onRetry;
+
+  /// Host-localized headline for the error cards, e.g. 'Connection
+  /// error'. Null lets each card's message take the glyph row.
+  final String? errorTitle;
+
+  /// Host-localized label for the error cards' retry pill; null renders
+  /// the pill glyph-only.
+  final String? retryLabel;
+
   /// Slot beside the content, e.g. an avatar.
   final Widget? leading;
 
@@ -101,12 +120,11 @@ class FlowMessage extends StatelessWidget {
   /// strings.
   final String? thinkingLabel;
 
-  /// Corner radius of the user bubble and the error bubbles. Defaults to
-  /// the design's 12.
+  /// Corner radius of the user bubble, its error state included.
+  /// Defaults to the design's 12.
   final BorderRadius? bubbleRadius;
 
-  /// Inside the user bubble. Defaults to the design's 16/10; the error
-  /// bubbles keep their own spec padding.
+  /// Inside the user bubble. Defaults to the design's 16/10.
   final EdgeInsetsGeometry? bubblePadding;
 
   /// The user bubble's ground, as an alpha over the ink — the same wash the
@@ -127,10 +145,6 @@ class FlowMessage extends StatelessWidget {
     Radius.circular(12),
   );
   static const double _bubbleHorizontalPadding = 16;
-
-  /// The error bubble sits a step deeper than the user bubble's 10 — the
-  /// design's asymmetry, not a leftover.
-  static const double _errorBubbleVerticalPadding = 12;
 
   /// Gaps: between a message's parts, under a user bubble, under assistant
   /// content before its actions, and beside a leading slot.
@@ -214,20 +228,25 @@ class FlowMessage extends StatelessWidget {
     Widget content;
     if (message.status == FlowMessageStatus.pending && message.parts.isEmpty) {
       content = FlowThinkingIndicator(label: thinkingLabel);
-    } else if (_isError) {
-      content = Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: _bubbleHorizontalPadding,
-            vertical: _errorBubbleVerticalPadding,
+    } else if (_isError &&
+        !message.parts.any((part) => part is FlowErrorPart)) {
+      // A failure must not swallow what the user has already read: parts
+      // keep their normal ink, and a default card closes the turn when
+      // the host supplied no FlowErrorPart of its own.
+      content = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (message.parts.isNotEmpty) ...[
+            _buildParts(context, colors.onSurface),
+            const SizedBox(height: _partGap),
+          ],
+          FlowErrorState(
+            title: errorTitle,
+            retryLabel: retryLabel,
+            onRetry: onRetry,
           ),
-          decoration: BoxDecoration(
-            color: colors.errorContainer,
-            borderRadius: bubbleRadius ?? _bubbleRadius,
-          ),
-          child: _buildParts(context, colors.onErrorContainer),
-        ),
+        ],
       );
     } else {
       content = _buildParts(context, colors.onSurface);
@@ -274,9 +293,11 @@ class FlowMessage extends StatelessWidget {
                 style: style,
                 textAlign: TextAlign.center,
               ),
-              // System messages are centered notices; attachments and code
-              // belong to user and assistant turns.
-              FlowAttachmentPart() || FlowCodePart() => const SizedBox.shrink(),
+              // System messages are centered notices; attachments, code
+              // and failures belong to user and assistant turns.
+              FlowAttachmentPart() ||
+              FlowCodePart() ||
+              FlowErrorPart() => const SizedBox.shrink(),
               FlowCustomPart() =>
                 customPartBuilder?.call(context, message, part) ??
                     const SizedBox.shrink(),
@@ -340,6 +361,15 @@ class FlowMessage extends StatelessWidget {
             isStreaming:
                 message.status == FlowMessageStatus.streaming &&
                 i == message.parts.length - 1,
+          ),
+        // `message` names the FlowMessageData here, so the part's text
+        // binds under its own name.
+        FlowErrorPart(message: final errorMessage, :final retryable) =>
+          FlowErrorState(
+            title: errorTitle,
+            message: errorMessage,
+            retryLabel: retryLabel,
+            onRetry: retryable ? onRetry : null,
           ),
         FlowCustomPart() => customPartBuilder?.call(context, message, part),
       };

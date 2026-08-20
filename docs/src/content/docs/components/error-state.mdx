@@ -1,0 +1,120 @@
+---
+title: Error state
+description: The failure card — an error glyph, a host-written message, and a retry pill that reports intent.
+sidebar:
+  order: 14
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowErrorState` is the failure surface: an error glyph and a host-written
+explanation on a hairline card, with an optional retry pill. It renders
+state and reports one intent — what retry *means* (re-run the turn,
+refetch, reconnect, resend) is the host's business. The package ships no
+strings, so `title`, `message` and `retryLabel` are all host-localized;
+the message announces to assistive tech as a live region, and the pill is
+a visible control rather than a hover-revealed action, because hover does
+not exist on touch.
+
+## Card
+
+<FlowDemo demo="errorState" variant="card" height={220} title="The full card" />
+
+```dart title="The full anatomy"
+FlowErrorState(
+  title: 'Connection error',
+  message: 'The API is overloaded right now. Retry in a moment.',
+  retryLabel: 'Retry',
+  onRetry: resend,
+)
+```
+
+## Minimal
+
+Every part is optional: without a `title` the message takes the glyph
+row, and a null `onRetry` hides the pill:
+
+<FlowDemo demo="errorState" variant="minimal" height={160} title="Message only" />
+
+```dart title="Just the failure"
+FlowErrorState(
+  message: 'The API is overloaded right now. Retry in a moment.',
+)
+```
+
+## A failed turn
+
+In a thread the card renders on its own. A `FlowErrorPart` in any turn
+becomes this card — and because parts render in order, everything the
+turn already delivered keeps its normal ink, with the failure closing the
+turn below it. Retry hands the failed message back through
+`FlowThread.onRetry`:
+
+<FlowDemo demo="errorState" variant="thread" height={480} title="Partial reply, then the card" />
+
+```dart title="The host contract"
+FlowThread(
+  messages: messages,
+  errorTitle: 'Connection error',
+  retryLabel: 'Retry',
+  // Typically: drop or reset the failed message, re-run the turn.
+  onRetry: (message) => rerun(message),
+)
+```
+
+A turn whose status is `FlowMessageStatus.error` but carries no
+`FlowErrorPart` still closes with a default card — zero-wiring hosts keep
+a visible failure state.
+
+## Not retryable
+
+`retryable: false` on the part suppresses the pill even when the thread
+wires `onRetry` — for failures retrying can't fix:
+
+```dart title="A terminal failure"
+FlowMessageData(
+  id: 'a2',
+  role: FlowMessageRole.assistant,
+  status: FlowMessageStatus.error,
+  parts: [
+    FlowErrorPart(
+      message: 'This conversation exceeds the context window.',
+      retryable: false,
+    ),
+  ],
+)
+```
+
+## Elsewhere
+
+Standalone, the same card serves the other failure surfaces — a thread
+that failed to load, a failed send below the composer, or a connection
+notice pinned above the input via `FlowChatScreen.aboveComposer`, the
+slot that already exists for exactly this:
+
+```dart title="A connection notice above the composer"
+FlowChatScreen(
+  thread: FlowThread(messages: messages),
+  aboveComposer: offline
+      ? FlowErrorState(
+          message: 'Connection lost.',
+          retryLabel: 'Reconnect',
+          onRetry: reconnect,
+        )
+      : null,
+  composer: FlowComposer(onSend: send),
+)
+```
+
+## Key API
+
+- `FlowErrorState` — `title`, `message`, `onRetry` (null hides the
+  pill), `retryLabel` (doubles as the pill's accessible name; null
+  renders the glyph alone), plus `padding` and `borderRadius` over the
+  design's 16/14 inset and 12px corner.
+- `FlowErrorPart` — `message`, `retryable` (default true); rendered by
+  `FlowMessage` in part order, skipped in system messages.
+- `FlowThread` / `FlowMessage` — `onRetry` (thread-level is handed the
+  failed `FlowMessageData`), `errorTitle`, `retryLabel`.
+- A failed assistant turn keeps its parts in normal ink; the
+  `errorContainer` recolor now applies only to the user bubble.
