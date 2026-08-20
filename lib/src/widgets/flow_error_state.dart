@@ -18,7 +18,7 @@ import '../theme/flow_theme.dart';
 /// becomes this card, and a failed assistant turn closes with a default
 /// one even when the host supplies no part. Standalone it serves the
 /// other failure surfaces — a thread that failed to load, a connection
-/// notice pinned in `FlowChatScreen.aboveComposer`, a failed send below
+/// notice pinned in `FlowChatView.aboveComposer`, a failed send below
 /// the composer.
 ///
 /// Retry reports intent; what it means — re-run the turn, refetch,

@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 const String threadSnippet = '''
 // A reversed, scrollable conversation — newest at the bottom. Give it
-// bounded height; inside FlowChatScreen that comes for free.
+// bounded height; inside FlowChatView that comes for free.
 SizedBox(
   height: 480,
   child: FlowThread(

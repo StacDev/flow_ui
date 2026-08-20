@@ -11,7 +11,7 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 there is room it sets a 40px glyph beside 32px text, bottom-aligned; below
 600px of available width it restacks itself — glyph above the text, at the
 design's 21px. The host supplies the whole string (name and all);
-`FlowChatScreen` centres it when the conversation hasn't started.
+`FlowChatView` centres it when the conversation hasn't started.
 
 ## Default
 
@@ -72,5 +72,5 @@ FlowGreeting(
 - `text` — the whole headline; the package composes no copy.
 - `icon`, `iconColor` — the optional glyph.
 - `textStyle` — overrides the responsive sizing outright.
-- In the assembled surface: pass it to `FlowChatScreen`'s `greeting:`
+- In the assembled surface: pass it to `FlowChatView`'s `greeting:`
   slot, shown only while `empty` is true.

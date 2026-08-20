@@ -93,6 +93,6 @@ Status legend: ⬜ Todo · ✅ Done
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 24 | Chat Screen | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
+| 24 | Chat View | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
 | 25 | SidePanel | | ⬜ |
 | 26 | Modal | | ⬜ |

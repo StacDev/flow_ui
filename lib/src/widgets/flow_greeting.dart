@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/flow_theme.dart';
 
 /// The zero state's headline — "Good afternoon, …" over a thread nobody has
-/// spoken in yet, usually through `FlowChatScreen.greeting`:
+/// spoken in yet, usually through `FlowChatView.greeting`:
 ///
 /// ```dart
 /// FlowGreeting(

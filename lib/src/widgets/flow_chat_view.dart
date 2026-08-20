@@ -21,7 +21,7 @@ const Duration _jumpScroll = Duration(milliseconds: 240);
 /// started.
 ///
 /// ```dart
-/// FlowChatScreen(
+/// FlowChatView(
 ///   empty: messages.isEmpty,
 ///   greeting: FlowGreeting(icon: Icons.wb_twilight, text: 'Good afternoon'),
 ///   suggestions: FlowSuggestionGroup(...),
@@ -39,8 +39,8 @@ const Duration _jumpScroll = Duration(milliseconds: 240);
 /// Body-only: it builds no [Scaffold] and no app bar, so drop it in a
 /// scaffold body and the host keeps the chrome, the background, and the
 /// keyboard inset.
-class FlowChatScreen extends StatefulWidget {
-  const FlowChatScreen({
+class FlowChatView extends StatefulWidget {
+  const FlowChatView({
     super.key,
     this.thread,
     this.composer,
@@ -91,7 +91,7 @@ class FlowChatScreen extends StatefulWidget {
   /// centre between them, per the design; on compact ones it stays docked
   /// with the suggestions just above it and the greeting floating centred.
   ///
-  /// The host flips this (typically `messages.isEmpty`): the screen takes
+  /// The host flips this (typically `messages.isEmpty`): the view takes
   /// finished widgets and cannot see into the thread.
   final bool empty;
 
@@ -100,7 +100,7 @@ class FlowChatScreen extends StatefulWidget {
   final Widget? greeting;
 
   /// The zero state's starters, usually a column `FlowSuggestionGroup`.
-  /// Shown only while [empty]; the screen places them — 48 below the
+  /// Shown only while [empty]; the view places them — 48 below the
   /// composer on wide layouts, capped at [emptySuggestionsWidth], and 16
   /// above it on compact ones, stepped in a further 8.
   final Widget? suggestions;
@@ -134,10 +134,10 @@ class FlowChatScreen extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   @override
-  State<FlowChatScreen> createState() => _FlowChatScreenState();
+  State<FlowChatView> createState() => _FlowChatViewState();
 }
 
-class _FlowChatScreenState extends State<FlowChatScreen> {
+class _FlowChatViewState extends State<FlowChatView> {
   /// The design's surface metrics. Compact begins below 600, Material's
   /// compact/medium boundary — read from this widget's own constraints, so
   /// a pane or a phone frame counts, not just a phone. The composer block
@@ -168,7 +168,7 @@ class _FlowChatScreenState extends State<FlowChatScreen> {
   }
 
   @override
-  void didUpdateWidget(FlowChatScreen oldWidget) {
+  void didUpdateWidget(FlowChatView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.threadController != widget.threadController) {
       oldWidget.threadController?.removeListener(_handleScroll);

@@ -15,6 +15,11 @@
   retry pill) and a `FlowErrorPart` message part, with
   `onRetry`/`errorTitle`/`retryLabel` threaded through `FlowMessage` and
   `FlowThread`.
+- **Breaking**: `FlowChatScreen` is renamed to `FlowChatView`. The widget
+  was never a screen — it is body-only and embeddable, and upcoming
+  surfaces (side panel, modal) will host it — so the name now follows
+  Flutter's convention for embeddable composites. Rename call sites;
+  the API is unchanged.
 - **Breaking**: a failed assistant turn no longer recolors its content
   into an `errorContainer` bubble — parts keep their normal ink and the
   turn closes with an error card (a default one when no `FlowErrorPart`
