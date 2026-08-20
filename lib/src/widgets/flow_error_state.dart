@@ -39,7 +39,8 @@ class FlowErrorState extends StatelessWidget {
   });
 
   /// Host-localized headline, e.g. 'Connection error'. Null lets
-  /// [message] take the glyph row.
+  /// [message] take the glyph row; without a [message] the title itself
+  /// announces as the live region.
   final String? title;
 
   /// The failure, host-written and sentence-case. Announced to assistive
@@ -107,8 +108,9 @@ class FlowErrorState extends StatelessWidget {
               )
             : typography.bodyMedium.copyWith(color: colors.onSurfaceVariant),
       );
-      if (title == null) {
-        // The row text IS the message here — announce it.
+      if (below == null) {
+        // The row text is all the card says — a lone title as much as a
+        // lone message — and failures arrive unprompted: announce it.
         rowLabel = Semantics(liveRegion: true, child: rowLabel);
       }
     }
