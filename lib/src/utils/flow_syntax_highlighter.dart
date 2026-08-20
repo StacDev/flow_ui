@@ -130,6 +130,11 @@ class FlowCodeLanguage {
   /// Makes [language] resolvable through [find], replacing any earlier
   /// registration of the same id or alias.
   static void register(FlowCodeLanguage language) {
+    // Drop every key still resolving to the replaced language: an alias
+    // the replacement doesn't relist must not keep serving the old
+    // instance, which shares the new one's compiled-pattern slot.
+    final id = language.id.toLowerCase();
+    _registry.removeWhere((_, earlier) => earlier.id.toLowerCase() == id);
     _add(_registry, language);
     FlowSyntaxHighlighter._invalidate(language.id);
   }
@@ -366,8 +371,12 @@ class FlowCodeLanguage {
     aliases: ['xml'],
     rules: [
       FlowSyntaxRule(FlowSyntaxToken.comment, r'<!--[\s\S]*?-->'),
-      // Doctype, CDATA and processing instructions.
-      FlowSyntaxRule(FlowSyntaxToken.meta, r'<![^>]*>|<\?[\s\S]*?\?>'),
+      // Doctype, CDATA and processing instructions — CDATA spelled out
+      // first, since its body may hold the > that ends the generic <!…>.
+      FlowSyntaxRule(
+        FlowSyntaxToken.meta,
+        r'<!\[CDATA\[[\s\S]*?\]\]>|<![^>]*>|<\?[\s\S]*?\?>',
+      ),
       // Attribute values only — anchored on the =, so quoted prose in
       // text content stays plain.
       FlowSyntaxRule(FlowSyntaxToken.string, r'=\s*"[^"]*"'),
@@ -376,7 +385,9 @@ class FlowCodeLanguage {
       FlowSyntaxRule(FlowSyntaxToken.meta, r'[A-Za-z-]+(?==)'),
       // Entities.
       FlowSyntaxRule(FlowSyntaxToken.meta, r'&[a-zA-Z]+;|&#\d+;'),
-      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[<>/=]+'),
+      // One angle at a time: a + run would swallow the < opening a
+      // comment or CDATA section straight after a closing >.
+      FlowSyntaxRule(FlowSyntaxToken.punctuation, r'[<>/=]'),
     ],
   );
 
@@ -385,7 +396,9 @@ class FlowCodeLanguage {
     aliases: ['scss', 'less'],
     rules: [
       FlowSyntaxRule(FlowSyntaxToken.comment, r'/\*[\s\S]*?\*/'),
-      FlowSyntaxRule(FlowSyntaxToken.comment, r'//[^\n]*'),
+      // Line-start or whitespace before the // — as with YAML's # — so an
+      // unquoted url(http://…) doesn't comment out the rest of the line.
+      FlowSyntaxRule(FlowSyntaxToken.comment, r'(?:^|[ \t])//[^\n]*'),
       FlowSyntaxRule(FlowSyntaxToken.string, r'"(?:\\.|[^"\\\n])*"'),
       FlowSyntaxRule(FlowSyntaxToken.string, r"'(?:\\.|[^'\\\n])*'"),
       FlowSyntaxRule(FlowSyntaxToken.keyword, r'@[\w-]+'),
