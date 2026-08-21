@@ -1,14 +1,13 @@
 # flow_ui example
 
-A single-file chat screen built with flow_ui: zero state with greeting and
-starters, a streaming reply behind the thinking indicator, and a composer
-with an add-menu and model selector.
+A single-file chat screen built with flow_ui — the minimal host: a zero
+state with a greeting, and a composer showing the package's default
+placeholder.
 
-To run it, generate platform runners once, then launch:
+Platform runners are checked in, so it launches directly:
 
 ```bash
-flutter create . --platforms=web
-flutter run -d chrome
+flutter run
 ```
 
 For a live tour of every component — with variants and code snippets — open
