@@ -96,5 +96,8 @@ page shows the full flow, from the "+" menu to the sent message.
   preview; `previewCloseTooltip` labels the preview's close button.
 - `controller`, `focusNode`, `placeholder` — the field itself; pass your
   own `TextEditingController` to prefill or clear the draft.
+  `placeholder` defaults to 'How can I help you today?' — the one string
+  the package ships — so localized hosts pass their own copy, and an
+  explicit null renders no hint.
 - `padding`, `borderRadius` — the card's metric overrides (the design's
   24px corner by default).

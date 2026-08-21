@@ -19,6 +19,15 @@
   in the composer's action row: host-passed icon, label and tooltips,
   removal intent on `onRemove`, and a label that auto-drops to the
   icon-only form on phones (`showLabel` forces either).
+- **Breaking**: `FlowComposer.placeholder` now defaults to
+  'How can I help you today?' — the one string the package ships. Hosts
+  that want an empty field must pass an explicit `placeholder: null`;
+  localized hosts keep passing their own copy.
+- **Breaking**: `FlowChatView.composer` is now required — still nullable,
+  so a read-only surface passes an explicit `composer: null` instead of
+  omitting it. Building the view with nothing to show at all (no thread,
+  composer, header, or zero state) now asserts in debug builds rather
+  than rendering a blank screen.
 - **Breaking**: `FlowChatScreen` is renamed to `FlowChatView`. The widget
   was never a screen — it is body-only and embeddable, and upcoming
   surfaces (side panel, modal) will host it — so the name now follows

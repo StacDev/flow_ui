@@ -32,7 +32,7 @@ class FlowComposer extends StatefulWidget {
     this.isStreaming = false,
     this.controller,
     this.focusNode,
-    this.placeholder,
+    this.placeholder = 'How can I help you today?',
     this.enabled = true,
     this.clearOnSend = true,
     this.submitOnEnter = true,
@@ -63,7 +63,9 @@ class FlowComposer extends StatefulWidget {
   /// Optional external focus node; an internal one is used when null.
   final FocusNode? focusNode;
 
-  /// Host-localized hint text.
+  /// Hint text in the empty field. Defaults to the design's greeting —
+  /// the one string the package ships, so localized hosts should pass
+  /// their own copy. An explicit null renders no hint at all.
   final String? placeholder;
 
   final bool enabled;
