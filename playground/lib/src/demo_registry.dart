@@ -99,6 +99,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.thread => const [
       ('default', 'Default'),
       ('streaming', 'Streaming'),
+      ('short', 'Short'),
     ],
     PlaygroundItem.streamingText => const [
       ('animated', 'Animated'),

@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 const String threadSnippet = '''
-// A reversed, scrollable conversation — newest at the bottom. Give it
+// A scrollable conversation — reads from the top, anchoring to the
+// newest message once it outgrows the viewport. Give it
 // bounded height; inside FlowChatView that comes for free.
 SizedBox(
   height: 480,
@@ -22,10 +23,11 @@ SizedBox(
 )''';
 
 const String _reply =
-    'FlowThread lays the conversation out as a reversed list, so the '
-    'newest message sits at the bottom and history loads upward. Messages '
-    'keep their identity by id, which is what makes streaming updates '
-    'cheap. Give it bounded height and it does the rest:';
+    'FlowThread reads from the top while the conversation fits, then '
+    'anchors to the newest message once it outgrows the viewport — '
+    'history loads upward. Messages keep their identity by id, which is '
+    'what makes streaming updates cheap. Give it bounded height and it '
+    'does the rest:';
 
 const String _replyCode = '''
 SizedBox(
@@ -71,9 +73,10 @@ List<FlowMessageData> _seed(bool streaming) => [
 
 /// The conversation list on its own, at a bounded height, closing on a
 /// reply that carries a code part. The Streaming variant mounts that
-/// reply mid-stream, so the text reveal plays above the code block. The
-/// demo owns the clipboard write and the copied confirmation, the way a
-/// host would.
+/// reply mid-stream, so the text reveal plays above the code block; the
+/// Short variant fits its viewport, showing the conversation reading
+/// from the top. The demo owns the clipboard write and the copied
+/// confirmation, the way a host would.
 class ThreadDemo extends StatefulWidget {
   const ThreadDemo({super.key, this.variant});
 
@@ -111,7 +114,9 @@ class _ThreadDemoState extends State<ThreadDemo> {
         child: SizedBox(
           height: 480,
           child: FlowThread(
-            messages: _seed(widget.variant == 'streaming'),
+            messages: widget.variant == 'short'
+                ? _seed(false).take(2).toList()
+                : _seed(widget.variant == 'streaming'),
             codeCopyTooltip: 'Copy code',
             copiedCodePart: _copiedPart,
             onCodeCopy: _copy,
