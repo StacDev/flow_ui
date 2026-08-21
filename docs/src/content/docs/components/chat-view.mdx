@@ -55,7 +55,8 @@ reach in and attach its own. Null leaves the button out entirely.
 - `thread` — usually a `FlowThread`, given the bounded height it needs.
   Null renders an empty thread: a conversation nobody has spoken in yet is
   a real state of a chat, so the surface stands up on its own.
-- `composer` — null renders no input: a read-only surface.
+- `composer` — required, but nullable: an explicit `composer: null`
+  renders no input, a read-only surface.
 - `empty` + `greeting` + `suggestions` — the zero state; the host flips
   `empty` (typically `messages.isEmpty`).
 - `header` — optional full-bleed bar above the thread; `aboveComposer`

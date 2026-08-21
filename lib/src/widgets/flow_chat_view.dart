@@ -42,8 +42,8 @@ const Duration _jumpScroll = Duration(milliseconds: 240);
 class FlowChatView extends StatefulWidget {
   const FlowChatView({
     super.key,
+    required this.composer,
     this.thread,
-    this.composer,
     this.header,
     this.aboveComposer,
     this.empty = false,
@@ -55,7 +55,19 @@ class FlowChatView extends StatefulWidget {
     this.emptyComposerWidth = 640,
     this.emptySuggestionsWidth = 480,
     this.padding,
-  }) : assert(maxContentWidth > 0, 'maxContentWidth must be positive'),
+  }) : assert(
+         thread != null ||
+             composer != null ||
+             header != null ||
+             aboveComposer != null ||
+             greeting != null ||
+             suggestions != null,
+         'FlowChatView was built with nothing to show, which renders a '
+         'blank surface. Pass a thread, a composer, or the zero state '
+         'pieces (greeting, suggestions) — see the class doc for the '
+         'minimal usage.',
+       ),
+       assert(maxContentWidth > 0, 'maxContentWidth must be positive'),
        assert(emptyComposerWidth > 0, 'emptyComposerWidth must be positive'),
        assert(
          emptySuggestionsWidth > 0,
@@ -69,12 +81,13 @@ class FlowChatView extends StatefulWidget {
   /// yet is a real state of a chat, so the surface stands up on its own.
   final Widget? thread;
 
-  /// The input, usually a `FlowComposer`.
+  /// The input, usually a `FlowComposer`. Required so a surface without an
+  /// input is a decision rather than an omission: pass an explicit null for
+  /// a read-only surface — an archived thread, a shared transcript.
   ///
-  /// Null renders no input at all, leaving a read-only surface — an archived
-  /// thread, a shared transcript. There is deliberately no default: a
-  /// composer needs somewhere to send to, which is why `FlowComposer` makes
-  /// `onSend` required, and a stand-in would swallow what the user typed.
+  /// There is deliberately no default: a composer needs somewhere to send
+  /// to, which is why `FlowComposer` makes `onSend` required, and a
+  /// stand-in would swallow what the user typed.
   final Widget? composer;
 
   /// Optional bar above the thread, full-bleed — the design's mobile nav
