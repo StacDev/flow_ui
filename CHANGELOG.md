@@ -24,6 +24,10 @@
   retry pill) and a `FlowErrorPart` message part, with
   `onRetry`/`errorTitle`/`retryLabel` threaded through `FlowMessage` and
   `FlowThread`.
+- **Thread** — a conversation that still fits its viewport now reads from
+  the top, the AI-app convention, instead of hugging the composer with
+  empty space above. Once it outgrows the viewport the thread anchors to
+  the newest message as before.
 - **Pill** — `FlowPill`, a removable pill showing an enabled tool or mode
   in the composer's action row: host-passed icon, label and tooltips,
   removal intent on `onRemove`, and a label that auto-drops to the

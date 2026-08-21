@@ -4,13 +4,15 @@ import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import 'flow_message.dart';
 
-/// The scrollable conversation: a bottom-anchored list of [FlowMessageData]s.
+/// The scrollable conversation, a list of [FlowMessageData]s.
 ///
-/// Uses a reversed [ListView] so the thread naturally sticks to the newest
-/// message while a reply streams in, and holds position when the user
-/// scrolls up to read history. Needs a bounded height (an [Expanded] in a
-/// column, or a sized parent).
-class FlowThread extends StatelessWidget {
+/// A conversation that still fits its viewport reads from the top, the AI
+/// apps' convention; once it grows past the viewport it anchors to the
+/// bottom instead. Uses a reversed [ListView] underneath so the thread
+/// naturally sticks to the newest message while a reply streams in, and
+/// holds position when the user scrolls up to read history. Needs a
+/// bounded height (an [Expanded] in a column, or a sized parent).
+class FlowThread extends StatefulWidget {
   const FlowThread({
     super.key,
     required this.messages,
@@ -31,7 +33,8 @@ class FlowThread extends StatelessWidget {
     this.thinkingLabel,
   });
 
-  /// Oldest → newest; the thread anchors to the newest.
+  /// Oldest → newest; once the conversation outgrows the viewport, the
+  /// thread anchors to the newest.
   final List<FlowMessageData> messages;
 
   /// Forwarded to each [FlowMessage].
@@ -92,50 +95,89 @@ class FlowThread extends StatelessWidget {
   /// on a pending message.
   final String? thinkingLabel;
 
+  @override
+  State<FlowThread> createState() => _FlowThreadState();
+}
+
+class _FlowThreadState extends State<FlowThread> {
   /// The design's thread metrics: edge padding and the gap between turns.
   /// The edge 16 is mirrored by `FlowChatView`'s composer-block padding,
   /// which promises its edges line up with the thread's.
   static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.all(16);
   static const double _defaultGap = 32;
 
+  /// Whether the conversation still fits its viewport. A fitting thread
+  /// lays out shrink-wrapped so the top alignment can take effect; once
+  /// content overflows, the lazy bottom-anchored form takes over. The flip
+  /// is read off the scroll metrics, and at the frame it happens content
+  /// equals the viewport, so nothing visibly moves. Shrink-wrapping lays
+  /// out every message, but a fitting conversation's messages are all
+  /// visible anyway — the lazy form carries the long threads.
+  bool _fits = true;
+
+  void _handleMetrics(ScrollMetrics metrics) {
+    final fits = metrics.maxScrollExtent <= 0;
+    if (fits == _fits) return;
+    // Metrics arrive during layout; flipping shrinkWrap there would
+    // rebuild the tree mid-layout, so the flip waits for the frame's end.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _fits != fits) setState(() => _fits = fits);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final gap = itemSpacing ?? _defaultGap;
-    final onAttachmentTap = this.onAttachmentTap;
-    final onRetry = this.onRetry;
+    final gap = widget.itemSpacing ?? _defaultGap;
+    final onAttachmentTap = widget.onAttachmentTap;
+    final onRetry = widget.onRetry;
+    final messages = widget.messages;
 
-    return ListView.builder(
-      controller: controller,
-      reverse: true,
-      padding: padding ?? _defaultPadding,
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        // Reversed list: index 0 is the newest (bottom) message.
-        final message = messages[messages.length - 1 - index];
-        final isOldest = index == messages.length - 1;
-        return Padding(
-          key: ValueKey(message.id),
-          padding: EdgeInsets.only(top: isOldest ? 0 : gap),
-          child:
-              messageBuilder?.call(context, message) ??
-              FlowMessage(
-                message,
-                customPartBuilder: customPartBuilder,
-                onAttachmentTap: onAttachmentTap == null
-                    ? null
-                    : (attachmentId) => onAttachmentTap(message, attachmentId),
-                previewCloseTooltip: previewCloseTooltip,
-                onCodeCopy: onCodeCopy,
-                copiedCodePart: copiedCodePart,
-                codeCopyTooltip: codeCopyTooltip,
-                onRetry: onRetry == null ? null : () => onRetry(message),
-                errorTitle: errorTitle,
-                retryLabel: retryLabel,
-                charactersPerSecond: charactersPerSecond,
-                thinkingLabel: thinkingLabel,
-              ),
-        );
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (notification) {
+        // Depth 0 is the thread's own list — scrollers nested inside
+        // messages (attachment strips, code blocks) report deeper and
+        // must not steer the fit.
+        if (notification.depth == 0) _handleMetrics(notification.metrics);
+        return false;
       },
+      child: Align(
+        alignment: AlignmentDirectional.topCenter,
+        child: ListView.builder(
+          controller: widget.controller,
+          reverse: true,
+          shrinkWrap: _fits,
+          padding: widget.padding ?? _defaultPadding,
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            // Reversed list: index 0 is the newest (bottom) message.
+            final message = messages[messages.length - 1 - index];
+            final isOldest = index == messages.length - 1;
+            return Padding(
+              key: ValueKey(message.id),
+              padding: EdgeInsets.only(top: isOldest ? 0 : gap),
+              child:
+                  widget.messageBuilder?.call(context, message) ??
+                  FlowMessage(
+                    message,
+                    customPartBuilder: widget.customPartBuilder,
+                    onAttachmentTap: onAttachmentTap == null
+                        ? null
+                        : (attachmentId) =>
+                              onAttachmentTap(message, attachmentId),
+                    previewCloseTooltip: widget.previewCloseTooltip,
+                    onCodeCopy: widget.onCodeCopy,
+                    copiedCodePart: widget.copiedCodePart,
+                    codeCopyTooltip: widget.codeCopyTooltip,
+                    onRetry: onRetry == null ? null : () => onRetry(message),
+                    errorTitle: widget.errorTitle,
+                    retryLabel: widget.retryLabel,
+                    charactersPerSecond: widget.charactersPerSecond,
+                    thinkingLabel: widget.thinkingLabel,
+                  ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
