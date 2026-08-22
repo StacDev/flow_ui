@@ -21,8 +21,9 @@ class GeminiApi {
   /// Streams the reply to [history] as text deltas.
   ///
   /// [history] is the conversation so far, oldest first; user turns are
-  /// sent as `user`, assistant turns as `model`, and everything without
-  /// text (system turns, error parts) is skipped. Throws a
+  /// sent as `user`, assistant turns as `model`, and everything that isn't
+  /// a successful turn with text (system turns, failed turns) is skipped.
+  /// Throws a
   /// [GeminiApiException] with the API's own message when the request is
   /// refused.
   Stream<String> streamReply(List<FlowMessageData> history) async* {
@@ -75,7 +76,11 @@ class GeminiApi {
   ) {
     return [
       for (final message in history)
-        if (message.role != FlowMessageRole.system)
+        // A failed turn can carry the partial text streamed before the
+        // error; replaying it as a successful `model` message would make
+        // Gemini continue from its own aborted reply.
+        if (message.role != FlowMessageRole.system &&
+            message.status != FlowMessageStatus.error)
           if (_textOf(message) case final text when text.isNotEmpty)
             {
               'role': message.role == FlowMessageRole.user ? 'user' : 'model',
