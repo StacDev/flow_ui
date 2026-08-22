@@ -97,7 +97,8 @@ class FlowThread extends StatefulWidget {
   /// modes, the chat convention.
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
 
-  /// Defaults to the design's 16 on every side.
+  /// Around the whole conversation. Defaults to the design's 16 at the
+  /// sides and 40 above and below.
   final EdgeInsetsGeometry? padding;
 
   /// Gap between messages; defaults to the design's 32.
@@ -127,9 +128,12 @@ class FlowThread extends StatefulWidget {
 
 class _FlowThreadState extends State<FlowThread> {
   /// The design's thread metrics: edge padding and the gap between turns.
-  /// The edge 16 is mirrored by `FlowChatView`'s composer-block padding,
-  /// which promises its edges line up with the thread's.
-  static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.all(16);
+  /// The side 16 is mirrored by `FlowChatView`'s composer-block padding,
+  /// which promises its edges line up with the thread's; the vertical 40
+  /// keeps the opening turn off the viewport edge and the last one
+  /// breathing against the composer.
+  static const EdgeInsetsGeometry _defaultPadding =
+      EdgeInsetsDirectional.fromSTEB(16, 40, 16, 40);
   static const double _defaultGap = 32;
 
   /// Whether the conversation still fits its viewport. A fitting thread
@@ -167,7 +171,12 @@ class _FlowThreadState extends State<FlowThread> {
     final fits = metrics.maxScrollExtent <= 0;
     final first = _metricsFits == null;
     _metricsFits = fits;
-    if (_streaming) return;
+    // The first reading escapes the streaming freeze: a conversation
+    // opened by sending a message mounts mid-stream, and its opening turn
+    // must read from the top from the start, not after the reply settles.
+    // One flip this early cannot oscillate — the freeze guards the
+    // grow-shrink loop of a reveal already underway.
+    if (_streaming && !first) return;
     if (fits == _fits) {
       _fitsHold?.cancel();
       _fitsHold = null;
@@ -178,7 +187,7 @@ class _FlowThreadState extends State<FlowThread> {
       // right away — the hold below guards later shrink-backs, not the
       // initial settle.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_fits && !_streaming && _metricsFits == true) {
+        if (mounted && !_fits && _metricsFits == true) {
           setState(() => _fits = true);
         }
       });

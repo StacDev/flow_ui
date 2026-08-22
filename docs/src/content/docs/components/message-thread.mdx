@@ -106,7 +106,8 @@ card, a chart) without the library knowing what it is.
 
 - `FlowThread` — the scrolling conversation; give it a `ScrollController`
   to pair with `FlowChatView`'s jump-to-latest. `padding` (the design's
-  16) and `itemSpacing` (32) override the metrics; `messageBuilder`
+  16 at the sides, 40 vertically) and `itemSpacing` (32) override the
+  metrics; `messageBuilder`
   swaps the default `FlowMessage` per turn; `thinkingLabel`,
   `charactersPerSecond`, and `previewCloseTooltip` forward to every
   message; `markdown` (default true) and `onLinkTap: (message, href)`
