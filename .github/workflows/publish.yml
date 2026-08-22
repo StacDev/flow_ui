@@ -23,15 +23,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  # The quality gate: the release only ships with full pub.dev points.
+  # Comparing granted against pana's own max (160 today) keeps the gate
+  # honest if pub.dev ever raises the ceiling.
+  pana:
+    name: Pana score gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Require a perfect score
+        run: |
+          dart pub global activate pana
+          dart pub global run pana --no-warning --json . > pana.json
+          granted=$(jq -r '.scores.grantedPoints' pana.json)
+          max=$(jq -r '.scores.maxPoints' pana.json)
+          echo "pana: $granted / $max"
+          if [ "$granted" != "$max" ]; then
+            echo "Points were dropped in these sections:"
+            jq -r '.report.sections[]
+                   | select(.grantedPoints < .maxPoints)
+                   | "--- \(.title) (\(.grantedPoints)/\(.maxPoints))\n\(.summary)"' \
+              pana.json
+            exit 1
+          fi
+
   package:
     # Manual dispatches redeploy the site only — pub.dev is tags-only.
     if: github.event_name == 'push'
+    needs: pana
     permissions:
       id-token: write # Required to mint the OIDC token pub.dev verifies.
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
 
   site:
     name: Docs + playground
+    needs: pana
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
