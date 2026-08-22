@@ -28,6 +28,27 @@ class FlowChipSpan extends TextSpan {
   });
 
   final Color fill;
+
+  // TextSpan's own equality and comparison don't know about [fill]; a
+  // fill-only change must still compare unequal and repaint, or
+  // RenderParagraph's text setter short-circuits and keeps the old wash.
+  @override
+  RenderComparison compareTo(InlineSpan other) {
+    final result = super.compareTo(other);
+    if (result == RenderComparison.identical &&
+        !identical(this, other) &&
+        (other as FlowChipSpan).fill != fill) {
+      return RenderComparison.paint;
+    }
+    return result;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      super == other && other is FlowChipSpan && other.fill == fill;
+
+  @override
+  int get hashCode => Object.hash(super.hashCode, fill);
 }
 
 /// `Text.rich`, chip-aware: renders [span] through a paragraph that
@@ -201,10 +222,7 @@ class _ChipRenderParagraph extends RenderParagraph {
       final paint = Paint()..color = range.fill;
       const radius = Radius.circular(_chipRadius);
       for (var i = 0; i < fragments.length; i++) {
-        final rect = fragments[i]
-            .inflate(0)
-            .shift(offset)
-            .inflateHorizontally(_chipHPad);
+        final rect = fragments[i].shift(offset).inflateHorizontally(_chipHPad);
         // Only the outer corners of a wrapped run round, so a chip
         // broken across lines reads as one run.
         final startRounded = i == 0;

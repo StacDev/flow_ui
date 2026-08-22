@@ -248,9 +248,19 @@ class _FlowChatViewState extends State<FlowChatView> {
       // Taps that reach the surface itself — dead space, the thread, a
       // settled message — dismiss the keyboard, the chat convention.
       // Interactive children (the composer, links, buttons) win the
-      // gesture arena first, so their taps behave as before.
+      // gesture arena first, so their taps behave as before. Touch
+      // platforms only — on desktop clicking a page's background doesn't
+      // blur the input, and a global unfocus would even reach fields
+      // outside this view. The theme's platform, like the composer's and
+      // the menus' resolution, so hosts and tests can steer it.
       behavior: HitTestBehavior.translucent,
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      onTap: () {
+        final platform = Theme.of(context).platform;
+        if (platform == TargetPlatform.iOS ||
+            platform == TargetPlatform.android) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      },
       child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
