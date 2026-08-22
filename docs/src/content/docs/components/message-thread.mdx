@@ -111,7 +111,10 @@ card, a chart) without the library knowing what it is.
   `charactersPerSecond`, and `previewCloseTooltip` forward to every
   message; `markdown` (default true) and `onLinkTap: (message, href)`
   gate and wire the assistant markdown; `keyboardDismissBehavior`
-  (default on-drag) dismisses the keyboard as the thread scrolls.
+  (default on-drag) dismisses the keyboard as the thread scrolls;
+  `messageFooter` builds each message's footer slot (an actions row, a
+  timestamp) without replacing the default message the way
+  `messageBuilder` does.
 - `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder`, an
   `onAttachmentTap` override, `leading` and `footer` slots (an avatar,
   the action row), a `textStyle`, the same `markdown` gate and a

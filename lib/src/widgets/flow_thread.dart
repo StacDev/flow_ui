@@ -34,6 +34,7 @@ class FlowThread extends StatefulWidget {
     this.padding,
     this.itemSpacing,
     this.messageBuilder,
+    this.messageFooter,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
   });
@@ -105,6 +106,13 @@ class FlowThread extends StatefulWidget {
   /// Per-message override; defaults to a [FlowMessage].
   final Widget Function(BuildContext context, FlowMessageData message)?
   messageBuilder;
+
+  /// Builds each default message's footer slot — an actions row, a
+  /// timestamp — without replacing the message the way [messageBuilder]
+  /// does, so the thread's per-message wiring stays intact. Return null
+  /// for no footer on that turn. Ignored when [messageBuilder] is set:
+  /// the builder owns the whole message.
+  final Widget? Function(FlowMessageData message)? messageFooter;
 
   /// Forwarded to [FlowMessage] for streaming text parts.
   final double charactersPerSecond;
@@ -274,6 +282,7 @@ class _FlowThreadState extends State<FlowThread> {
                     retryLabel: widget.retryLabel,
                     charactersPerSecond: widget.charactersPerSecond,
                     thinkingLabel: widget.thinkingLabel,
+                    footer: widget.messageFooter?.call(message),
                   ),
             );
           },

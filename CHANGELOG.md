@@ -46,7 +46,9 @@
 - **Thread** — a conversation that still fits its viewport now reads from
   the top, the AI-app convention, instead of hugging the composer with
   empty space above. Once it outgrows the viewport the thread anchors to
-  the newest message as before.
+  the newest message as before. A new `messageFooter` builder fills each
+  default message's footer slot (an actions row, a timestamp) without
+  replacing the whole message the way `messageBuilder` does.
 - **Pill** — `FlowPill`, a removable pill showing an enabled tool or mode
   in the composer's action row: host-passed icon, label and tooltips,
   removal intent on `onRemove`, and a label that auto-drops to the
