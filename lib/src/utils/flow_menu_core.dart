@@ -293,7 +293,7 @@ WidgetStatePropertyAll<Widget> flowSubmenuChevron(BuildContext context) {
 }
 
 /// Default row label style: the design's 14 Medium in the menu and
-/// 16 Medium in the sheet, both on the tight line height.
+/// 16 Medium in the sheet — the label roles' emphasised cuts.
 TextStyle flowMenuLabelStyle(
   BuildContext context, {
   required bool large,
@@ -301,8 +301,8 @@ TextStyle flowMenuLabelStyle(
 }) {
   final typography = context.flowTypography;
   final base = large
-      ? typography.bodyLarge.copyWith(fontWeight: FontWeight.w500, height: 1.3)
-      : typography.labelLarge.copyWith(fontWeight: FontWeight.w500);
+      ? typography.labelLargeEmphasised
+      : typography.labelMediumEmphasised;
   final override = style?.labelStyle;
   return override == null ? base : base.merge(override);
 }
@@ -312,7 +312,7 @@ TextStyle flowMenuDescriptionStyle(
   BuildContext context, {
   FlowMenuStyle? style,
 }) {
-  final base = context.flowTypography.labelLarge.copyWith(
+  final base = context.flowTypography.labelMedium.copyWith(
     color: context.flowColors.onSurfaceMuted,
   );
   final override = style?.descriptionStyle;

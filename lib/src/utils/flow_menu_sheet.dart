@@ -159,10 +159,8 @@ class _FlowMenuSheetState extends State<_FlowMenuSheet> {
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.flowTypography.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: colors.onSurface,
-                      ),
+                      style: context.flowTypography.labelLargeEmphasised
+                          .copyWith(color: colors.onSurface),
                     ),
             ),
             // Balances the leading button so the title stays centered.

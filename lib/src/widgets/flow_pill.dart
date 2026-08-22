@@ -170,8 +170,7 @@ class _FlowPillState extends State<FlowPill> {
             const SizedBox(width: _gap),
             Text(
               widget.label,
-              style: typography.labelLarge.copyWith(
-                fontWeight: FontWeight.w500,
+              style: typography.labelMediumEmphasised.copyWith(
                 color: labelForeground,
               ),
             ),

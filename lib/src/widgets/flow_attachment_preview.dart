@@ -398,7 +398,7 @@ class _TopBar extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: typography.labelLarge.copyWith(
+                  style: typography.labelMedium.copyWith(
                     color: colors.onSurface,
                   ),
                 ),

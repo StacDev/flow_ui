@@ -51,8 +51,11 @@ class FlowTypography {
     required this.headlineMedium,
     required this.headlineSmall,
     required this.titleLarge,
+    required this.titleLargeEmphasised,
     required this.titleMedium,
+    required this.titleMediumEmphasised,
     required this.titleSmall,
+    required this.titleSmallEmphasised,
     required this.bodyLarge,
     required this.bodyLargeEmphasised,
     required this.bodyLargeDark,
@@ -63,8 +66,11 @@ class FlowTypography {
     required this.bodySmallEmphasised,
     required this.bodySmallDark,
     required this.labelLarge,
+    required this.labelLargeEmphasised,
     required this.labelMedium,
+    required this.labelMediumEmphasised,
     required this.labelSmall,
+    required this.labelSmallEmphasised,
     this.code = _standardCode,
     this.codeInline = _standardCodeInline,
   });
@@ -75,9 +81,15 @@ class FlowTypography {
   final TextStyle headlineLarge;
   final TextStyle headlineMedium;
   final TextStyle headlineSmall;
+
+  /// Headings — single-line at 1.3. Each size pairs the regular cut
+  /// (w400) with an emphasised one (w600).
   final TextStyle titleLarge;
+  final TextStyle titleLargeEmphasised;
   final TextStyle titleMedium;
+  final TextStyle titleMediumEmphasised;
   final TextStyle titleSmall;
+  final TextStyle titleSmallEmphasised;
 
   /// Prose and composer input — the design's 16/1.5 body.
   /// Each size carries three inks: regular (w400), emphasised (w500) and
@@ -92,10 +104,15 @@ class FlowTypography {
   final TextStyle bodySmallEmphasised;
   final TextStyle bodySmallDark;
 
-  /// Controls — the design's 14/1.3 label.
+  /// Controls — the design's 16/14/12 on the tight 1.3 line. Each size
+  /// pairs the regular cut (w400) with an emphasised one (w500), like the
+  /// body roles.
   final TextStyle labelLarge;
+  final TextStyle labelLargeEmphasised;
   final TextStyle labelMedium;
+  final TextStyle labelMediumEmphasised;
   final TextStyle labelSmall;
+  final TextStyle labelSmallEmphasised;
 
   /// Code, set in the bundled Geist Mono — the code block's body. A step
   /// under prose (13) on a taller line (1.6), so a block reads as inset
@@ -110,67 +127,87 @@ class FlowTypography {
     displayLarge: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 57,
+      fontSize: 52,
       fontWeight: FontWeight.w400,
       height: 1.15,
     ),
     displayMedium: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 45,
+      fontSize: 46,
       fontWeight: FontWeight.w400,
       height: 1.15,
     ),
     displaySmall: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 36,
+      fontSize: 40,
       fontWeight: FontWeight.w400,
-      height: 1.2,
+      height: 1.15,
     ),
     // The greeting: 32 regular at 1.3.
     headlineLarge: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 32,
+      fontSize: 36,
       fontWeight: FontWeight.w400,
-      height: 1.3,
+      height: 1.2,
     ),
     headlineMedium: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 28,
+      fontSize: 32,
       fontWeight: FontWeight.w400,
-      height: 1.3,
+      height: 1.2,
     ),
     headlineSmall: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 28,
+      fontWeight: FontWeight.w400,
+      height: 1.2,
+    ),
+    titleLarge: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
       fontSize: 24,
       fontWeight: FontWeight.w400,
       height: 1.3,
     ),
-    titleLarge: TextStyle(
+    titleLargeEmphasised: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 22,
+      fontSize: 24,
       fontWeight: FontWeight.w600,
       height: 1.3,
     ),
-    // A heading inside a message: 18 semibold at 1.5.
     titleMedium: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 18,
+      fontSize: 21,
+      fontWeight: FontWeight.w400,
+      height: 1.3,
+    ),
+    titleMediumEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 21,
       fontWeight: FontWeight.w600,
-      height: 1.5,
+      height: 1.3,
     ),
     titleSmall: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 16,
+      fontSize: 18,
+      fontWeight: FontWeight.w400,
+      height: 1.3,
+    ),
+    titleSmallEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 18,
       fontWeight: FontWeight.w600,
-      height: 1.4,
+      height: 1.3,
     ),
     bodyLarge: TextStyle(
       fontFamily: _fontFamily,
@@ -238,21 +275,42 @@ class FlowTypography {
     labelLarge: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: FontWeight.w400,
+      height: 1.3,
+    ),
+    labelLargeEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
       height: 1.3,
     ),
     labelMedium: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 12,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.3,
+    ),
+    labelMediumEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 14,
       fontWeight: FontWeight.w500,
       height: 1.3,
     ),
     labelSmall: TextStyle(
       fontFamily: _fontFamily,
       package: _fontPackage,
-      fontSize: 11,
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.3,
+    ),
+    labelSmallEmphasised: TextStyle(
+      fontFamily: _fontFamily,
+      package: _fontPackage,
+      fontSize: 12,
       fontWeight: FontWeight.w500,
       height: 1.3,
     ),
@@ -284,8 +342,11 @@ class FlowTypography {
       headlineMedium: reface(headlineMedium),
       headlineSmall: reface(headlineSmall),
       titleLarge: reface(titleLarge),
+      titleLargeEmphasised: reface(titleLargeEmphasised),
       titleMedium: reface(titleMedium),
+      titleMediumEmphasised: reface(titleMediumEmphasised),
       titleSmall: reface(titleSmall),
+      titleSmallEmphasised: reface(titleSmallEmphasised),
       bodyLarge: reface(bodyLarge),
       bodyLargeEmphasised: reface(bodyLargeEmphasised),
       bodyLargeDark: reface(bodyLargeDark),
@@ -296,8 +357,11 @@ class FlowTypography {
       bodySmallEmphasised: reface(bodySmallEmphasised),
       bodySmallDark: reface(bodySmallDark),
       labelLarge: reface(labelLarge),
+      labelLargeEmphasised: reface(labelLargeEmphasised),
       labelMedium: reface(labelMedium),
+      labelMediumEmphasised: reface(labelMediumEmphasised),
       labelSmall: reface(labelSmall),
+      labelSmallEmphasised: reface(labelSmallEmphasised),
       code: code,
       codeInline: codeInline,
     );
@@ -328,8 +392,11 @@ class FlowTypography {
     TextStyle? headlineMedium,
     TextStyle? headlineSmall,
     TextStyle? titleLarge,
+    TextStyle? titleLargeEmphasised,
     TextStyle? titleMedium,
+    TextStyle? titleMediumEmphasised,
     TextStyle? titleSmall,
+    TextStyle? titleSmallEmphasised,
     TextStyle? bodyLarge,
     TextStyle? bodyLargeEmphasised,
     TextStyle? bodyLargeDark,
@@ -340,8 +407,11 @@ class FlowTypography {
     TextStyle? bodySmallEmphasised,
     TextStyle? bodySmallDark,
     TextStyle? labelLarge,
+    TextStyle? labelLargeEmphasised,
     TextStyle? labelMedium,
+    TextStyle? labelMediumEmphasised,
     TextStyle? labelSmall,
+    TextStyle? labelSmallEmphasised,
     TextStyle? code,
     TextStyle? codeInline,
   }) {
@@ -353,8 +423,12 @@ class FlowTypography {
       headlineMedium: headlineMedium ?? this.headlineMedium,
       headlineSmall: headlineSmall ?? this.headlineSmall,
       titleLarge: titleLarge ?? this.titleLarge,
+      titleLargeEmphasised: titleLargeEmphasised ?? this.titleLargeEmphasised,
       titleMedium: titleMedium ?? this.titleMedium,
+      titleMediumEmphasised:
+          titleMediumEmphasised ?? this.titleMediumEmphasised,
       titleSmall: titleSmall ?? this.titleSmall,
+      titleSmallEmphasised: titleSmallEmphasised ?? this.titleSmallEmphasised,
       bodyLarge: bodyLarge ?? this.bodyLarge,
       bodyLargeEmphasised: bodyLargeEmphasised ?? this.bodyLargeEmphasised,
       bodyLargeDark: bodyLargeDark ?? this.bodyLargeDark,
@@ -365,8 +439,12 @@ class FlowTypography {
       bodySmallEmphasised: bodySmallEmphasised ?? this.bodySmallEmphasised,
       bodySmallDark: bodySmallDark ?? this.bodySmallDark,
       labelLarge: labelLarge ?? this.labelLarge,
+      labelLargeEmphasised: labelLargeEmphasised ?? this.labelLargeEmphasised,
       labelMedium: labelMedium ?? this.labelMedium,
+      labelMediumEmphasised:
+          labelMediumEmphasised ?? this.labelMediumEmphasised,
       labelSmall: labelSmall ?? this.labelSmall,
+      labelSmallEmphasised: labelSmallEmphasised ?? this.labelSmallEmphasised,
       code: code ?? this.code,
       codeInline: codeInline ?? this.codeInline,
     );
@@ -382,8 +460,23 @@ class FlowTypography {
       headlineMedium: TextStyle.lerp(headlineMedium, other.headlineMedium, t)!,
       headlineSmall: TextStyle.lerp(headlineSmall, other.headlineSmall, t)!,
       titleLarge: TextStyle.lerp(titleLarge, other.titleLarge, t)!,
+      titleLargeEmphasised: TextStyle.lerp(
+        titleLargeEmphasised,
+        other.titleLargeEmphasised,
+        t,
+      )!,
       titleMedium: TextStyle.lerp(titleMedium, other.titleMedium, t)!,
+      titleMediumEmphasised: TextStyle.lerp(
+        titleMediumEmphasised,
+        other.titleMediumEmphasised,
+        t,
+      )!,
       titleSmall: TextStyle.lerp(titleSmall, other.titleSmall, t)!,
+      titleSmallEmphasised: TextStyle.lerp(
+        titleSmallEmphasised,
+        other.titleSmallEmphasised,
+        t,
+      )!,
       bodyLarge: TextStyle.lerp(bodyLarge, other.bodyLarge, t)!,
       bodyLargeEmphasised: TextStyle.lerp(
         bodyLargeEmphasised,
@@ -406,8 +499,23 @@ class FlowTypography {
       )!,
       bodySmallDark: TextStyle.lerp(bodySmallDark, other.bodySmallDark, t)!,
       labelLarge: TextStyle.lerp(labelLarge, other.labelLarge, t)!,
+      labelLargeEmphasised: TextStyle.lerp(
+        labelLargeEmphasised,
+        other.labelLargeEmphasised,
+        t,
+      )!,
       labelMedium: TextStyle.lerp(labelMedium, other.labelMedium, t)!,
+      labelMediumEmphasised: TextStyle.lerp(
+        labelMediumEmphasised,
+        other.labelMediumEmphasised,
+        t,
+      )!,
       labelSmall: TextStyle.lerp(labelSmall, other.labelSmall, t)!,
+      labelSmallEmphasised: TextStyle.lerp(
+        labelSmallEmphasised,
+        other.labelSmallEmphasised,
+        t,
+      )!,
       code: TextStyle.lerp(code, other.code, t)!,
       codeInline: TextStyle.lerp(codeInline, other.codeInline, t)!,
     );
