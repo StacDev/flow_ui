@@ -9,8 +9,14 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 
 `FlowThread` renders a conversation from plain message data — user,
 assistant, and system roles — and `FlowMessage` renders a single turn: an
-ink-wash bubble for the user, plain text on the page for the assistant.
-Neither knows where the messages came from.
+ink-wash bubble for the user, typeset prose on the page for the assistant
+(assistant text renders as [markdown](/components/markdown/) by default;
+`markdown: false` opts a literal-text host out). Neither knows where the
+messages came from.
+
+A conversation that still fits its viewport reads from the top, the
+AI-app convention; once it outgrows the viewport the thread anchors to
+the newest message.
 
 ## A conversation
 
@@ -103,10 +109,13 @@ card, a chart) without the library knowing what it is.
   16) and `itemSpacing` (32) override the metrics; `messageBuilder`
   swaps the default `FlowMessage` per turn; `thinkingLabel`,
   `charactersPerSecond`, and `previewCloseTooltip` forward to every
-  message.
+  message; `markdown` (default true) and `onLinkTap: (message, href)`
+  gate and wire the assistant markdown; `keyboardDismissBehavior`
+  (default on-drag) dismisses the keyboard as the thread scrolls.
 - `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder`, an
   `onAttachmentTap` override, `leading` and `footer` slots (an avatar,
-  the action row), a `textStyle`, and the user bubble's overrides —
+  the action row), a `textStyle`, the same `markdown` gate and a
+  single-arity `onLinkTap`, and the user bubble's overrides —
   `maxBubbleWidthFraction` (0.75), `bubbleRadius`, `bubblePadding`.
 - `FlowMessageData` — `id`, `role`, `parts`, `status`, and an optional
   `timestamp`; the `.text` constructor covers the plain case.
