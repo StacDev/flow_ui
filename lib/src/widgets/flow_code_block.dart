@@ -127,6 +127,17 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
   }
 
   @override
+  void didUpdateWidget(FlowCodeBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The copy button unmounts outright while streaming or when onCopy
+    // goes away, and Focus drops its listener before detaching, so its
+    // onFocusChange(false) never arrives — without this the remounted
+    // affordance would stay revealed with no pointer and no focus.
+    final hideCopy = widget.onCopy == null || widget.isStreaming;
+    if (hideCopy && _copyFocused) _copyFocused = false;
+  }
+
+  @override
   void dispose() {
     FocusManager.instance.removeHighlightModeListener(
       _handleHighlightModeChange,
