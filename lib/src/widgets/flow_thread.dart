@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
@@ -136,6 +137,15 @@ class _FlowThreadState extends State<FlowThread> {
       EdgeInsetsDirectional.fromSTEB(16, 40, 16, 40);
   static const double _defaultGap = 32;
 
+  /// How far beyond the viewport messages get real layouts. A lazy list
+  /// estimates its total extent from the items laid out so far, and chat
+  /// turns vary wildly in height — a one-line bubble to a whole document
+  /// — so a small cache makes the scrollbar thumb resize and jump as the
+  /// estimate swings with every scroll. A few viewports of cache gives a
+  /// typical conversation exact extents (a steady thumb) while a long
+  /// history still lays out lazily.
+  static const ScrollCacheExtent _cacheExtent = ScrollCacheExtent.viewport(3);
+
   /// Whether the conversation still fits its viewport. A fitting thread
   /// lays out shrink-wrapped so the top alignment can take effect; once
   /// content overflows, the lazy bottom-anchored form takes over. The flip
@@ -259,6 +269,7 @@ class _FlowThreadState extends State<FlowThread> {
           controller: widget.controller,
           reverse: true,
           shrinkWrap: _fits,
+          scrollCacheExtent: _cacheExtent,
           keyboardDismissBehavior: widget.keyboardDismissBehavior,
           padding: widget.padding ?? _defaultPadding,
           itemCount: messages.length,
