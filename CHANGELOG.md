@@ -15,6 +15,34 @@
   retry pill) and a `FlowErrorPart` message part, with
   `onRetry`/`errorTitle`/`retryLabel` threaded through `FlowMessage` and
   `FlowThread`.
+- **Markdown** — `FlowMarkdown`, assistant prose typeset by a built-in
+  parser (no new dependency): headings on the existing type ramp,
+  emphasis, inline code on the `codeInline` role as a rounded chip
+  painted under the glyphs — wrapping keeps only the outer corners
+  rounded — links reporting intent through `onLinkTap` (bare
+  `https://`, `http://` and `www.` URLs autolink with GFM's trimming
+  rules), nested lists, quotes, rules, tables with alignment and
+  overflow scroll, and fenced code rendered by `FlowCodeBlock` —
+  sharing the `FlowCodePart` copy contract. Streaming input may end
+  mid-construct and renders gracefully, with the trailing paragraph
+  revealing character by character.
+- **Streaming motion** — markdown reveals through one sequenced
+  frontier: nothing renders below the animating block, fences, tables
+  and rules ease in with height and opacity when the frontier reaches
+  them, and pacing keeps the frontier within the reveal's lag bound on
+  fast streams. Growth is eased in layout — the revealing paragraph
+  gains each wrapped line over a beat — so a thread pinned to the
+  newest message moves continuously instead of stepping a line-height
+  at a time. Reduced-motion settings render statically.
+- **Breaking**: assistant text parts now render as markdown by default.
+  Hosts whose assistant text is literal pass `markdown: false` on
+  `FlowThread` or `FlowMessage`; user bubbles and system notices are
+  unaffected.
+- **Keyboard** — taps landing on the chat surface itself (dead space,
+  the thread, a settled message) now dismiss the keyboard, and scrolling
+  the thread dismisses it too (`FlowThread.keyboardDismissBehavior`,
+  default on-drag) — the chat conventions. Interactive children keep
+  their taps.
 - **Thread** — a conversation that still fits its viewport now reads from
   the top, the AI-app convention, instead of hugging the composer with
   empty space above. Once it outgrows the viewport the thread anchors to

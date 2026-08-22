@@ -41,6 +41,7 @@ elements and the remaining AI states are on the way.
 | Confirmation | <span class="badge-todo">Planned</span> |
 | Error state | <span class="badge-done">Shipped</span> |
 | Code block | <span class="badge-done">Shipped</span> |
+| Markdown | <span class="badge-done">Shipped</span> |
 | Thinking indicator | <span class="badge-done">Shipped</span> |
 | Shimmer | <span class="badge-done">Shipped</span> |
 | Pill | <span class="badge-done">Shipped</span> |

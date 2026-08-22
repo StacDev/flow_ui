@@ -1,0 +1,103 @@
+---
+title: Markdown
+description: Assistant prose, typeset — headings, emphasis, lists, quotes, tables, links, and fenced code, streaming gracefully.
+sidebar:
+  order: 16
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowMarkdown` typesets what the assistant says. Assistant text parts
+render through it **by default** — a thread wired yesterday shows rich
+replies today, and `markdown: false` on `FlowThread` or `FlowMessage`
+opts a literal-text host back out. User bubbles and system notices always
+render plain: what the user typed is a transcription, not prose to
+typeset.
+
+The parser is built in — no dependency, synchronous, and written for the
+dialect assistants actually emit. Deliberately deferred syntax (images,
+task lists, footnotes, inline HTML, setext headings) renders as the
+literal text it is.
+
+## The document
+
+Headings sit on the existing type ramp, inline code takes the mono face
+on a rounded chip of the faint wash — painted under the glyphs, so a
+wrapped chip keeps only its outer corners rounded and the streaming
+reveal runs straight through it — quotes step down to the secondary ink
+behind the hairline bar, and fenced code renders through
+`FlowCodeBlock` — highlighting, header, and copy intent included:
+
+<FlowDemo demo="markdown" variant="document" height={760} title="The typeset reply" />
+
+```dart title="Standalone, outside a thread"
+FlowMarkdown(
+  text: reply,
+  isStreaming: generating,
+  onLinkTap: (href) => openInBrowser(href),
+  onCodeCopy: copyPart,
+  codeCopyTooltip: 'Copy code',
+)
+```
+
+## Streaming
+
+Streaming is data, as everywhere: rebuild with a longer `text` and the
+trailing paragraph reveals with the same per-character fade plain text
+gets, while fences, tables and rules render whole. The parser tolerates
+input that ends mid-construct — unclosed emphasis stays literal until its
+closer arrives (and restyles without re-fading), a half-typed link shows
+its label and hides the URL, an unterminated fence is a code block still
+in progress, and a table only appears once its delimiter row lands:
+
+<FlowDemo demo="markdown" variant="streaming" height={640} title="The reveal over styled text" />
+
+## Tables
+
+Column alignment comes from the delimiter row; a table wider than its
+column scrolls horizontally inside the message rather than wrapping the
+page:
+
+<FlowDemo demo="markdown" variant="tables" height={560} title="Alignment and overflow" />
+
+## Links
+
+Links report intent: the label styles in the accent ink with an
+underline, and tapping hands the host the href — the package never
+launches URLs. With no `onLinkTap` wired, links render as plain prose
+rather than a styled-but-dead affordance. In a thread the callback
+carries the message too: `onLinkTap: (message, href) => ...`.
+
+Bare URLs autolink with GFM's rules: `https://`, `http://` and `www.`
+(handed to the host with `https://` prepended), trailing punctuation
+trimmed, a closing parenthesis kept when the URL's parens balance, and
+emails deliberately left literal. Mid-stream, a URL still being typed
+links early and its href grows with the text — links are inert while
+the reveal runs, so nothing mis-taps.
+
+<FlowDemo demo="markdown" variant="links" height={420} title="Intent, made visible" />
+
+## Fenced code and copy
+
+Every fence synthesizes a `FlowCodePart`, so copy flows through the same
+contract code parts use — one `onCodeCopy` handler and one
+`copiedCodePart` confirmation serve both. While a fence is still
+streaming its copy affordance stays hidden, exactly like a streaming
+`FlowCodePart`.
+
+## Key API
+
+- `text` — the markdown source received so far.
+- `isStreaming` — animates the trailing text block; tolerant parsing
+  either way.
+- `style` — merged over `bodyLarge` + `onSurface`; headings keep their
+  scale but follow this style's color.
+- `onLinkTap`, `onCodeCopy`, `copiedCodePart`, `codeCopyTooltip` —
+  intent out, host-localized strings in.
+- On `FlowThread` / `FlowMessage`: `markdown` (default true) gates the
+  assistant-text rendering; `onLinkTap` threads through with the
+  message-arity shape on the thread.
+
+Prose renders non-selectable `Text.rich`, matching plain assistant text —
+wrap the thread in a `SelectionArea` for selection. Fenced code keeps
+`FlowCodeBlock`'s own selectable body.

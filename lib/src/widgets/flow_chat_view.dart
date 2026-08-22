@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -173,6 +174,7 @@ class _FlowChatViewState extends State<FlowChatView> {
   static const double _suggestionsExtraInset = 8;
 
   bool _showJump = false;
+  Timer? _jumpDebounce;
 
   @override
   void initState() {
@@ -196,6 +198,7 @@ class _FlowChatViewState extends State<FlowChatView> {
 
   @override
   void dispose() {
+    _jumpDebounce?.cancel();
     widget.threadController?.removeListener(_handleScroll);
     super.dispose();
   }
@@ -204,11 +207,30 @@ class _FlowChatViewState extends State<FlowChatView> {
     final controller = widget.threadController;
     // hasClients guards the frames before the thread has attached, and the
     // ones after it detaches.
-    final show =
+    final over =
         controller != null &&
         controller.hasClients &&
         controller.offset > _jumpThreshold;
-    if (show != _showJump) setState(() => _showJump = show);
+    if (!over) {
+      _jumpDebounce?.cancel();
+      _jumpDebounce = null;
+      if (_showJump) setState(() => _showJump = false);
+      return;
+    }
+    if (_showJump || _jumpDebounce != null) return;
+    // The thread's follow glide can carry the offset past the threshold
+    // for a beat while a block eases in — only a held position earns the
+    // button, so it isn't mounted and torn down by every entrance.
+    _jumpDebounce = Timer(const Duration(milliseconds: 250), () {
+      _jumpDebounce = null;
+      if (!mounted) return;
+      final controller = widget.threadController;
+      if (controller != null &&
+          controller.hasClients &&
+          controller.offset > _jumpThreshold) {
+        setState(() => _showJump = true);
+      }
+    });
   }
 
   void _jumpToLatest() {
@@ -222,36 +244,44 @@ class _FlowChatViewState extends State<FlowChatView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < _compactBreakpoint;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.header != null) widget.header!,
-              if (widget.empty && !compact)
-                // The wide zero state: the composer leaves the bottom edge
-                // and the whole cluster centres itself instead.
-                Expanded(child: _emptyCentre(constraints.maxWidth))
-              else ...[
-                Expanded(
-                  child: widget.empty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: _sideInset,
+    return GestureDetector(
+      // Taps that reach the surface itself — dead space, the thread, a
+      // settled message — dismiss the keyboard, the chat convention.
+      // Interactive children (the composer, links, buttons) win the
+      // gesture arena first, so their taps behave as before.
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < _compactBreakpoint;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (widget.header != null) widget.header!,
+                if (widget.empty && !compact)
+                  // The wide zero state: the composer leaves the bottom edge
+                  // and the whole cluster centres itself instead.
+                  Expanded(child: _emptyCentre(constraints.maxWidth))
+                else ...[
+                  Expanded(
+                    child: widget.empty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: _sideInset,
+                              ),
+                              child: widget.greeting,
                             ),
-                            child: widget.greeting,
-                          ),
-                        )
-                      : _threadArea(context),
-                ),
-                ..._composerZone(compact),
+                          )
+                        : _threadArea(context),
+                  ),
+                  ..._composerZone(compact),
+                ],
               ],
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

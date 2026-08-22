@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/flow_theme.dart';
+import '../utils/flow_reveal_engine.dart';
 
 /// Animated reveal for text that arrives incrementally.
 ///
@@ -50,33 +51,12 @@ class FlowStreamingText extends StatefulWidget {
 
 class _FlowStreamingTextState extends State<FlowStreamingText>
     with SingleTickerProviderStateMixin {
-  /// How long a revealed character takes to fade to full opacity.
-  static const double _fadeSeconds = 0.25;
-
-  /// Maximum time the reveal may lag behind the incoming text.
-  static const double _maxLagSeconds = 0.4;
-
-  /// Catch-up window once streaming has completed.
-  static const double _fastForwardSeconds = 0.15;
-
-  /// Upper bound on individually faded spans per frame.
-  static const int _maxFadeSpans = 60;
+  /// The counters live in the shared engine; this state owns the Ticker
+  /// and the flat-string span construction.
+  final FlowRevealEngine _engine = FlowRevealEngine();
 
   late final Ticker _ticker;
-
-  /// Characters revealed so far (fractional between characters).
-  double _revealed = 0;
-
-  /// Monotonic clock in seconds, accumulated across ticker runs.
-  double _clock = 0;
-
-  /// Reveal timestamps: entry `i` is for character `_stampBase + i`.
-  /// Characters below [_stampBase] were revealed without animation.
-  final List<double> _revealedAt = <double>[];
-  int _stampBase = 0;
-
   Duration _lastElapsed = Duration.zero;
-  bool _fastForwarding = false;
 
   @override
   void initState() {
@@ -85,8 +65,7 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
     if (widget.isStreaming) {
       _ensureTicking();
     } else {
-      _revealed = widget.text.length.toDouble();
-      _stampBase = widget.text.length;
+      _engine.snapToEnd(widget.text.length);
     }
   }
 
@@ -99,11 +78,8 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
         widget.text.startsWith(oldWidget.text);
     if (!extended) {
       // Replacement: regenerate / branch switch.
-      _revealedAt.clear();
-      _fastForwarding = false;
       if (widget.isStreaming) {
-        _revealed = 0;
-        _stampBase = 0;
+        _engine.reset();
         _ensureTicking();
       } else {
         _snapToEnd();
@@ -112,12 +88,12 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
     }
 
     if (widget.isStreaming) {
-      _fastForwarding = false;
-      if (_revealed < widget.text.length) _ensureTicking();
+      _engine.clearFastForward();
+      if (_engine.revealed < widget.text.length) _ensureTicking();
     } else if (oldWidget.isStreaming) {
       // Stream completed: fast-forward whatever is left.
-      if (_revealed < widget.text.length || _tailStillFading) {
-        _fastForwarding = true;
+      if (_engine.revealed < widget.text.length || _engine.tailStillFading) {
+        _engine.beginFastForward();
         _ensureTicking();
       }
     } else if (widget.text != oldWidget.text) {
@@ -132,9 +108,6 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
     super.dispose();
   }
 
-  bool get _tailStillFading =>
-      _revealedAt.isNotEmpty && _clock - _revealedAt.last < _fadeSeconds;
-
   void _ensureTicking() {
     if (_ticker.isActive) return;
     _lastElapsed = Duration.zero;
@@ -143,50 +116,18 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
 
   void _snapToEnd() {
     _ticker.stop();
-    _revealed = widget.text.length.toDouble();
-    _revealedAt.clear();
-    _stampBase = widget.text.length;
-    _fastForwarding = false;
+    _engine.snapToEnd(widget.text.length);
   }
 
   void _onTick(Duration elapsed) {
     final dt = (elapsed - _lastElapsed).inMicroseconds / 1e6;
     _lastElapsed = elapsed;
     if (dt <= 0) return;
-    _clock += dt;
-
-    final target = widget.text.length.toDouble();
-    var speed = widget.charactersPerSecond;
-    final backlog = target - _revealed;
-    if (backlog > 0) {
-      // Adapt so the backlog clears within the lag window.
-      final window = _fastForwarding ? _fastForwardSeconds : _maxLagSeconds;
-      speed = math.max(speed, backlog / window);
-    }
-
     setState(() {
-      final before = _revealed.floor();
-      _revealed = math.min(_revealed + speed * dt, target);
-      final count = _revealed.floor() - before;
-      // Stamp newly revealed characters, spread across this frame's time.
-      for (var i = 0; i < count; i++) {
-        _revealedAt.add(_clock - dt + dt * (i + 1) / count);
-      }
-      if (_revealed >= target && !_tailStillFading) {
+      if (!_engine.tick(dt, widget.text.length, widget.charactersPerSecond)) {
         _ticker.stop();
-        _fastForwarding = false;
       }
     });
-  }
-
-  /// Fade-in progress (0–1) for the character at index [index].
-  double _fadeProgress(int index) {
-    if (index < _stampBase) return 1;
-    final i = index - _stampBase;
-    if (i >= _revealedAt.length) return 0;
-    return ((_clock - _revealedAt[i]) / _fadeSeconds)
-        .clamp(0.0, 1.0)
-        .toDouble();
   }
 
   static bool _isHighSurrogate(int codeUnit) => (codeUnit & 0xFC00) == 0xD800;
@@ -200,12 +141,12 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
         .merge(widget.style);
 
     // Settled: history messages and completed streams render statically.
-    if (!_ticker.isActive && _revealed >= widget.text.length) {
+    if (!_ticker.isActive && _engine.revealed >= widget.text.length) {
       return Text(widget.text, style: style, textAlign: widget.textAlign);
     }
 
     final text = widget.text;
-    var shown = math.min(_revealed.floor(), text.length);
+    var shown = math.min(_engine.revealedFloor, text.length);
     // Never split a surrogate pair at the reveal head.
     if (shown > 0 &&
         shown < text.length &&
@@ -215,8 +156,8 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
 
     var fadeStart = shown;
     while (fadeStart > 0 &&
-        shown - fadeStart < _maxFadeSpans &&
-        _fadeProgress(fadeStart - 1) < 1) {
+        shown - fadeStart < FlowRevealEngine.maxFadeSpans &&
+        _engine.progressFor(fadeStart - 1) < 1) {
       fadeStart--;
     }
     if (fadeStart > 0 && _isLowSurrogate(text.codeUnitAt(fadeStart))) {
@@ -236,7 +177,9 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
         TextSpan(
           text: text.substring(i, end),
           style: TextStyle(
-            color: baseColor.withValues(alpha: baseColor.a * _fadeProgress(i)),
+            color: baseColor.withValues(
+              alpha: baseColor.a * _engine.progressFor(i),
+            ),
           ),
         ),
       );
