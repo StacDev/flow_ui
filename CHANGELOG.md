@@ -2,6 +2,15 @@
 
 ## 0.2.0 (unreleased)
 
+- **Typography** — title and label roles now carry an emphasised cut
+  (`titleLargeEmphasised` / `labelLargeEmphasised`, and the medium/small
+  pair for each). The standard scale sizes and line heights are retuned
+  to the design file: display at 1.15, headline at 1.2, title/label at
+  1.3. Compact `FlowGreeting` uses `titleMedium` instead of a one-off 21.
+- **Breaking**: constructing `FlowTypography(...)` now requires the new
+  title and label emphasised styles. `FlowTypography.standard` and
+  `copyWith` cover the usual host paths; label sizes also step up one
+  rung (16 / 14 / 12).
 - **Code block** — `FlowCodeBlock`, and a `FlowCodePart` message part
   rendered by `FlowMessage`/`FlowThread` with copy intent surfaced on
   `onCodeCopy`. Highlighting is built in and synchronous (Dart, JSON,

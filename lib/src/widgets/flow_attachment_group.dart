@@ -481,7 +481,7 @@ class _TypePill extends StatelessWidget {
               padding: _pillPadding,
               child: Text(
                 kind,
-                style: context.flowTypography.labelMedium.copyWith(
+                style: context.flowTypography.labelSmall.copyWith(
                   color: colors.surfaceBright,
                   fontWeight: FontWeight.w600,
                 ),

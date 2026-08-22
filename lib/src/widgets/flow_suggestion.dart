@@ -132,8 +132,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
                   widget.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.flowTypography.bodyLarge.copyWith(
-                    height: 1.3,
+                  style: context.flowTypography.labelLarge.copyWith(
                     color: foreground,
                   ),
                 );
