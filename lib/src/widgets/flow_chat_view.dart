@@ -315,11 +315,24 @@ class _FlowChatViewState extends State<FlowChatView> {
         child: widget.thread ?? const FlowThread(messages: []),
       ),
     );
-    if (widget.threadController == null) return thread;
+    // The scrollable lives inside the centred rail, so left alone the
+    // platform scrollbar hugs the rail's edge, floating mid-window on
+    // wide layouts. Suppressing it and painting one out here instead —
+    // fed by the thread's own notifications — puts the thumb at the
+    // surface's edge, where readers expect it. Depth 0 keeps the
+    // scrollers nested in messages (tables, code blocks) off it.
+    final scrollArea = Scrollbar(
+      controller: widget.threadController,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: thread,
+      ),
+    );
+    if (widget.threadController == null) return scrollArea;
 
     return Stack(
       children: [
-        Positioned.fill(child: thread),
+        Positioned.fill(child: scrollArea),
         Positioned(
           bottom: _jumpInset,
           left: 0,
