@@ -92,8 +92,8 @@ class FlowCodeBlock extends StatefulWidget {
 
 class _FlowCodeBlockState extends State<FlowCodeBlock> {
   /// The design's block: the message bubble's 12px corner, code inset
-  /// 16/12, and a 36 header — 6px around the copy affordance's 24 frame,
-  /// with the label a full 16 from the edge so it aligns with the code.
+  /// 16/12, and a ruleless header standing 10 off the top and 12 from the
+  /// end, its label a full 16 from the edge so it aligns with the code.
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
   static const EdgeInsetsGeometry _bodyPadding = EdgeInsets.symmetric(
     horizontal: 16,
@@ -102,12 +102,55 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
   static const double _headerHeight = 36;
   static const EdgeInsetsGeometry _headerPadding = EdgeInsets.only(
     left: 16,
-    right: 6,
+    right: 12,
+    top: 10,
   );
 
-  /// The block's ground: the same 4% ink wash as the user bubble and the
-  /// attachment tiles, edged with the tiles' outline hairline.
-  static const double _groundOpacity = 0.04;
+  /// The copy affordance reveals with the pointer — short enough to feel
+  /// like part of the hover itself, the attachment tiles' idiom.
+  static const Duration _revealDuration = Duration(milliseconds: 120);
+
+  bool _hovered = false;
+  bool _copyFocused = false;
+
+  /// Whether the user is currently driving the UI with a device that can
+  /// hover — the attachment group's idiom: the framework tracks and
+  /// *revises* this, where a platform check could strand the affordance
+  /// invisible on a hybrid device.
+  late bool _hoverCapable;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverCapable = _hoverCapableNow;
+    FocusManager.instance.addHighlightModeListener(_handleHighlightModeChange);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(
+      _handleHighlightModeChange,
+    );
+    super.dispose();
+  }
+
+  static bool get _hoverCapableNow =>
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+
+  void _handleHighlightModeChange(FocusHighlightMode mode) {
+    if (!mounted) return;
+    final value = mode == FocusHighlightMode.traditional;
+    if (_hoverCapable != value) setState(() => _hoverCapable = value);
+  }
+
+  /// Hover-revealing is a pointer affordance: it needs a hovering device
+  /// *and* a non-phone platform — the theme's platform rather than the
+  /// real one, like the menus' sheet resolution.
+  bool _revealsOnHover(BuildContext context) {
+    if (!_hoverCapable) return false;
+    final platform = Theme.of(context).platform;
+    return platform != TargetPlatform.iOS && platform != TargetPlatform.android;
+  }
 
   /// The last highlight and the inputs it was computed from. Tokenizing
   /// re-scans the whole source, so a rebuild that changes none of the
@@ -175,52 +218,84 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
             child: code,
           );
 
-    return Container(
-      width: double.infinity,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: colors.onSurface.withValues(alpha: _groundOpacity),
-        borderRadius: widget.borderRadius ?? _radius,
-        border: Border.all(color: colors.outline),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasHeader)
-            Container(
-              height: _headerHeight,
-              padding: _headerPadding,
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: colors.outlineVariant),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: Container(
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLowest,
+          borderRadius: widget.borderRadius ?? _radius,
+          // The hover state lives on the edge, not the ground: the
+          // hairline firms from the faint rung to the ladder's deepest.
+          border: Border.all(
+            color: _hovered
+                ? colors.surfaceContainerHighest
+                : colors.outlineVariant,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasHeader)
+              Container(
+                height: _headerHeight,
+                padding: _headerPadding,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: label == null
+                          ? const SizedBox.shrink()
+                          : Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: typography.bodySmall.copyWith(
+                                color: colors.onSurfaceMuted,
+                              ),
+                            ),
+                    ),
+                    if (showCopy)
+                      // Revealed by the pointer on hover-capable devices,
+                      // always present on phones (by the theme's platform,
+                      // so hosts and tests can steer it) or wherever
+                      // hovering isn't how the UI is being driven — and
+                      // kept while focused, so keyboard users aren't
+                      // copying blind. Opacity alone still hit-tests, so
+                      // the hidden affordance must also ignore the
+                      // pointer.
+                      IgnorePointer(
+                        ignoring:
+                            _revealsOnHover(context) &&
+                            !_hovered &&
+                            !_copyFocused,
+                        child: AnimatedOpacity(
+                          opacity:
+                              !_revealsOnHover(context) ||
+                                  _hovered ||
+                                  _copyFocused
+                              ? 1
+                              : 0,
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : _revealDuration,
+                          child: _CopyButton(
+                            copied: widget.copied,
+                            tooltip: widget.copyTooltip,
+                            onTap: widget.onCopy!,
+                            onFocusChange: (value) =>
+                                setState(() => _copyFocused = value),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: label == null
-                        ? const SizedBox.shrink()
-                        : Text(
-                            label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: typography.labelMedium.copyWith(
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ),
-                  ),
-                  if (showCopy)
-                    _CopyButton(
-                      copied: widget.copied,
-                      tooltip: widget.copyTooltip,
-                      onTap: widget.onCopy!,
-                    ),
-                ],
-              ),
-            ),
-          body,
-        ],
+            body,
+          ],
+        ),
       ),
     );
   }
@@ -234,20 +309,22 @@ class _CopyButton extends StatefulWidget {
     required this.copied,
     required this.tooltip,
     required this.onTap,
+    required this.onFocusChange,
   });
 
   final bool copied;
   final String? tooltip;
   final VoidCallback onTap;
+  final ValueChanged<bool> onFocusChange;
 
   @override
   State<_CopyButton> createState() => _CopyButtonState();
 }
 
 class _CopyButtonState extends State<_CopyButton> {
-  /// Breathing room around the 16 glyph inside its 24 frame.
-  static const double _framePadding = 4;
-  static const double _iconSize = 16;
+  /// Breathing room around the 14 glyph inside its 24 frame.
+  static const double _framePadding = 5;
+  static const double _iconSize = 14;
 
   /// The frame's corner — a step under the block's 12, per the ratio the
   /// menu rows keep to their card.
@@ -275,6 +352,7 @@ class _CopyButtonState extends State<_CopyButton> {
       child: InkWell(
         onTap: widget.onTap,
         onHover: (value) => setState(() => _hovered = value),
+        onFocusChange: widget.onFocusChange,
         borderRadius: _frameRadius,
         hoverColor: colors.surfaceContainerHigh,
         child: Padding(

@@ -6,6 +6,7 @@ import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
 import '../utils/flow_gradient_outline.dart';
 import 'flow_attachment_group.dart';
+import 'flow_pill.dart';
 
 /// The message input area: an auto-growing text field with an action bar
 /// and a send button that morphs into stop while [isStreaming].
@@ -132,6 +133,11 @@ class _FlowComposerState extends State<FlowComposer> {
   static const double _leadingGap = 4;
   static const double _trailingGap = 8;
 
+  /// Between two neighbouring pills in the action row — the design's 8,
+  /// closing to 6 on phones.
+  static const double _pillGap = 8;
+  static const double _mobilePillGap = 6;
+
   /// The field's floor, sized so an empty composer stands at the design's
   /// 116px: 19 + 38 + 16 (gap) + 32 (action row) + 11.
   static const double _fieldMinHeight = 38;
@@ -197,6 +203,13 @@ class _FlowComposerState extends State<FlowComposer> {
     if (_focused != _attachedFocusNode.hasFocus) {
       setState(() => _focused = _attachedFocusNode.hasFocus);
     }
+  }
+
+  /// The theme's platform rather than the real one, like the menus' sheet
+  /// resolution, so hosts and tests can steer it without a device.
+  static bool _isMobile(BuildContext context) {
+    final platform = Theme.of(context).platform;
+    return platform == TargetPlatform.iOS || platform == TargetPlatform.android;
   }
 
   void _send() {
@@ -384,9 +397,19 @@ class _FlowComposerState extends State<FlowComposer> {
                 padding: const EdgeInsets.symmetric(horizontal: _actionInset),
                 child: Row(
                   children: [
-                    for (final action in widget.leadingActions) ...[
-                      action,
-                      const SizedBox(width: _leadingGap),
+                    for (var i = 0; i < widget.leadingActions.length; i++) ...[
+                      widget.leadingActions[i],
+                      // Two neighbouring pills read as a set and take the
+                      // design's wider step — 8, closing to 6 on phones —
+                      // while everything else keeps the action row's 4.
+                      SizedBox(
+                        width:
+                            i + 1 < widget.leadingActions.length &&
+                                widget.leadingActions[i] is FlowPill &&
+                                widget.leadingActions[i + 1] is FlowPill
+                            ? (_isMobile(context) ? _mobilePillGap : _pillGap)
+                            : _leadingGap,
+                      ),
                     ],
                     const Spacer(),
                     for (final action in widget.trailingActions) ...[

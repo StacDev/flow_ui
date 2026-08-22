@@ -74,13 +74,14 @@ class FlowErrorState extends StatelessWidget {
   static const double _groundOpacity = 0.02;
   static const double _borderOpacity = 0.4;
 
-  /// The glyph, and the indent that hangs the message and the pill under
-  /// the text rather than under the glyph.
-  static const double _iconSize = 20;
-  static const double _iconGap = 10;
+  /// The glyph, sized to the title's line so the pair reads as one row;
+  /// the message and the pill align to the card's edge below, not to the
+  /// text's indent.
+  static const double _iconSize = 16;
+  static const double _iconGap = 6;
 
   /// Gaps: glyph row to message, content to the retry pill.
-  static const double _messageGap = 4;
+  static const double _messageGap = 8;
   static const double _retryGap = 12;
 
   @override
@@ -97,23 +98,28 @@ class FlowErrorState extends StatelessWidget {
     final rowText = title ?? message;
     final below = title == null ? null : message;
 
+    final rowStyle = title != null
+        ? typography.labelLarge.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colors.onSurface,
+          )
+        : typography.bodyMedium.copyWith(color: colors.onSurfaceVariant);
+
     Widget? rowLabel;
     if (rowText != null) {
-      rowLabel = Text(
-        rowText,
-        style: title != null
-            ? typography.labelLarge.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colors.onSurface,
-              )
-            : typography.bodyMedium.copyWith(color: colors.onSurfaceVariant),
-      );
+      rowLabel = Text(rowText, style: rowStyle);
       if (below == null) {
         // The row text is all the card says — a lone title as much as a
         // lone message — and failures arrive unprompted: announce it.
         rowLabel = Semantics(liveRegion: true, child: rowLabel);
       }
     }
+
+    // The glyph centres on the text's *first line* — a box the line's own
+    // height keeps it optically centred beside a one-line title and on
+    // the opening line of a wrapping message alike.
+    final firstLineHeight =
+        (rowStyle.fontSize ?? _iconSize) * (rowStyle.height ?? 1);
 
     return Container(
       padding: padding ?? _cardPadding,
@@ -132,7 +138,16 @@ class FlowErrorState extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error_outline, size: _iconSize, color: colors.error),
+              SizedBox(
+                height: firstLineHeight,
+                child: Center(
+                  child: Icon(
+                    Icons.error_outline,
+                    size: _iconSize,
+                    color: colors.error,
+                  ),
+                ),
+              ),
               if (rowLabel != null) ...[
                 const SizedBox(width: _iconGap),
                 Flexible(child: rowLabel),
@@ -141,10 +156,7 @@ class FlowErrorState extends StatelessWidget {
           ),
           if (below != null)
             Padding(
-              padding: const EdgeInsets.only(
-                left: _iconSize + _iconGap,
-                top: _messageGap,
-              ),
+              padding: const EdgeInsets.only(top: _messageGap),
               child: Semantics(
                 liveRegion: true,
                 child: Text(
@@ -157,10 +169,7 @@ class FlowErrorState extends StatelessWidget {
             ),
           if (onRetry != null)
             Padding(
-              padding: const EdgeInsets.only(
-                left: _iconSize + _iconGap,
-                top: _retryGap,
-              ),
+              padding: const EdgeInsets.only(top: _retryGap),
               child: _RetryButton(onTap: onRetry, label: retryLabel),
             ),
         ],
