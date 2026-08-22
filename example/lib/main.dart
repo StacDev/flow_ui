@@ -109,7 +109,20 @@ class _ChatScreenState extends State<ChatScreen> {
           },
           onDone: () {
             _reply = null;
-            _update(id, status: FlowMessageStatus.complete);
+            // A stream can close without ever emitting text (an empty or
+            // filtered response); completing then would leave a blank
+            // assistant row — drop the turn instead, like _stop does.
+            if (reply.isEmpty) {
+              if (!mounted) return;
+              setState(() {
+                _messages = [
+                  for (final m in _messages)
+                    if (m.id != id) m,
+                ];
+              });
+            } else {
+              _update(id, status: FlowMessageStatus.complete);
+            }
           },
           cancelOnError: true,
         );
