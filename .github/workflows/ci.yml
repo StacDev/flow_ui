@@ -62,6 +62,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The example reads its Gemini key from lib/env.g.dart, which is
+      # gitignored so a real key can never land in a commit — meaning a
+      # fresh checkout doesn't have it. Stub it with an empty key, the
+      # same state a fresh clone runs with (see example/README.md).
+      - name: Stub the example's key file
+        if: matrix.app == 'example'
+        run: |
+          printf '// CI stub — the real file is gitignored.\nconst String apiKey = %s;\n' "''" \
+            > example/lib/env.g.dart
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
