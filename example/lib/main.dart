@@ -204,9 +204,9 @@ class _ChatScreenState extends State<ChatScreen> {
           onRetry: _retry,
           // Intent out: the host decides what opening a link means. Here,
           // a snackbar showing the href stands in for a browser launch.
-          onLinkTap: (message, href) =>
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(href))),
+          onLinkTap: (message, href) => ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(href))),
         ),
         threadController: _scroll,
         jumpToLatestTooltip: 'Jump to latest',
