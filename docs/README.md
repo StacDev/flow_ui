@@ -20,5 +20,8 @@ component pages as live demos via `src/components/FlowDemo.astro`
 (`/playground/?embed=<demo>&variant=<v>&theme=<light|dark>`).
 `npm run build:site` chains playground + docs into one `dist/`.
 
-Planned: `dart doc` output under `public/api/`, and Cloudflare Pages
-deploy via GitHub Actions.
+Deploys to Cloudflare Pages from `.github/workflows/publish.yml` — every
+release tag ships the site (playground included) alongside the pub.dev
+publish, and `workflow_dispatch` redeploys it on its own.
+
+Planned: `dart doc` output under `public/api/`.

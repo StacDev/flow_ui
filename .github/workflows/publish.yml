@@ -1,18 +1,66 @@
-# Publishes to pub.dev when a version tag is pushed, e.g.
+# One release trigger, everything ships: pushing a version tag publishes
+# the package to pub.dev AND deploys the docs site — playground included,
+# it's built into dist/playground/ — to Cloudflare Pages.
 #
 #   git tag v0.2.0 && git push origin v0.2.0
 #
-# Authentication is OIDC — no token lives in this repo. It requires automated
-# publishing to be enabled once on pub.dev (flow_ui → Admin → Automated
-# publishing) for StacDev/flow_ui with the tag pattern `v{{version}}`.
+# Package authentication is OIDC — no token lives in this repo. It requires
+# automated publishing to be enabled once on pub.dev (flow_ui → Admin →
+# Automated publishing) for StacDev/flow_ui with the tag pattern
+# `v{{version}}`.
+#
+# The site deploy needs one-time repo configuration:
+#   secrets: CLOUDFLARE_API_TOKEN  (Pages:Edit permission)
+#            CLOUDFLARE_ACCOUNT_ID
+#   variable: CLOUDFLARE_PAGES_PROJECT  (the Pages project serving
+#             flowui.stac.dev)
 name: Publish
 
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+  # Redeploy the site without cutting a release, e.g. after a docs fix.
+  workflow_dispatch:
 
 jobs:
-  publish:
+  package:
+    # Manual dispatches redeploy the site only — pub.dev is tags-only.
+    if: github.event_name == 'push'
     permissions:
       id-token: write # Required to mint the OIDC token pub.dev verifies.
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+
+  site:
+    name: Docs + playground
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # `build:site` compiles the playground to wasm before Astro builds,
+      # so this job needs both toolchains — the same build CI validates.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - run: npm ci
+        working-directory: docs
+
+      - run: npm run build:site
+        working-directory: docs
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy docs/dist
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=main

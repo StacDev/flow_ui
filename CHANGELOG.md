@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut
   (`titleLargeEmphasised` / `labelLargeEmphasised`, and the medium/small
@@ -57,7 +57,13 @@
   empty space above. Once it outgrows the viewport the thread anchors to
   the newest message as before. A new `messageFooter` builder fills each
   default message's footer slot (an actions row, a timestamp) without
-  replacing the whole message the way `messageBuilder` does.
+  replacing the whole message the way `messageBuilder` does. Default
+  padding now gives the conversation 40 above and below (16 at the
+  sides, all overridable through `padding`).
+- **Chat View** — the thread's scrollbar rides the surface's edge
+  instead of hugging the centred rail, and the jump-to-latest button
+  sits on an outlined, softly lifted `surface` disc rather than a
+  translucent wash.
 - **Pill** — `FlowPill`, a removable pill showing an enabled tool or mode
   in the composer's action row: host-passed icon, label and tooltips,
   removal intent on `onRemove`, and a label that auto-drops to the
