@@ -16,7 +16,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'Flow UI Example', home: ChatScreen());
+    // FlowTheme installs the design tokens as theme extensions — the
+    // canonical host wiring, in both brightnesses so the app follows the
+    // device setting.
+    return MaterialApp(
+      title: 'Flow UI Example',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(extensions: [FlowTheme.light()]),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        extensions: [FlowTheme.dark()],
+      ),
+      home: const ChatScreen(),
+    );
   }
 }
 

@@ -128,6 +128,12 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   bool _cursorDone = false;
   int _cursorDoneLength = 0;
 
+  /// The streaming semantics label's folded settled prefix: the joined
+  /// text of the first [_labelUnits] units, all below the cursor and so
+  /// immutable while the source only grows.
+  String _labelPrefix = '';
+  int _labelUnits = 0;
+
   /// The cursor at the moment streaming ended — units beyond it mount
   /// with one soft group fade instead of a terminal pop.
   int? _flipOrdinal;
@@ -148,8 +154,8 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   /// Link recognizers, keyed by their owning leaf/cell instance and run
   /// index. Instance reuse across deltas keeps settled keys stable, so
   /// the sweep only ever churns the streaming tail.
-  final Map<(int, int), TapGestureRecognizer> _recognizers = {};
-  final Set<(int, int)> _liveRecognizers = {};
+  final Map<(Object, int), TapGestureRecognizer> _recognizers = {};
+  final Set<(Object, int)> _liveRecognizers = {};
 
   @override
   void dispose() {
@@ -297,17 +303,22 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    // The settled cache is valid for exactly one theme/style epoch.
+    // The settled cache is valid for exactly one theme/style epoch. The
+    // link callback's *identity* is deliberately not part of the epoch —
+    // hosts (FlowThread included) build a fresh closure every build, and
+    // keying on it would clear the cache on every delta. Only the
+    // null/non-null flip restyles spans; a changed closure is rebound
+    // onto the cached recognizers in [_markLive].
     if (!identical(colors, _cacheColors) ||
         !identical(typography, _cacheTypography) ||
         widget.style != _cacheStyle ||
-        !identical(widget.onLinkTap, _cacheOnLinkTap)) {
+        (widget.onLinkTap == null) != (_cacheOnLinkTap == null)) {
       _settledCache.clear();
       _cacheColors = colors;
       _cacheTypography = typography;
       _cacheStyle = widget.style;
-      _cacheOnLinkTap = widget.onLinkTap;
     }
+    _cacheOnLinkTap = widget.onLinkTap;
     final base = typography.bodyLarge
         .copyWith(color: colors.onSurface)
         .merge(widget.style);
@@ -358,28 +369,43 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
     // inert during the reveal anyway, so nothing interactive is hidden.
     return Semantics(
       container: true,
-      label: _streamingLabel(),
+      // Concatenating the document on every delta is O(n²) over a
+      // stream, so the label is only built while an accessibility
+      // service is actually reading it.
+      label: MediaQuery.accessibleNavigationOf(context)
+          ? _streamingLabel()
+          : null,
       child: ExcludeSemantics(child: column),
     );
   }
 
   /// The visible text so far, marker-free — leaf runs joined, fences as
-  /// their code. Run lists are cached per block instance, so this is a
-  /// concatenation, not a parse.
+  /// their code. Units below the cursor are settled, so their text folds
+  /// into a cached prefix and a delta re-joins only the frontier unit.
   String _streamingLabel() {
-    final parts = <String>[];
-    for (final unit in _units) {
-      if ((_ordinalOf[unit] ?? 0) > _cursor) break;
-      switch (unit) {
-        case FlowMarkdownLeafBlock():
-          parts.add([for (final run in unit.runs) run.text].join());
-        case FlowMarkdownFence():
-          parts.add(unit.code);
-        default:
-          break;
-      }
+    if (_labelUnits > _cursor) {
+      // The cursor moved backwards — a replacement reset — so the folded
+      // prefix no longer matches.
+      _labelPrefix = '';
+      _labelUnits = 0;
     }
-    return parts.join('\n');
+    while (_labelUnits < _cursor && _labelUnits < _units.length) {
+      _labelPrefix = _labelJoin(_labelPrefix, _units[_labelUnits]);
+      _labelUnits++;
+    }
+    return _cursor < _units.length
+        ? _labelJoin(_labelPrefix, _units[_cursor])
+        : _labelPrefix;
+  }
+
+  static String _labelJoin(String prefix, FlowMarkdownBlock unit) {
+    final text = switch (unit) {
+      FlowMarkdownLeafBlock() => [for (final run in unit.runs) run.text].join(),
+      FlowMarkdownFence() => unit.code,
+      _ => null,
+    };
+    if (text == null) return prefix;
+    return prefix.isEmpty ? text : '$prefix\n$text';
   }
 
   void _sweepCaches() {
@@ -588,35 +614,34 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   ) {
     final ordinal = _ordinalOf[leaf] ?? 0;
     final isCursor = _gated && ordinal == _cursor;
-    Widget child = _smoothGrowth(
-      context,
-      _FlowMarkdownRevealText(
-        key: ValueKey(ordinal),
-        source: leaf.source,
-        runs: leaf.runs,
-        baseStyle: style,
-        styleFor: (run) => _runStyle(context, run, style),
-        chipFill: context.flowColors.onSurface.withValues(
-          alpha: _inlineCodeWash,
+    // The fade wrapper is permanent, like _atomic's: a leaf the frontier
+    // never reached before the stream ended enters with the settle group
+    // instead of popping, and one that did animates its own reveal (the
+    // entrance decision is made once, on mount). Wrapping conditionally
+    // would change the child's type when the flip clears — remounting
+    // the reveal element and replaying the whole paragraph.
+    final flip = _flipOrdinal;
+    return _FlowMarkdownBlockFadeIn(
+      key: ValueKey(ordinal),
+      animate: flip != null && ordinal > flip,
+      child: _smoothGrowth(
+        context,
+        _FlowMarkdownRevealText(
+          source: leaf.source,
+          runs: leaf.runs,
+          baseStyle: style,
+          styleFor: (run) => _runStyle(context, run, style),
+          chipFill: context.flowColors.onSurface.withValues(
+            alpha: _inlineCodeWash,
+          ),
+          isStreaming: isCursor,
+          charactersPerSecond: widget.charactersPerSecond,
+          extraBacklog: isCursor ? _pendingBeyondCursor().toDouble() : 0,
+          onRevealed: isCursor ? () => _onUnitRevealed(ordinal) : null,
+          settled: _settledLeaf(leaf, style),
         ),
-        isStreaming: isCursor,
-        charactersPerSecond: widget.charactersPerSecond,
-        extraBacklog: isCursor ? _pendingBeyondCursor().toDouble() : 0,
-        onRevealed: isCursor ? () => _onUnitRevealed(ordinal) : null,
-        settled: _settledLeaf(leaf, style),
       ),
     );
-    // A leaf the frontier never reached before the stream ended fades in
-    // with the settle group rather than popping.
-    final flip = _flipOrdinal;
-    if (flip != null && ordinal > flip) {
-      child = _FlowMarkdownBlockFadeIn(
-        key: ValueKey(('flip', ordinal)),
-        animate: true,
-        child: child,
-      );
-    }
-    return child;
   }
 
   /// The settled form of a leaf, its spans cached per instance.
@@ -645,12 +670,17 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
 
   /// Marks a cached subtree's recognizers live without rebuilding its
   /// spans — the sweep must never dispose a recognizer a cached span
-  /// still holds.
+  /// still holds — and rebinds them to this build's callback, since the
+  /// callback's identity is not part of the cache epoch.
   void _markLive(Object owner, List<FlowMarkdownRun> runs) {
-    if (widget.onLinkTap == null) return;
+    final onLinkTap = widget.onLinkTap;
+    if (onLinkTap == null) return;
     for (var i = 0; i < runs.length; i++) {
-      if (runs[i].linkHref != null) {
-        _liveRecognizers.add((identityHashCode(owner), i));
+      final href = runs[i].linkHref;
+      if (href != null) {
+        final key = (owner, i);
+        _liveRecognizers.add(key);
+        _recognizers[key]?.onTap = () => onLinkTap(href);
       }
     }
   }
@@ -769,7 +799,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
       TapGestureRecognizer? recognizer;
       final href = run.linkHref;
       if (href != null && onLinkTap != null && tappable) {
-        final key = (identityHashCode(owner), i);
+        final key = (owner, i);
         recognizer = _recognizers.putIfAbsent(key, TapGestureRecognizer.new)
           ..onTap = () => onLinkTap(href);
         _liveRecognizers.add(key);
@@ -865,7 +895,6 @@ class _FlowMarkdownBlockFadeInState extends State<_FlowMarkdownBlockFadeIn>
 /// stamps and never re-fades.
 class _FlowMarkdownRevealText extends StatefulWidget {
   const _FlowMarkdownRevealText({
-    super.key,
     required this.source,
     required this.runs,
     required this.baseStyle,
@@ -1049,6 +1078,9 @@ class _FlowMarkdownRevealTextState extends State<_FlowMarkdownRevealText>
     while (fadeStart > 0 &&
         shown - fadeStart < FlowRevealEngine.maxFadeSpans &&
         _engine.progressFor(fadeStart - 1) < 1) {
+      fadeStart--;
+    }
+    if (fadeStart > 0 && _isLowSurrogate(source.codeUnitAt(fadeStart))) {
       fadeStart--;
     }
 

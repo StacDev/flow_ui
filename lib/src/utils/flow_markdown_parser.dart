@@ -140,7 +140,7 @@ abstract final class FlowMarkdownParser {
     final info = text.substring(length).trim();
     // An info string with a backtick would be ambiguous with inline code.
     if (char == '`' && info.contains('`')) return null;
-    final language = info.isEmpty ? null : info.split(RegExp(r'\s+')).first;
+    final language = info.isEmpty ? null : info.split(_whitespaceRun).first;
     return _FenceOpen(char, length, language);
   }
 
@@ -185,6 +185,11 @@ abstract final class FlowMarkdownParser {
 
   // Headings -------------------------------------------------------------
 
+  /// Hoisted patterns — the parse re-runs over the whole document on
+  /// every streaming delta, so per-call RegExp construction compounds.
+  static final RegExp _whitespaceRun = RegExp(r'\s+');
+  static final RegExp _closingHashes = RegExp(r'(^|\s)#+$');
+
   static FlowMarkdownHeading? _headingOf(_Line line, String marker) {
     var level = 0;
     while (level < marker.length && level < 6 && marker[level] == '#') {
@@ -196,7 +201,7 @@ abstract final class FlowMarkdownParser {
     if (rest.isNotEmpty && !rest.startsWith(' ')) return null;
     var text = rest.trim();
     // A trailing run of #s is decoration, per ATX.
-    final closing = RegExp(r'(^|\s)#+$').firstMatch(text);
+    final closing = _closingHashes.firstMatch(text);
     if (closing != null) text = text.substring(0, closing.start).trimRight();
     return FlowMarkdownHeading(line.start, _endOf(line), text, level: level);
   }
@@ -401,6 +406,11 @@ abstract final class FlowMarkdownParser {
     var i = index;
     List<_Line>? current;
     var contentColumn = first.contentColumn;
+    // Interior offsets accumulate per item, like _readQuote's, so blocks
+    // parsed inside the item keep the source-offset invariant
+    // FlowMarkdownBlock documents (offsets index the item's normalized
+    // source, not everything zero).
+    var itemOffset = 0;
 
     void closeItem() {
       if (current != null) {
@@ -425,7 +435,8 @@ abstract final class FlowMarkdownParser {
         if ((nextMarker != null && nextMarker.ordered == first.ordered) ||
             continuation) {
           if (continuation && current != null) {
-            current!.add(_Line(0, ''));
+            current!.add(_Line(itemOffset, ''));
+            itemOffset += 1;
           }
           i = peek;
           continue;
@@ -439,21 +450,20 @@ abstract final class FlowMarkdownParser {
           _indentOf(line.text) < contentColumn) {
         closeItem();
         contentColumn = marker.contentColumn;
-        current = <_Line>[
-          _Line(
-            0,
-            line.text.length > contentColumn
-                ? line.text.substring(contentColumn)
-                : '',
-          ),
-        ];
+        final text = line.text.length > contentColumn
+            ? line.text.substring(contentColumn)
+            : '';
+        current = <_Line>[_Line(0, text)];
+        itemOffset = text.length + 1;
         end = _endOf(line);
         i++;
         continue;
       }
 
       if (_indentOf(line.text) >= contentColumn && current != null) {
-        current!.add(_Line(0, _stripColumns(line.text, contentColumn)));
+        final text = _stripColumns(line.text, contentColumn);
+        current!.add(_Line(itemOffset, text));
+        itemOffset += text.length + 1;
         end = _endOf(line);
         i++;
         continue;
@@ -741,7 +751,7 @@ abstract final class FlowMarkdownParser {
         if (parens == 0) {
           final target = source.substring(i + 2, j).trim();
           // A quoted title after the href is tolerated and dropped.
-          final href = target.split(RegExp(r'\s+')).first;
+          final href = target.split(_whitespaceRun).first;
           return _LinkToken(label, from + 1, href: href, consumed: j + 1);
         }
         parens--;

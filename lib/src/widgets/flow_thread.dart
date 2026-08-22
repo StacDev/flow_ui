@@ -129,9 +129,11 @@ class _FlowThreadState extends State<FlowThread> {
   /// content overflows, the lazy bottom-anchored form takes over. The flip
   /// is read off the scroll metrics, and at the frame it happens content
   /// equals the viewport, so nothing visibly moves. Shrink-wrapping lays
-  /// out every message, but a fitting conversation's messages are all
-  /// visible anyway — the lazy form carries the long threads.
-  bool _fits = true;
+  /// out every message, so the mount starts from the lazy form — a
+  /// restored long conversation must never pay a full layout on open —
+  /// and the first metrics reading flips a short thread to the top read
+  /// a frame later.
+  bool _fits = false;
   Timer? _fitsHold;
 
   /// Whether any message is mid-turn, read each build. The fit flip is
@@ -155,11 +157,23 @@ class _FlowThreadState extends State<FlowThread> {
 
   void _handleMetrics(ScrollMetrics metrics) {
     final fits = metrics.maxScrollExtent <= 0;
+    final first = _metricsFits == null;
     _metricsFits = fits;
     if (_streaming) return;
     if (fits == _fits) {
       _fitsHold?.cancel();
       _fitsHold = null;
+      return;
+    }
+    if (first) {
+      // The mount starts lazy; the very first reading that fits flips
+      // right away — the hold below guards later shrink-backs, not the
+      // initial settle.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_fits && !_streaming && _metricsFits == true) {
+          setState(() => _fits = true);
+        }
+      });
       return;
     }
     if (!fits) {
