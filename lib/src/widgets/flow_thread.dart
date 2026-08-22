@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
@@ -22,10 +24,13 @@ class FlowThread extends StatefulWidget {
     this.onCodeCopy,
     this.copiedCodePart,
     this.codeCopyTooltip,
+    this.markdown = true,
+    this.onLinkTap,
     this.onRetry,
     this.errorTitle,
     this.retryLabel,
     this.controller,
+    this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.onDrag,
     this.padding,
     this.itemSpacing,
     this.messageBuilder,
@@ -63,6 +68,14 @@ class FlowThread extends StatefulWidget {
   /// Host-localized label for the code blocks' copy affordance.
   final String? codeCopyTooltip;
 
+  /// Whether assistant text parts render as markdown. Forwarded to each
+  /// [FlowMessage]; pass false for hosts whose assistant text is literal.
+  final bool markdown;
+
+  /// Link intent from any markdown content in the thread, handed the
+  /// message and the tapped href. Null renders links as plain prose.
+  final void Function(FlowMessageData message, String href)? onLinkTap;
+
   /// Retry intent from a failed turn's error card, handed the message so
   /// the host can re-run it. Forwarded to each [FlowMessage].
   final void Function(FlowMessageData message)? onRetry;
@@ -77,6 +90,11 @@ class FlowThread extends StatefulWidget {
 
   /// Optional external scroll controller.
   final ScrollController? controller;
+
+  /// How scrolling the thread treats an open keyboard. Defaults to
+  /// dismissing it on drag — reading history and typing are different
+  /// modes, the chat convention.
+  final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
 
   /// Defaults to the design's 16 on every side.
   final EdgeInsetsGeometry? padding;
@@ -114,15 +132,77 @@ class _FlowThreadState extends State<FlowThread> {
   /// out every message, but a fitting conversation's messages are all
   /// visible anyway — the lazy form carries the long threads.
   bool _fits = true;
+  Timer? _fitsHold;
+
+  /// Whether any message is mid-turn, read each build. The fit flip is
+  /// frozen while streaming: swapping the list's viewport type remounts
+  /// the whole subtree, resetting every reveal — mid-stream that reset
+  /// shrank the content back under the viewport and flipped the fit
+  /// again, a grow-collapse flicker loop until the stream settled. A
+  /// shrink-wrapped list whose content overflows still clamps to its
+  /// constraints and scrolls, so deferring the flip only defers the
+  /// laziness, not correctness.
+  bool _streaming = false;
+
+  /// The latest observed fit, applied when the freeze lifts.
+  bool? _metricsFits;
+
+  @override
+  void dispose() {
+    _fitsHold?.cancel();
+    super.dispose();
+  }
 
   void _handleMetrics(ScrollMetrics metrics) {
     final fits = metrics.maxScrollExtent <= 0;
-    if (fits == _fits) return;
-    // Metrics arrive during layout; flipping shrinkWrap there would
-    // rebuild the tree mid-layout, so the flip waits for the frame's end.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _fits != fits) setState(() => _fits = fits);
+    _metricsFits = fits;
+    if (_streaming) return;
+    if (fits == _fits) {
+      _fitsHold?.cancel();
+      _fitsHold = null;
+      return;
+    }
+    if (!fits) {
+      // Overflow takes the lazy form immediately.
+      _fitsHold?.cancel();
+      _fitsHold = null;
+      // Metrics arrive during layout; flipping shrinkWrap there would
+      // rebuild the tree mid-layout, so the flip waits for the frame's
+      // end.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _fits && !_streaming) setState(() => _fits = false);
+      });
+      return;
+    }
+    // Shrinking back to fitting must hold before the flip, so transient
+    // zero-extent readings — a block still easing in — don't bounce the
+    // viewport type.
+    _fitsHold ??= Timer(const Duration(milliseconds: 250), () {
+      _fitsHold = null;
+      if (mounted && !_fits && !_streaming) setState(() => _fits = true);
     });
+  }
+
+  /// Called from build: freezes the flip during a stream and applies the
+  /// deferred state once the stream ends.
+  void _syncStreaming(List<FlowMessageData> messages) {
+    final streamingNow = messages.any(
+      (message) =>
+          message.status == FlowMessageStatus.streaming ||
+          message.status == FlowMessageStatus.pending,
+    );
+    if (_streaming && !streamingNow) {
+      final fits = _metricsFits;
+      if (fits != null && fits != _fits) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = _metricsFits;
+          if (mounted && !_streaming && target != null && target != _fits) {
+            setState(() => _fits = target);
+          }
+        });
+      }
+    }
+    _streaming = streamingNow;
   }
 
   @override
@@ -130,7 +210,9 @@ class _FlowThreadState extends State<FlowThread> {
     final gap = widget.itemSpacing ?? _defaultGap;
     final onAttachmentTap = widget.onAttachmentTap;
     final onRetry = widget.onRetry;
+    final onLinkTap = widget.onLinkTap;
     final messages = widget.messages;
+    _syncStreaming(messages);
 
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) {
@@ -146,6 +228,7 @@ class _FlowThreadState extends State<FlowThread> {
           controller: widget.controller,
           reverse: true,
           shrinkWrap: _fits,
+          keyboardDismissBehavior: widget.keyboardDismissBehavior,
           padding: widget.padding ?? _defaultPadding,
           itemCount: messages.length,
           itemBuilder: (context, index) {
@@ -168,6 +251,10 @@ class _FlowThreadState extends State<FlowThread> {
                     onCodeCopy: widget.onCodeCopy,
                     copiedCodePart: widget.copiedCodePart,
                     codeCopyTooltip: widget.codeCopyTooltip,
+                    markdown: widget.markdown,
+                    onLinkTap: onLinkTap == null
+                        ? null
+                        : (href) => onLinkTap(message, href),
                     onRetry: onRetry == null ? null : () => onRetry(message),
                     errorTitle: widget.errorTitle,
                     retryLabel: widget.retryLabel,

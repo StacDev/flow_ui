@@ -7,6 +7,7 @@ import 'demos/composer_demo.dart';
 import 'demos/error_state_demo.dart';
 import 'demos/full_chat_demo.dart';
 import 'demos/greeting_demo.dart';
+import 'demos/markdown_demo.dart';
 import 'demos/message_actions_demo.dart';
 import 'demos/message_demo.dart';
 import 'demos/model_selector_demo.dart';
@@ -34,6 +35,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
       variant: variant,
     ),
     PlaygroundItem.codeBlock => CodeBlockDemo(key: key, variant: variant),
+    PlaygroundItem.markdown => MarkdownDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.pill => PillDemo(key: key, variant: variant),
@@ -80,6 +82,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('sql', 'SQL'),
       ('plain', 'Plain'),
       ('streaming', 'Streaming'),
+    ],
+    PlaygroundItem.markdown => const [
+      ('document', 'Document'),
+      ('streaming', 'Streaming'),
+      ('tables', 'Tables'),
+      ('links', 'Links'),
     ],
     PlaygroundItem.errorState => const [
       ('card', 'Card'),
@@ -140,6 +148,7 @@ String snippetFor(PlaygroundItem item) {
     PlaygroundItem.message => messageSnippet,
     PlaygroundItem.streamingMessage => streamingMessageSnippet,
     PlaygroundItem.codeBlock => codeBlockSnippet,
+    PlaygroundItem.markdown => markdownSnippet,
     PlaygroundItem.errorState => errorStateSnippet,
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.pill => pillSnippet,

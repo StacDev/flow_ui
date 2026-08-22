@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 /// deltas the screen folds into its own state. Everything model-facing
 /// stays on this side of the boundary.
 class GeminiApi {
-  GeminiApi({required this.apiKey, this.model = 'gemini-3.5-flash-lite'});
+  GeminiApi({required this.apiKey, this.model = 'gemini-3.6-flash'});
 
   final String apiKey;
   final String model;

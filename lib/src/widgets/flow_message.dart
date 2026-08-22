@@ -6,6 +6,7 @@ import '../theme/flow_theme.dart';
 import 'flow_attachment_group.dart';
 import 'flow_code_block.dart';
 import 'flow_error_state.dart';
+import 'flow_markdown.dart';
 import 'flow_thinking_indicator.dart';
 import 'flow_streaming_text.dart';
 
@@ -42,6 +43,8 @@ class FlowMessage extends StatelessWidget {
     this.onCodeCopy,
     this.copiedCodePart,
     this.codeCopyTooltip,
+    this.markdown = true,
+    this.onLinkTap,
     this.onRetry,
     this.errorTitle,
     this.retryLabel,
@@ -91,6 +94,16 @@ class FlowMessage extends StatelessWidget {
   /// assistant turn renders, or any [FlowErrorPart]'s (unless the part
   /// says `retryable: false`). Null hides every retry affordance.
   final VoidCallback? onRetry;
+
+  /// Whether assistant text parts render as markdown (`FlowMarkdown`).
+  /// User bubbles and system notices always render plain — what the user
+  /// typed is a transcription, not prose to typeset. Pass false for
+  /// hosts whose assistant text is literal.
+  final bool markdown;
+
+  /// Link intent from markdown content, handed the tapped href. Null
+  /// renders links as plain prose; the package never launches URLs.
+  final ValueChanged<String>? onLinkTap;
 
   /// Host-localized headline for the error cards, e.g. 'Connection
   /// error'. Null lets each card's message take the glyph row.
@@ -327,6 +340,22 @@ class FlowMessage extends StatelessWidget {
     for (var i = 0; i < message.parts.length; i++) {
       final part = message.parts[i];
       final child = switch (part) {
+        // Assistant prose typesets as markdown by default; the user's
+        // words render exactly as typed.
+        FlowTextPart(:final text)
+            when markdown && message.role == FlowMessageRole.assistant =>
+          FlowMarkdown(
+            text: text,
+            isStreaming:
+                message.status == FlowMessageStatus.streaming &&
+                i == lastTextIndex,
+            style: style,
+            charactersPerSecond: charactersPerSecond,
+            onLinkTap: onLinkTap,
+            onCodeCopy: onCodeCopy,
+            copiedCodePart: copiedCodePart,
+            codeCopyTooltip: codeCopyTooltip,
+          ),
         FlowTextPart(:final text) => FlowStreamingText(
           text: text,
           isStreaming:
