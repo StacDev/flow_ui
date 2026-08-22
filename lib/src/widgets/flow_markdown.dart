@@ -877,7 +877,10 @@ class _FlowMarkdownBlockFadeInState extends State<_FlowMarkdownBlockFadeIn>
   Widget build(BuildContext context) {
     return SizeTransition(
       sizeFactor: _ease,
-      alignment: AlignmentDirectional.topCenter,
+      // topStart, not topCenter: the transition's Align spans the rail,
+      // so its cross-axis alignment is the *document's* — anything else
+      // centers every block narrower than the line.
+      alignment: AlignmentDirectional.topStart,
       child: FadeTransition(opacity: _controller, child: widget.child),
     );
   }
