@@ -35,19 +35,17 @@ class FlowGreeting extends StatelessWidget {
   /// accent in the glyph in both themes.
   final Color? iconColor;
 
-  /// Defaults to `headlineLarge` in the row form, and the same style at the
-  /// design's 21 in the stacked form. An explicit style is used as given in
-  /// both.
+  /// Defaults to `headlineLarge` in the row form and `titleMedium` in the
+  /// stacked form. An explicit style is used as given in both.
   final TextStyle? textStyle;
 
-  /// The design's title: a 40px glyph, beside 32px text on wide screens —
-  /// 16 apart, bottom-aligned — and above 21px text on compact ones, 4
-  /// apart. The 21 sits between the type scale's steps, so it stays here as
-  /// drawn. Compact begins below 600, Material's compact/medium boundary.
+  /// The design's title: a 40px glyph, beside headline text on wide
+  /// screens — 16 apart, bottom-aligned — and above title text on compact
+  /// ones, 4 apart. Compact begins below 600, Material's compact/medium
+  /// boundary.
   static const double _iconSize = 40;
   static const double _wideGap = 16;
   static const double _narrowGap = 4;
-  static const double _narrowFontSize = 21;
   static const double _compactBreakpoint = 600;
 
   @override
@@ -57,12 +55,11 @@ class FlowGreeting extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < _compactBreakpoint;
+        final typography = context.flowTypography;
         final style =
             textStyle ??
-            context.flowTypography.headlineLarge.copyWith(
-              color: colors.onSurface,
-              fontSize: compact ? _narrowFontSize : null,
-            );
+            (compact ? typography.titleMedium : typography.headlineLarge)
+                .copyWith(color: colors.onSurface);
         final label = Text(text, style: style, textAlign: TextAlign.center);
         if (icon == null) return label;
 

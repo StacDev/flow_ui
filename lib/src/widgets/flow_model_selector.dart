@@ -385,7 +385,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                 children: [
                   Text(
                     _selected?.label ?? '',
-                    style: context.flowTypography.labelLarge.copyWith(
+                    style: context.flowTypography.labelMedium.copyWith(
                       color: labelColor,
                     ),
                   ),
@@ -393,7 +393,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
                     const SizedBox(width: _gap),
                     Text(
                       effort.label,
-                      style: context.flowTypography.labelLarge.copyWith(
+                      style: context.flowTypography.labelMedium.copyWith(
                         color: effortForeground,
                       ),
                     ),

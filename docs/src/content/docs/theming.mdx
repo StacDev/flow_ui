@@ -93,16 +93,16 @@ Text(
 ## The type scale
 
 `FlowTypography.standard` follows the Material 3 scale — display, headline,
-title, body and label, each in large / medium / small — set in Figtree. Two
-habits of the design carry through the whole scale: no letter-spacing, and
-one of two line heights — 1.5 where text wraps into paragraphs, 1.3 where
-it sits on a single line in a control.
+title, body and label, each in large / medium / small — set in Figtree.
+Letter-spacing stays at zero. Line heights step with the role: 1.5 for
+body, 1.3 for title and label, 1.2 for headline, 1.15 for display.
 
-Each body size also carries three weights of ink — `bodyLarge`,
+Each body size carries three weights of ink — `bodyLarge`,
 `bodyLargeEmphasised` (w500), `bodyLargeDark` (w600), and likewise for
-Medium and Small — so emphasis inside a message never needs an ad-hoc
-`copyWith`. Styles are colorless; components pair them with color tokens at
-draw time.
+Medium and Small. Title and label pair the regular cut with an emphasised
+one (`titleLargeEmphasised` at w600, `labelLargeEmphasised` at w500), so
+emphasis in a heading or a control never needs an ad-hoc `copyWith`.
+Styles are colorless; components pair them with color tokens at draw time.
 
 To keep the scale and swap the face:
 

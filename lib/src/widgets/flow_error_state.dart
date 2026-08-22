@@ -99,7 +99,7 @@ class FlowErrorState extends StatelessWidget {
     final below = title == null ? null : message;
 
     final rowStyle = title != null
-        ? typography.labelLarge.copyWith(
+        ? typography.labelMedium.copyWith(
             fontWeight: FontWeight.w600,
             color: colors.onSurface,
           )
@@ -239,7 +239,7 @@ class _RetryButtonState extends State<_RetryButton> {
                   const SizedBox(width: _glyphGap),
                   Text(
                     label,
-                    style: typography.labelLarge.copyWith(
+                    style: typography.labelMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: foreground,
                     ),

@@ -62,11 +62,11 @@ class FlowMenuStyle {
   /// Row fill on hover and focus. Defaults to `surfaceContainer`.
   final Color? hoverColor;
 
-  /// Merged over the default row label style (`labelLarge` at weight 500 in
-  /// the menu, `bodyLarge` at weight 500 in the sheet).
+  /// Merged over the default row label style (`labelMediumEmphasised` in
+  /// the menu, `labelLargeEmphasised` in the sheet).
   final TextStyle? labelStyle;
 
-  /// Merged over the default description style (`labelLarge` in
+  /// Merged over the default description style (`labelMedium` in
   /// `onSurfaceMuted`).
   final TextStyle? descriptionStyle;
 
