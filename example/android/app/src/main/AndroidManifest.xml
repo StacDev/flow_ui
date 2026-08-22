@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The example talks to the Gemini API, so network access is a real
+         app permission, not just the dev tooling's — release builds merge
+         only this manifest. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="example"
         android:name="${applicationName}"
