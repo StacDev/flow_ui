@@ -2,7 +2,39 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
-const String pillSnippet = '''
+String pillSnippet([String? variant]) => switch (variant) {
+  'icon' => _iconSnip,
+  'static' => _staticSnip,
+  _ => _composerSnip,
+};
+
+const String _iconSnip = '''
+// On phones the label auto-drops to the design's icon-only form;
+// showLabel forces either.
+FlowPill(
+  icon: PhosphorIconsRegular.globe,
+  label: 'Web Search',
+  showLabel: false,
+  removeTooltip: 'Turn off Web Search',
+  onRemove: () => setWebSearch(false),
+)''';
+
+const String _staticSnip = '''
+// No onRemove renders a static pill; enabled: false mutes one.
+FlowPill(
+  icon: PhosphorIconsRegular.graduationCap,
+  label: 'Research',
+)
+
+FlowPill(
+  icon: PhosphorIconsRegular.globe,
+  label: 'Web Search',
+  enabled: false,
+  removeTooltip: 'Turn off Web Search',
+  onRemove: turnOff,
+)''';
+
+const String _composerSnip = '''
 // Presence is the state: the host renders a pill while its tool is on,
 // and the X only reports intent — removal is the host's move.
 FlowComposer(

@@ -1,11 +1,22 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String streamingTextSnippet = '''
+String streamingTextSnippet([String? variant]) => switch (variant) {
+  'instant' => _instantSnip,
+  _ => _animatedSnip,
+};
+
+const String _animatedSnip = '''
 FlowStreamingText(
   text: streamedSoFar, // append as chunks arrive
-  isStreaming: generating, // false settles the reveal instantly
+  isStreaming: true,
   charactersPerSecond: 300,
+)''';
+
+const String _instantSnip = '''
+FlowStreamingText(
+  text: fullReply,
+  isStreaming: false, // settles the reveal instantly — history at rest
 )''';
 
 const String _passage =

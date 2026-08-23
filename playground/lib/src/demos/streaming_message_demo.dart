@@ -1,7 +1,20 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String streamingMessageSnippet = '''
+String streamingMessageSnippet([String? variant]) => switch (variant) {
+  'static' => _static,
+  _ => _animated,
+};
+
+const String _static = '''
+// Settled: active: false parks the asterisk upright and stills the
+// shimmering label — the waiting state, at rest.
+FlowThinkingIndicator(
+  label: 'thinking..',
+  active: false,
+)''';
+
+const String _animated = '''
 Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [

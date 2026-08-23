@@ -1,10 +1,21 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String thinkingIndicatorSnippet = '''
+String thinkingIndicatorSnippet([String? variant]) => switch (variant) {
+  'settled' => _settledSnip,
+  _ => _activeSnip,
+};
+
+const String _activeSnip = '''
 FlowThinkingIndicator(
   label: 'thinking..',
-  active: generating, // false settles the asterisk upright
+  active: true, // the turning, breathing asterisk and shimmer label
+)''';
+
+const String _settledSnip = '''
+FlowThinkingIndicator(
+  label: 'thinking..',
+  active: false, // settles the asterisk upright, stills the label
 )''';
 
 /// The turning, breathing asterisk with its shimmering label, on its own.

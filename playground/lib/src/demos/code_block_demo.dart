@@ -4,7 +4,56 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String codeBlockSnippet = r'''
+String codeBlockSnippet([String? variant]) => switch (variant) {
+  'json' => _blockFor('json', 'screen.json'),
+  'yaml' => _blockFor('yaml', 'deploy.yml'),
+  'html' => _blockFor('html', 'index.html'),
+  'css' => _blockFor('css', 'stage.css'),
+  'sql' => _blockFor('sql', 'threads.sql'),
+  'plain' => _plain,
+  'streaming' => _streaming,
+  _ => _dart,
+};
+
+String _blockFor(String language, String filename) =>
+    '''
+// Highlighting is built in and synchronous — $language is one of the
+// nine bundled languages.
+FlowCodeBlock(
+  code: source,
+  language: '$language',
+  filename: '$filename',
+  copyTooltip: 'Copy code',
+  copied: copied,
+  onCopy: copy,
+)''';
+
+const String _plain = r'''
+// No registered language: the block renders plain. Hosts register
+// their own rules:
+FlowCodeBlock(
+  code: buildLog,
+  filename: 'build.log',
+)
+
+FlowCodeLanguage.register(
+  const FlowCodeLanguage(
+    id: 'lisp',
+    rules: [FlowSyntaxRule(FlowSyntaxToken.comment, r';[^\n]*')],
+  ),
+);''';
+
+const String _streaming = '''
+// A fence still arriving: the copy affordance stays hidden until the
+// code settles, exactly like a streaming FlowCodePart in a thread.
+FlowCodeBlock(
+  code: arrivedSoFar, // grows as chunks land
+  language: 'dart',
+  filename: 'point.dart',
+  isStreaming: true,
+)''';
+
+const String _dart = r'''
 // The block reports intent; the host owns the clipboard and the
 // confirmation's timing.
 FlowCodeBlock(

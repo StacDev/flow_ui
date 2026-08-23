@@ -3,7 +3,13 @@ import 'dart:async';
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String errorStateSnippet = '''
+String errorStateSnippet([String? variant]) => switch (variant) {
+  'minimal' => _minimalSnip,
+  'thread' => _threadSnip,
+  _ => _cardSnip,
+};
+
+const String _cardSnip = '''
 // The card renders state and reports one intent; what retry means —
 // re-run the turn, refetch, reconnect — is the host's business.
 FlowErrorState(
@@ -11,8 +17,16 @@ FlowErrorState(
   message: 'The API is overloaded right now. Retry in a moment.',
   retryLabel: 'Retry',
   onRetry: resend,
-)
+)''';
 
+const String _minimalSnip = '''
+// The message-only form: no title, no retry pill — for failures
+// retrying can't fix.
+FlowErrorState(
+  message: 'The API is overloaded right now. Retry in a moment.',
+)''';
+
+const String _threadSnip = '''
 // In a thread the card renders on its own: parts a failed turn already
 // delivered keep their ink, and its FlowErrorPart closes the turn.
 FlowThread(
@@ -22,8 +36,6 @@ FlowThread(
   onRetry: (message) => rerun(message),
 )
 
-// retryable: false suppresses the pill — for failures retrying
-// can't fix.
 FlowMessageData(
   id: 'a2',
   role: FlowMessageRole.assistant,

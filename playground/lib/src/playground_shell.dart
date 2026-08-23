@@ -66,6 +66,7 @@ class _PlaygroundShellState extends State<PlaygroundShell> {
                 CodePanel(
                   open: _codeOpen,
                   item: _selected,
+                  variant: _variant,
                   onClose: () => setState(() => _codeOpen = false),
                 ),
               ],

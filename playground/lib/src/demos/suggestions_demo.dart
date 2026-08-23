@@ -2,12 +2,21 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
-const String suggestionsSnippet = '''
+String suggestionsSnippet([String? variant]) {
+  final layout = switch (variant) {
+    'scroll' => 'scroll',
+    'wrap' => 'wrap',
+    _ => 'column',
+  };
+  return _suggestionsSnip.replaceFirst('LAYOUT', layout);
+}
+
+const String _suggestionsSnip = '''
 FlowSuggestionGroup(
   // column: full-width rows, the zero state's form.
-  // scroll (default): one strip, no scrollbar — above a composer.
+  // scroll: one strip, no scrollbar — above a composer.
   // wrap: as many lines as needed.
-  layout: FlowSuggestionLayout.column,
+  layout: FlowSuggestionLayout.LAYOUT,
   suggestions: [
     for (final starter in starters)
       FlowSuggestion(
