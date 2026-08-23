@@ -7,11 +7,24 @@ String streamingMessageSnippet([String? variant]) => switch (variant) {
 };
 
 const String _static = '''
-// Settled: active: false parks the asterisk upright and stills the
-// shimmering label — the waiting state, at rest.
-FlowThinkingIndicator(
-  label: 'thinking..',
-  active: false,
+Column(
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    FlowMessage(
+      FlowMessageData.text(
+        id: 'u1',
+        role: FlowMessageRole.user,
+        text: 'Can you tell me more about what you can do?',
+      ),
+    ),
+    const SizedBox(height: 30),
+    // Settled: active: false parks the asterisk upright and stills
+    // the shimmering label — the waiting moment, at rest.
+    FlowThinkingIndicator(
+      label: 'thinking..',
+      active: false,
+    ),
+  ],
 )''';
 
 const String _animated = '''
