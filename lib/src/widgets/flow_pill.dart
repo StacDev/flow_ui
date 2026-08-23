@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_pill_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_state_colors.dart';
 
@@ -39,6 +40,7 @@ class FlowPill extends StatefulWidget {
     this.enabled = true,
     this.padding,
     this.borderRadius,
+    this.style,
   });
 
   /// The tool's glyph — always drawn; the pill's whole identity in the
@@ -82,6 +84,10 @@ class FlowPill extends StatefulWidget {
   /// The pill's corner. Defaults to the design's 8.
   final BorderRadius? borderRadius;
 
+  /// Per-instance restyling, merged over [FlowTheme.pillStyle]'s fields;
+  /// nulls fall through to the theme tokens.
+  final FlowPillStyle? style;
+
   @override
   State<FlowPill> createState() => _FlowPillState();
 }
@@ -122,25 +128,27 @@ class _FlowPillState extends State<FlowPill> {
     // carry a body tap of its own.
     final VoidCallback? tapAction = hasRemove ? widget.onRemove : widget.onTap;
 
+    final style =
+        context.flowTheme.pillStyle?.merge(widget.style) ?? widget.style;
+
     // The glyph rests a step down in the secondary ink, the label in full
     // ink, and the X at the muted chrome level — lifting to full ink as
     // the pill is hovered. Disabling fades each from its own rest.
-    final iconForeground = enabled
-        ? colors.onSurfaceVariant
-        : flowDisabledColor(colors.onSurfaceVariant);
+    final iconRest = style?.iconColor ?? colors.onSurfaceVariant;
+    final iconForeground = enabled ? iconRest : flowDisabledColor(iconRest);
     final labelForeground = enabled
         ? colors.onSurface
         : flowDisabledColor(colors.onSurface);
     final removeRest = enabled
-        ? colors.onSurfaceMuted
-        : flowDisabledColor(colors.onSurfaceMuted);
+        ? (style?.removeColor ?? colors.onSurfaceMuted)
+        : flowDisabledColor(style?.removeColor ?? colors.onSurfaceMuted);
     final removeForeground = _hovered && enabled
         ? colors.onSurface
         : removeRest;
 
     final shape = RoundedRectangleBorder(
       borderRadius: widget.borderRadius ?? _radius,
-      side: BorderSide(color: colors.outlineVariant),
+      side: BorderSide(color: style?.borderColor ?? colors.outlineVariant),
     );
 
     // The X absorbs the end inset so the affordance reaches the pill's
@@ -170,9 +178,9 @@ class _FlowPillState extends State<FlowPill> {
             const SizedBox(width: _gap),
             Text(
               widget.label,
-              style: typography.labelMediumEmphasised.copyWith(
-                color: labelForeground,
-              ),
+              style: typography.labelMediumEmphasised
+                  .copyWith(color: labelForeground)
+                  .merge(style?.labelStyle),
             ),
           ],
           if (hasRemove) ...[
@@ -186,7 +194,7 @@ class _FlowPillState extends State<FlowPill> {
     // One control: the hover wash spans the whole pill and a tap anywhere
     // on it fires the pill's action.
     Widget pill = Material(
-      color: colors.surfaceContainerLow,
+      color: style?.backgroundColor ?? colors.surfaceContainerLow,
       shape: shape,
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
@@ -198,7 +206,7 @@ class _FlowPillState extends State<FlowPill> {
                 onHover: enabled
                     ? (value) => setState(() => _hovered = value)
                     : null,
-                hoverColor: colors.surfaceContainer,
+                hoverColor: style?.hoverColor ?? colors.surfaceContainer,
                 child: content,
               ),
       ),

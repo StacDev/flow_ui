@@ -117,6 +117,31 @@ FlowTheme(
 carries — size, weight, line height, tracking — and takes a `package:` for
 a font that ships inside one.
 
+## Component styles
+
+Between the tokens and a single widget sit the component styles —
+Material's component-theme tier. Each major widget has a `FlowXStyle`
+data bag of optional overrides (`FlowMenuStyle`, `FlowMarkdownStyle`,
+`FlowComposerStyle`, `FlowMessageStyle`, `FlowCodeBlockStyle`,
+`FlowErrorStateStyle`, `FlowMessageActionsStyle`, `FlowPillStyle`,
+`FlowSuggestionStyle`), and the theme can carry an app-wide default for
+each:
+
+```dart title="Restyle every instance once"
+FlowTheme(
+  colors: FlowColors.light,
+  markdownStyle: const FlowMarkdownStyle(linkColor: brandBlue),
+  codeBlockStyle: const FlowCodeBlockStyle(borderColor: Colors.transparent),
+)
+```
+
+Resolution is field by field: a widget's own style object wins over the
+theme's, and any field neither sets falls through to the tokens. Text
+style fields merge over their role's base, so setting one property never
+restates the rest. Every field is documented on its style class, with
+the token it defaults to. The `Restyling` section on each component's
+page lists its fields.
+
 ## Spacing and radii are not tokens
 
 Following Material's structure, each component bakes its own metrics from

@@ -106,6 +106,14 @@ FlowChatView(
 )
 ```
 
+## Restyling
+
+`FlowErrorStateStyle` overrides the card's look without touching the
+global tokens: `backgroundColor`, `borderColor`, `glyphColor`,
+`titleStyle`, and `messageStyle` (both merged over their defaults).
+Install one on `FlowTheme.errorStateStyle` for every error card — failed
+turns in a thread included; the widget's `style` wins field by field.
+
 ## Key API
 
 - `FlowErrorState` — `title`, `message`, `onRetry` (null hides the

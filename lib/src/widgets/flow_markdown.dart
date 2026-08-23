@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_part.dart';
+import '../styles/flow_markdown_style.dart';
 import '../theme/flow_colors.dart';
 import '../theme/flow_theme.dart';
 import '../theme/flow_typography.dart';
@@ -53,6 +54,7 @@ class FlowMarkdown extends StatefulWidget {
     this.onCodeCopy,
     this.copiedCodePart,
     this.codeCopyTooltip,
+    this.markdownStyle,
   }) : assert(charactersPerSecond > 0, 'charactersPerSecond must be positive');
 
   /// The markdown source received so far.
@@ -65,6 +67,12 @@ class FlowMarkdown extends StatefulWidget {
   /// Merged over the default `bodyLarge` + `onSurface` prose style.
   /// Headings keep their own scale but follow this style's color.
   final TextStyle? style;
+
+  /// Per-element restyling — heading cuts, the link color, the inline
+  /// code chip, quote and table inks — merged over
+  /// [FlowTheme.markdownStyle]'s fields; nulls fall through to the theme
+  /// tokens.
+  final FlowMarkdownStyle? markdownStyle;
 
   /// Baseline reveal speed while streaming.
   final double charactersPerSecond;
@@ -149,7 +157,12 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   FlowColors? _cacheColors;
   FlowTypography? _cacheTypography;
   TextStyle? _cacheStyle;
+  FlowMarkdownStyle? _cacheMarkdownStyle;
   ValueChanged<String>? _cacheOnLinkTap;
+
+  /// The effective markdown style this build — the widget's over the
+  /// theme's — resolved once at the top of [build].
+  FlowMarkdownStyle? _mdStyle;
 
   /// Link recognizers, keyed by their owning leaf/cell instance and run
   /// index. Instance reuse across deltas keeps settled keys stable, so
@@ -309,14 +322,19 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
     // keying on it would clear the cache on every delta. Only the
     // null/non-null flip restyles spans; a changed closure is rebound
     // onto the cached recognizers in [_markLive].
+    _mdStyle =
+        context.flowTheme.markdownStyle?.merge(widget.markdownStyle) ??
+        widget.markdownStyle;
     if (!identical(colors, _cacheColors) ||
         !identical(typography, _cacheTypography) ||
         widget.style != _cacheStyle ||
+        _mdStyle != _cacheMarkdownStyle ||
         (widget.onLinkTap == null) != (_cacheOnLinkTap == null)) {
       _settledCache.clear();
       _cacheColors = colors;
       _cacheTypography = typography;
       _cacheStyle = widget.style;
+      _cacheMarkdownStyle = _mdStyle;
     }
     _cacheOnLinkTap = widget.onLinkTap;
     final base = typography.bodyLarge
@@ -480,9 +498,17 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           4 => typography.bodyLargeDark,
           _ => typography.bodyMediumDark,
         };
-        final style = scale.copyWith(
-          color: level == 6 ? colors.onSurfaceVariant : base.color,
-        );
+        final override = switch (level) {
+          1 => _mdStyle?.h1Style,
+          2 => _mdStyle?.h2Style,
+          3 => _mdStyle?.h3Style,
+          4 => _mdStyle?.h4Style,
+          5 => _mdStyle?.h5Style,
+          _ => _mdStyle?.h6Style,
+        };
+        final style = scale
+            .copyWith(color: level == 6 ? colors.onSurfaceVariant : base.color)
+            .merge(override);
         return _leaf(context, block, style);
 
       case FlowMarkdownFence():
@@ -503,7 +529,10 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
         return Container(
           decoration: BoxDecoration(
             border: BorderDirectional(
-              start: BorderSide(color: colors.outline, width: _quoteBarWidth),
+              start: BorderSide(
+                color: _mdStyle?.quoteBarColor ?? colors.outline,
+                width: _quoteBarWidth,
+              ),
             ),
           ),
           padding: const EdgeInsetsDirectional.only(start: _quoteGap),
@@ -514,7 +543,9 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
               context,
               children,
               // Quoted material steps down to the secondary ink.
-              base: base.copyWith(color: colors.onSurfaceVariant),
+              base: base.copyWith(
+                color: _mdStyle?.quoteColor ?? colors.onSurfaceVariant,
+              ),
               depth: depth,
               itemGap: _blockGap,
             ),
@@ -568,7 +599,10 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
       case FlowMarkdownRuleBlock():
         return _atomic(
           block,
-          Container(height: _ruleThickness, color: colors.outlineVariant),
+          Container(
+            height: _ruleThickness,
+            color: _mdStyle?.ruleColor ?? colors.outlineVariant,
+          ),
         );
 
       case FlowMarkdownTable():
@@ -631,9 +665,9 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           runs: leaf.runs,
           baseStyle: style,
           styleFor: (run) => _runStyle(context, run, style),
-          chipFill: context.flowColors.onSurface.withValues(
-            alpha: _inlineCodeWash,
-          ),
+          chipFill:
+              _mdStyle?.codeChipColor ??
+              context.flowColors.onSurface.withValues(alpha: _inlineCodeWash),
           isStreaming: isCursor,
           charactersPerSecond: widget.charactersPerSecond,
           extraBacklog: isCursor ? _pendingBeyondCursor().toDouble() : 0,
@@ -688,9 +722,13 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   Widget _table(BuildContext context, FlowMarkdownTable table, TextStyle base) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
-    final headerStyle = typography.bodyMediumDark.copyWith(color: base.color);
+    final headerStyle = typography.bodyMediumDark
+        .copyWith(color: base.color)
+        .merge(_mdStyle?.tableHeaderStyle);
     // Table material reads a step under the prose, like code does.
-    final cellStyle = typography.bodyMedium.copyWith(color: base.color);
+    final cellStyle = typography.bodyMedium
+        .copyWith(color: base.color)
+        .merge(_mdStyle?.tableCellStyle);
 
     Widget cell(FlowMarkdownTableCell cell, TextStyle style, int column) {
       final alignment = switch (column < table.alignments.length
@@ -720,7 +758,11 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
         children: [
           TableRow(
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: colors.outline)),
+              border: Border(
+                bottom: BorderSide(
+                  color: _mdStyle?.tableBorderColor ?? colors.outline,
+                ),
+              ),
             ),
             children: [
               for (var c = 0; c < table.header.length; c++)
@@ -733,7 +775,11 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
                   ? null
                   : BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: colors.outlineVariant),
+                        bottom: BorderSide(
+                          color:
+                              _mdStyle?.tableDividerColor ??
+                              colors.outlineVariant,
+                        ),
                       ),
                     ),
               children: [
@@ -761,7 +807,9 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
       // The mono face at prose size. The wash paints as a rounded chip
       // in FlowChipText — the span stays plain text, so wrapping and
       // the reveal keep working.
-      style = typography.codeInline.copyWith(color: base.color);
+      style = typography.codeInline
+          .copyWith(color: base.color)
+          .merge(_mdStyle?.inlineCodeStyle);
     }
     if (run.bold) style = style.copyWith(fontWeight: FontWeight.w600);
     if (run.italic) style = style.copyWith(fontStyle: FontStyle.italic);
@@ -772,10 +820,8 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
       if (linked) TextDecoration.underline,
     ];
     if (linked) {
-      style = style.copyWith(
-        color: colors.tertiary,
-        decorationColor: colors.tertiary,
-      );
+      final linkColor = _mdStyle?.linkColor ?? colors.tertiary;
+      style = style.copyWith(color: linkColor, decorationColor: linkColor);
     }
     if (decorations.isNotEmpty) {
       style = style.copyWith(decoration: TextDecoration.combine(decorations));
@@ -790,9 +836,9 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
     required bool tappable,
   }) {
     final onLinkTap = widget.onLinkTap;
-    final chipFill = context.flowColors.onSurface.withValues(
-      alpha: _inlineCodeWash,
-    );
+    final chipFill =
+        _mdStyle?.codeChipColor ??
+        context.flowColors.onSurface.withValues(alpha: _inlineCodeWash);
     final spans = <InlineSpan>[];
     for (var i = 0; i < runs.length; i++) {
       final run = runs[i];

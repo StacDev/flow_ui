@@ -102,6 +102,15 @@ extension seam — it carries a `type` your builder switches on and an
 arbitrary `data` payload, so the host injects its own content (a tool
 card, a chart) without the library knowing what it is.
 
+## Restyling
+
+`FlowMessageStyle` overrides the user bubble without touching the global
+tokens: `bubbleColor` and `bubbleTextColor` (a failed turn keeps the
+error treatment regardless). Install one on `FlowTheme.messageStyle` for
+every message; a `FlowMessage`'s own `style` wins field by field.
+Assistant prose is restyled through `FlowMarkdownStyle`, code through
+`FlowCodeBlockStyle` — see those components' pages.
+
 ## Key classes
 
 - `FlowThread` — the scrolling conversation; give it a `ScrollController`

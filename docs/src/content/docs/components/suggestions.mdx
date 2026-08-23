@@ -114,6 +114,14 @@ Column(
 )
 ```
 
+## Restyling
+
+`FlowSuggestionStyle` overrides a suggestion's colors without touching
+the global tokens: `backgroundColor`, `borderColor` (the outlined form's
+hairline), `hoverColor`, `foregroundColor`, and `labelStyle` (merged over
+the default). Install one on `FlowTheme.suggestionStyle` for every
+suggestion; the widget's `style` wins field by field.
+
 ## Key API
 
 - `FlowSuggestion` — `label`, optional `icon`, `outlined`, `onTap`,

@@ -85,6 +85,18 @@ contract code parts use — one `onCodeCopy` handler and one
 streaming its copy affordance stays hidden, exactly like a streaming
 `FlowCodePart`.
 
+## Restyling
+
+`FlowMarkdownStyle` overrides the document's per-element styling without
+touching the global tokens: `h1Style` through `h6Style` (merged over each
+level's role), `linkColor`, `inlineCodeStyle` and `codeChipColor` (the
+face and the painted chip), `quoteColor` and `quoteBarColor`,
+`tableHeaderStyle`, `tableCellStyle`, `tableBorderColor` and
+`tableDividerColor`, and `ruleColor`. Install one on
+`FlowTheme.markdownStyle` for every markdown surface — assistant turns in
+a thread included; the widget's `markdownStyle` wins field by field.
+Fences restyle through `FlowCodeBlockStyle`.
+
 ## Key API
 
 - `text` — the markdown source received so far.

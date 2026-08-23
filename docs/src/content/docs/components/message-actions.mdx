@@ -59,6 +59,14 @@ FlowMessage(
 )
 ```
 
+## Restyling
+
+`FlowMessageActionsStyle` overrides the strip's inks without touching the
+global tokens: `iconColor`, `hoverIconColor`, `selectedColor`, and
+`hoverColor` (the wash behind a hovered action). Install one on
+`FlowTheme.messageActionsStyle` for every actions row; the widget's
+`style` wins field by field.
+
 ## Key API
 
 - `FlowMessageAction.copy / .regenerate / .edit / .thumbUp / .thumbDown` —

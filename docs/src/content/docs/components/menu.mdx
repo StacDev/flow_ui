@@ -82,12 +82,15 @@ its `localizationsDelegates`.
 
 ## Restyling
 
-`FlowMenuStyle` overrides the menu's colors and metrics per instance
-without touching the global tokens: `backgroundColor`, `borderColor`,
-`separatorColor`, `hoverColor`, `labelStyle`, `descriptionStyle`,
-`iconColor`, `checkColor`, `accentColor`, `menuRadius`, `sheetRadius`,
-`minWidth`, and `barrierColor`. Paddings are baked spec metrics, not style
-fields.
+`FlowMenuStyle` overrides the menu's colors and metrics without touching
+the global tokens: `backgroundColor`, `borderColor`, `separatorColor`,
+`hoverColor`, `labelStyle`, `descriptionStyle`, `iconColor`, `checkColor`,
+`accentColor`, `menuRadius`, `sheetRadius`, `minWidth`, and
+`barrierColor`. Paddings are baked spec metrics, not style fields.
+
+Install one on `FlowTheme.menuStyle` to restyle every menu and model
+selector app-wide; a widget's own `menuStyle` wins field by field, and
+the tokens sit beneath both.
 
 ## Key API
 

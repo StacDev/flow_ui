@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_attachment.dart';
+import '../styles/flow_composer_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
 import '../utils/flow_gradient_outline.dart';
@@ -47,6 +48,7 @@ class FlowComposer extends StatefulWidget {
     this.trailingActions = const [],
     this.padding,
     this.borderRadius,
+    this.style,
   }) : assert(maxLines > 0, 'maxLines must be positive');
 
   /// Called with the trimmed text; never with empty text.
@@ -109,6 +111,10 @@ class FlowComposer extends StatefulWidget {
 
   /// The card's corner. Defaults to the design's 24.
   final BorderRadius? borderRadius;
+
+  /// Per-instance restyling, merged over [FlowTheme.composerStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowComposerStyle? style;
 
   @override
   State<FlowComposer> createState() => _FlowComposerState();
@@ -205,6 +211,10 @@ class _FlowComposerState extends State<FlowComposer> {
     }
   }
 
+  /// The effective style: the widget's over the theme's, tokens beneath.
+  FlowComposerStyle? _styleOf(BuildContext context) =>
+      context.flowTheme.composerStyle?.merge(widget.style) ?? widget.style;
+
   /// The theme's platform rather than the real one, like the menus' sheet
   /// resolution, so hosts and tests can steer it without a device.
   static bool _isMobile(BuildContext context) {
@@ -244,14 +254,19 @@ class _FlowComposerState extends State<FlowComposer> {
     required Widget disc,
   }) {
     final colors = context.flowColors;
+    final style = _styleOf(context);
     return Container(
       width: _buttonFrame,
       height: _buttonFrame,
       alignment: Alignment.center,
       decoration: ShapeDecoration(
-        color: colors.surfaceBright,
+        color: style?.backgroundColor ?? colors.surfaceBright,
         shape: CircleBorder(
-          side: BorderSide(color: active ? colors.primary : colors.outline),
+          side: BorderSide(
+            color: active
+                ? (style?.sendBackgroundColor ?? colors.primary)
+                : colors.outline,
+          ),
         ),
       ),
       child: SizedBox.square(dimension: _buttonDisc, child: disc),
@@ -260,14 +275,17 @@ class _FlowComposerState extends State<FlowComposer> {
 
   Widget _buildSendStopButton(BuildContext context) {
     final colors = context.flowColors;
+    final style = _styleOf(context);
+    final discColor = style?.sendBackgroundColor ?? colors.primary;
+    final glyphColor = style?.sendForegroundColor ?? colors.onPrimary;
     if (widget.isStreaming) {
       return _ringed(
         context,
         active: true,
         disc: FlowCircleButton(
           icon: Icons.stop_rounded,
-          background: colors.primary,
-          foreground: colors.onPrimary,
+          background: discColor,
+          foreground: glyphColor,
           padding: _stopPadding,
           onTap: widget.onStop,
         ),
@@ -283,7 +301,7 @@ class _FlowComposerState extends State<FlowComposer> {
           disc: Material(
             // Disabled keeps the arrow's ink and only drains the disc:
             // primary gives way to the 30% disabled wash.
-            color: canSend ? colors.primary : colors.onSurfaceDisabled,
+            color: canSend ? discColor : colors.onSurfaceDisabled,
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -292,7 +310,7 @@ class _FlowComposerState extends State<FlowComposer> {
               child: CustomPaint(
                 // The design's arrow is a thin stroke, not the chunky
                 // Material glyph.
-                painter: _ArrowUpPainter(color: colors.onPrimary),
+                painter: _ArrowUpPainter(color: glyphColor),
               ),
             ),
           ),
@@ -308,6 +326,10 @@ class _FlowComposerState extends State<FlowComposer> {
 
     final active = widget.enabled && (_focused || _hovered);
     final radius = widget.borderRadius ?? _cardRadius;
+    final style = _styleOf(context);
+    // A style's outline flattens the default gradient to one solid color
+    // in every state, like the menu card's border override does.
+    final outline = style?.outlineColor;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -317,19 +339,23 @@ class _FlowComposerState extends State<FlowComposer> {
         // never shifts as it swaps between its rest and active gradients.
         foregroundPainter: FlowGradientOutlinePainter(
           radius: radius,
-          start: colors.onSurface.withValues(
-            alpha: active ? _outlineActiveAlpha : _outlineRestAlpha,
-          ),
-          end: colors.onSurface.withValues(
-            alpha: active ? _outlineActiveFadeAlpha : _outlineRestFadeAlpha,
-          ),
+          start:
+              outline ??
+              colors.onSurface.withValues(
+                alpha: active ? _outlineActiveAlpha : _outlineRestAlpha,
+              ),
+          end:
+              outline ??
+              colors.onSurface.withValues(
+                alpha: active ? _outlineActiveFadeAlpha : _outlineRestFadeAlpha,
+              ),
         ),
         child: Container(
           decoration: BoxDecoration(
             // The composer is the design's raised card: it sits above the
             // page rather than tinting it, in both themes, under a
             // barely-there ambient lift.
-            color: colors.surfaceBright,
+            color: style?.backgroundColor ?? colors.surfaceBright,
             borderRadius: radius,
             boxShadow: [
               BoxShadow(
@@ -374,17 +400,16 @@ class _FlowComposerState extends State<FlowComposer> {
                       enabled: widget.enabled,
                       minLines: 1,
                       maxLines: widget.maxLines,
-                      style: typography.bodyLarge.copyWith(
-                        height: 1.3,
-                        color: colors.onSurface,
-                      ),
+                      style: typography.bodyLarge
+                          .copyWith(height: 1.3, color: colors.onSurface)
+                          .merge(style?.textStyle),
                       decoration: InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
                         hintText: widget.placeholder,
                         hintStyle: typography.bodyLarge.copyWith(
                           height: 1.3,
-                          color: colors.onSurfaceMuted,
+                          color: style?.hintColor ?? colors.onSurfaceMuted,
                         ),
                         contentPadding: EdgeInsets.zero,
                       ),

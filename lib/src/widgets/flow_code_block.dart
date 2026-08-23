@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_code_block_style.dart';
 import '../theme/flow_syntax_colors.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_syntax_highlighter.dart';
@@ -47,6 +48,7 @@ class FlowCodeBlock extends StatefulWidget {
     this.wrap = false,
     this.padding,
     this.borderRadius,
+    this.style,
   });
 
   /// The source, rendered verbatim.
@@ -85,6 +87,10 @@ class FlowCodeBlock extends StatefulWidget {
 
   /// The block's corner. Defaults to the design's 12.
   final BorderRadius? borderRadius;
+
+  /// Per-instance restyling, merged over [FlowTheme.codeBlockStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowCodeBlockStyle? style;
 
   @override
   State<FlowCodeBlock> createState() => _FlowCodeBlockState();
@@ -195,10 +201,13 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
     final typography = context.flowTypography;
     final syntaxColors = context.flowSyntaxColors;
 
+    final style =
+        context.flowTheme.codeBlockStyle?.merge(widget.style) ?? widget.style;
+
     final language = FlowCodeLanguage.find(widget.language);
     final span = _highlight(
       language,
-      typography.code.copyWith(color: colors.onSurface),
+      typography.code.copyWith(color: colors.onSurface).merge(style?.codeStyle),
       syntaxColors,
     );
 
@@ -225,14 +234,18 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: colors.surfaceContainerLowest,
+          color: style?.backgroundColor ?? colors.surfaceContainerLowest,
           borderRadius: widget.borderRadius ?? _radius,
           // The hover state lives on the edge, not the ground: the
           // hairline firms from the faint rung to the ladder's deepest.
+          // A style's borderColor holds through hover unless the style
+          // names its own hover edge.
           border: Border.all(
             color: _hovered
-                ? colors.surfaceContainerHighest
-                : colors.outlineVariant,
+                ? (style?.hoverBorderColor ??
+                      style?.borderColor ??
+                      colors.surfaceContainerHighest)
+                : (style?.borderColor ?? colors.outlineVariant),
           ),
         ),
         child: Column(
@@ -252,9 +265,9 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
                               label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: typography.bodySmall.copyWith(
-                                color: colors.onSurfaceMuted,
-                              ),
+                              style: typography.bodySmall
+                                  .copyWith(color: colors.onSurfaceMuted)
+                                  .merge(style?.headerStyle),
                             ),
                     ),
                     if (showCopy)

@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
 import '../utils/flow_menu_sheet.dart';
 import '../utils/flow_state_colors.dart';
-import 'flow_menu_style.dart';
 
 /// One model choice in a [FlowModelSelector].
 @immutable
@@ -147,6 +147,11 @@ class FlowModelSelector extends StatefulWidget {
 }
 
 class _FlowModelSelectorState extends State<FlowModelSelector> {
+  /// The effective style: the widget's over [FlowTheme.menuStyle]'s,
+  /// tokens beneath both.
+  FlowMenuStyle? get _style =>
+      context.flowTheme.menuStyle?.merge(widget.menuStyle) ?? widget.menuStyle;
+
   /// The design's trigger: an 8px-radius pill padded 8/7 — 32 tall around
   /// its 18px line, matching the action row's buttons — its pieces 4
   /// apart.
@@ -186,7 +191,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
       selected: model.id == widget.selectedId,
       enabled: model.enabled,
       large: large,
-      style: widget.menuStyle,
+      style: _style,
       onTap: () => widget.onSelected?.call(model.id),
     );
   }
@@ -198,7 +203,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
       selected: option.id == widget.selectedEffortId,
       enabled: option.enabled,
       large: large,
-      style: widget.menuStyle,
+      style: _style,
       // In the anchored menu the row's own closeOnTap would only dismiss
       // the submenu it sits in; picking an effort should close the whole
       // menu, so the root controller does it. The sheet closes through the
@@ -213,7 +218,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
 
   /// The anchored menu's children.
   List<Widget> _menuChildren(BuildContext context) {
-    final style = widget.menuStyle;
+    final style = _style;
     final effort = _selectedEffort;
     return [
       for (final model in widget.models) _modelRow(model, large: false),
@@ -269,7 +274,7 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
   }
 
   void _openSheet() {
-    final style = widget.menuStyle;
+    final style = _style;
     setState(() => _sheetOpen = true);
     _showSheet(style).whenComplete(() {
       if (mounted) setState(() => _sheetOpen = false);
@@ -347,15 +352,10 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
 
     return MenuAnchor(
       controller: _menuController,
-      style: flowMenuStyle(context, style: widget.menuStyle),
+      style: flowMenuStyle(context, style: _style),
       menuChildren: asSheet
           ? const []
-          : [
-              FlowMenuCard(
-                style: widget.menuStyle,
-                children: _menuChildren(context),
-              ),
-            ],
+          : [FlowMenuCard(style: _style, children: _menuChildren(context))],
       builder: (context, controller, _) {
         final active = controller.isOpen || _sheetOpen;
         Widget trigger = Material(
