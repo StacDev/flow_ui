@@ -1,7 +1,6 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'src/code_panel.dart';
 import 'src/embed.dart';
 import 'src/playground_shell.dart';
 
@@ -16,9 +15,6 @@ Future<void> main() async {
     runApp(EmbedApp(request: embed));
     return;
   }
-  // Loads the Dart grammar and both highlight themes once, so the code
-  // panel renders synchronously.
-  await CodeHighlighting.init();
   runApp(const PlaygroundApp());
 }
 
