@@ -139,27 +139,28 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
 bool demoFillsStage(PlaygroundItem item) => item == PlaygroundItem.fullChat;
 
 /// The code panel's snippet for [item] — the real flow_ui usage, not the
-/// demo's plumbing.
-String snippetFor(PlaygroundItem item) {
+/// demo's plumbing. [variant] is the stage's active pill, so the code
+/// follows what the demo is showing.
+String snippetFor(PlaygroundItem item, {String? variant}) {
   return switch (item) {
     PlaygroundItem.fullChat => _fullChatSnippet,
-    PlaygroundItem.composer => composerSnippet,
+    PlaygroundItem.composer => composerSnippet(variant),
     PlaygroundItem.modalSelector => modelSelectorSnippet,
-    PlaygroundItem.message => messageSnippet,
-    PlaygroundItem.streamingMessage => streamingMessageSnippet,
-    PlaygroundItem.codeBlock => codeBlockSnippet,
-    PlaygroundItem.markdown => markdownSnippet,
-    PlaygroundItem.errorState => errorStateSnippet,
+    PlaygroundItem.message => messageSnippet(variant),
+    PlaygroundItem.streamingMessage => streamingMessageSnippet(variant),
+    PlaygroundItem.codeBlock => codeBlockSnippet(variant),
+    PlaygroundItem.markdown => markdownSnippet(variant),
+    PlaygroundItem.errorState => errorStateSnippet(variant),
     PlaygroundItem.addToChat => addToChatSnippet,
-    PlaygroundItem.pill => pillSnippet,
-    PlaygroundItem.attachments => attachmentsSnippet,
-    PlaygroundItem.thread => threadSnippet,
+    PlaygroundItem.pill => pillSnippet(variant),
+    PlaygroundItem.attachments => attachmentsSnippet(variant),
+    PlaygroundItem.thread => threadSnippet(variant),
     PlaygroundItem.messageActions => messageActionsSnippet,
-    PlaygroundItem.streamingText => streamingTextSnippet,
-    PlaygroundItem.shimmerText => shimmerTextSnippet,
-    PlaygroundItem.thinkingIndicator => thinkingIndicatorSnippet,
-    PlaygroundItem.suggestions => suggestionsSnippet,
-    PlaygroundItem.greeting => greetingSnippet,
+    PlaygroundItem.streamingText => streamingTextSnippet(variant),
+    PlaygroundItem.shimmerText => shimmerTextSnippet(variant),
+    PlaygroundItem.thinkingIndicator => thinkingIndicatorSnippet(variant),
+    PlaygroundItem.suggestions => suggestionsSnippet(variant),
+    PlaygroundItem.greeting => greetingSnippet(variant),
   };
 }
 

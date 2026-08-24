@@ -1,7 +1,47 @@
 import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String messageSnippet = '''
+String messageSnippet([String? variant]) => switch (variant) {
+  'ai' => _assistant,
+  'user' => _user,
+  _ => _pair,
+};
+
+const String _user = '''
+// The user turn: an ink-wash bubble, trailing-aligned.
+FlowMessage(
+  FlowMessageData.text(
+    id: 'u1',
+    role: FlowMessageRole.user,
+    text: 'Can you tell me more about what you can do?',
+  ),
+)''';
+
+const String _assistant = '''
+// The assistant turn: plain on the page. FlowCustomPart is the
+// host-content seam — the builder renders this one as the heading.
+FlowMessage(
+  const FlowMessageData(
+    id: 'a1',
+    role: FlowMessageRole.assistant,
+    parts: [
+      FlowCustomPart(type: 'heading', data: 'Hello! I am AI chat :)'),
+      FlowTextPart('I can assist you with most tasks across...'),
+    ],
+  ),
+  customPartBuilder: (context, message, part) =>
+      part.type == 'heading' ? Heading(part.data as String) : null,
+  footer: FlowMessageActions(
+    actions: [
+      FlowMessageAction.copy(onPressed: copy),
+      FlowMessageAction.thumbUp(selected: liked, onPressed: like),
+      FlowMessageAction.thumbDown(selected: disliked, onPressed: dislike),
+      FlowMessageAction.regenerate(onPressed: retry),
+    ],
+  ),
+)''';
+
+const String _pair = '''
 Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [

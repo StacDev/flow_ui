@@ -1,203 +1,71 @@
 import 'dart:async';
 
+import 'package:flow_ui/flow_ui.dart';
+// The built-in highlighter isn't part of the public barrel; the
+// playground lives beside the package and reaches in for it so the
+// panel can typeset its snippets in the code block's own style without
+// the package growing panel-only API.
+// ignore: implementation_imports
+import 'package:flow_ui/src/utils/flow_syntax_highlighter.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
-
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
-import 'package:syntax_highlight/syntax_highlight.dart';
 
 import 'demo_registry.dart';
 import 'playground_item.dart';
 import 'shell_palette.dart';
 
-/// The playground's Dart highlighters, initialized once at startup.
-///
-/// `syntax_highlight` loads its TextMate grammar and themes from bundled
-/// assets, so setup is async; `main` awaits [init] before running the app
-/// and the panel then highlights synchronously. Plain text is the fallback
-/// if init hasn't run.
-class CodeHighlighting {
-  CodeHighlighting._();
-
-  static Highlighter? _light;
-  static Highlighter? _dark;
-
-  static Future<void> init() async {
-    await Highlighter.initialize(['dart']);
-    _light = Highlighter(
-      language: 'dart',
-      theme: await HighlighterTheme.loadLightTheme(),
-    );
-    _dark = Highlighter(
-      language: 'dart',
-      theme: await HighlighterTheme.loadDarkTheme(),
-    );
-  }
-
-  static Highlighter? of(Brightness brightness) =>
-      brightness == Brightness.dark ? _dark : _light;
-}
-
-/// The slide-in code panel: a 400px pane with a filename header and a
-/// snippet body. Snippets arrive with the demos — for now the body holds
-/// a placeholder comment, but the header already tracks the selection.
-class CodePanel extends StatelessWidget {
+/// The slide-in code panel, resizable by its left edge. The snippet is
+/// typeset in the package's code block style — the built-in highlighter
+/// over the theme's syntax tokens and mono face — directly on the
+/// panel's ground, with copy and close as header chips. It follows the
+/// stage: switching the variant pills swaps the code to match what's
+/// being shown.
+class CodePanel extends StatefulWidget {
   const CodePanel({
     super.key,
     required this.open,
     required this.item,
+    this.variant,
     required this.onClose,
   });
 
   final bool open;
   final PlaygroundItem item;
+
+  /// The stage's active variant; null renders the item's default form.
+  final String? variant;
+
   final VoidCallback onClose;
 
-  static const double _width = 400;
+  @override
+  State<CodePanel> createState() => _CodePanelState();
+}
+
+class _CodePanelState extends State<CodePanel> {
+  /// The pane resizes by its left edge, between the design's default
+  /// width and a cap that keeps the stage usable.
+  static const double _minWidth = 400;
+  static const double _maxWidth = 720;
   static const Duration _slide = Duration(milliseconds: 250);
 
-  @override
-  Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+  double _width = _minWidth;
+  bool _dragging = false;
 
-    return AnimatedContainer(
-      duration: _slide,
-      curve: Curves.ease,
-      width: open ? _width : 0,
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: shell.codeBg,
-        border: open
-            ? Border(left: BorderSide(color: shell.border))
-            : const Border(),
-      ),
-      // Fixed-width inner pane so the content doesn't reflow while the
-      // panel animates — it slides, per the design.
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: open ? 1 : 0,
-        child: OverflowBox(
-          alignment: Alignment.centerLeft,
-          minWidth: _width,
-          maxWidth: _width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: shell.codeHeaderBg,
-                  border: Border(bottom: BorderSide(color: shell.codeBorder)),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      item.codeFile,
-                      style: _mono(size: 12, color: shell.codeHeaderText),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: shell.codeBorder),
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(5),
-                        ),
-                      ),
-                      child: Text(
-                        'DART',
-                        style: shellText(
-                          size: 10,
-                          weight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: shell.codeHeaderText,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    _CopyButton(code: snippetFor(item)),
-                    const SizedBox(width: 10),
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: onClose,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: shell.codeChip,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(6),
-                            ),
-                          ),
-                          child: Icon(
-                            PhosphorIconsRegular.x,
-                            size: 14,
-                            color: shell.codeHeaderText,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: _HighlightedCode(
-                      code: snippetFor(item),
-                      style: _mono(
-                        size: 12,
-                        height: 1.7,
-                        color: shell.codeText,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The design sets code in Geist; the playground doesn't bundle it, so
-  /// this leans on the platform's monospace stack.
-  static TextStyle _mono({double? size, double? height, Color? color}) {
-    return TextStyle(
-      fontFamily: 'monospace',
-      fontFamilyFallback: const ['Menlo', 'Consolas', 'Courier'],
-      fontSize: size,
-      height: height,
-      color: color,
-    );
-  }
-}
-
-/// The header's copy chip: puts the snippet on the clipboard and reads
-/// "Copied!" for a beat, per the design.
-class _CopyButton extends StatefulWidget {
-  const _CopyButton({required this.code});
-
-  final String code;
-
-  @override
-  State<_CopyButton> createState() => _CopyButtonState();
-}
-
-class _CopyButtonState extends State<_CopyButton> {
+  /// The copy confirmation, per the package's contract: the block
+  /// reports intent, the panel owns the clipboard and the timing.
   bool _copied = false;
   Timer? _reset;
+
+  @override
+  void didUpdateWidget(CodePanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item != oldWidget.item || widget.variant != oldWidget.variant) {
+      _reset?.cancel();
+      _reset = null;
+      _copied = false;
+    }
+  }
 
   @override
   void dispose() {
@@ -205,8 +73,8 @@ class _CopyButtonState extends State<_CopyButton> {
     super.dispose();
   }
 
-  Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.code));
+  Future<void> _copy(String code) async {
+    await Clipboard.setData(ClipboardData(text: code));
     if (!mounted) return;
     setState(() => _copied = true);
     _reset?.cancel();
@@ -218,34 +86,59 @@ class _CopyButtonState extends State<_CopyButton> {
   @override
   Widget build(BuildContext context) {
     final shell = ShellPalette.of(context);
+    final code = snippetFor(widget.item, variant: widget.variant);
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: _copy,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: shell.codeChip,
-            borderRadius: const BorderRadius.all(Radius.circular(6)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+    return AnimatedContainer(
+      // Zero while dragging: the width must track the pointer, not ease
+      // after it — the slide animates only opening and closing.
+      duration: _dragging ? Duration.zero : _slide,
+      curve: Curves.ease,
+      width: widget.open ? _width : 0,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: shell.codeBg,
+        border: widget.open
+            ? Border(left: BorderSide(color: shell.border))
+            : const Border(),
+      ),
+      // Fixed-width inner pane so the content doesn't reflow while the
+      // panel animates — it slides, per the design.
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: widget.open ? 1 : 0,
+        child: OverflowBox(
+          alignment: Alignment.centerLeft,
+          minWidth: _width,
+          maxWidth: _width,
+          child: Stack(
             children: [
-              Icon(
-                _copied
-                    ? PhosphorIconsRegular.check
-                    : PhosphorIconsRegular.copy,
-                size: 13,
-                color: shell.text,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                _copied ? 'Copied!' : 'Copy',
-                style: shellText(
-                  size: 12,
-                  weight: FontWeight.w500,
-                  color: shell.text,
+              Positioned.fill(child: _pane(shell, code)),
+              // The resize handle rides the pane's left edge: drag to
+              // widen between the min and max.
+              PositionedDirectional(
+                start: 0,
+                top: 0,
+                bottom: 0,
+                width: 8,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeLeftRight,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: (_) =>
+                        setState(() => _dragging = true),
+                    onHorizontalDragUpdate: (details) => setState(() {
+                      _width = (_width - details.delta.dx).clamp(
+                        _minWidth,
+                        _maxWidth,
+                      );
+                    }),
+                    onHorizontalDragEnd: (_) =>
+                        setState(() => _dragging = false),
+                    onHorizontalDragCancel: () =>
+                        setState(() => _dragging = false),
+                    // Double-tap snaps back to the default width.
+                    onDoubleTap: () => setState(() => _width = _minWidth),
+                  ),
                 ),
               ),
             ],
@@ -254,23 +147,98 @@ class _CopyButtonState extends State<_CopyButton> {
       ),
     );
   }
-}
 
-/// The snippet through the VS Code Dart grammar, in the theme matching the
-/// ambient brightness; the base style keeps the mono font and line height,
-/// the spans carry per-token color.
-class _HighlightedCode extends StatelessWidget {
-  const _HighlightedCode({required this.code, required this.style});
+  /// The header's 24px action chip — copy and close share the form.
+  Widget _headerChip(
+    ShellPalette shell, {
+    required VoidCallback onTap,
+    required Widget child,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 24,
+          height: 24,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: shell.codeChip,
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
 
-  final String code;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    final highlighter = CodeHighlighting.of(Theme.of(context).brightness);
-    final content = highlighter == null
-        ? TextSpan(text: code, style: style)
-        : TextSpan(style: style, children: [highlighter.highlight(code)]);
-    return SelectableText.rich(content);
+  Widget _pane(ShellPalette shell, String code) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+          child: Row(
+            children: [
+              Text(
+                'Code',
+                style: shellText(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: shell.codeHeaderText,
+                ),
+              ),
+              const Spacer(),
+              // The copy affordance, always visible beside the close
+              // chip: copy, then a primary-tinted check while the
+              // confirmation lasts.
+              Tooltip(
+                message: 'Copy code',
+                child: _headerChip(
+                  shell,
+                  onTap: () => _copy(code),
+                  child: Icon(
+                    _copied ? Icons.check : Icons.copy_outlined,
+                    size: 14,
+                    color: _copied
+                        ? context.flowColors.primary
+                        : shell.codeHeaderText,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _headerChip(
+                shell,
+                onTap: widget.onClose,
+                child: Icon(
+                  PhosphorIconsRegular.x,
+                  size: 14,
+                  color: shell.codeHeaderText,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SelectableText.rich(
+                FlowSyntaxHighlighter.highlight(
+                  code,
+                  language: FlowCodeLanguage.find('dart'),
+                  style: context.flowTypography.code.copyWith(
+                    color: context.flowColors.onSurface,
+                  ),
+                  colors: context.flowSyntaxColors,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

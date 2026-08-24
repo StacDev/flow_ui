@@ -4,7 +4,12 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_content.dart';
 
-const String attachmentsSnippet = '''
+String attachmentsSnippet([String? variant]) => switch (variant) {
+  'tiles' => _tilesSnip,
+  _ => _composerSnip,
+};
+
+const String _composerSnip = '''
 FlowComposer(
   controller: input,
   attachments: [
@@ -15,9 +20,10 @@ FlowComposer(
   onRemoveAttachment: remove,
   removeAttachmentTooltip: 'Remove',
   onSend: send,
-)
+)''';
 
-// Or the strip on its own:
+const String _tilesSnip = '''
+// The strip on its own, outside a composer.
 FlowAttachmentGroup(
   attachments: attachments,
   onRemove: remove,

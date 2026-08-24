@@ -5,7 +5,50 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String markdownSnippet = '''
+String markdownSnippet([String? variant]) => switch (variant) {
+  'streaming' => _streamingSnip,
+  'tables' => _tablesSnip,
+  'links' => _linksSnip,
+  _ => _documentSnip,
+};
+
+const String _streamingSnip = '''
+// Streaming is data: rebuild with a longer text and the trailing
+// paragraph reveals character by character — fences, tables and rules
+// ease in whole when the frontier reaches them. Input that ends
+// mid-construct renders gracefully.
+FlowMarkdown(
+  text: receivedSoFar,
+  isStreaming: generating, // false settles the reveal
+  charactersPerSecond: 300,
+)''';
+
+const String _tablesSnip = '''
+// Column alignment comes from the delimiter row; a table wider than
+// its column scrolls horizontally inside the message rather than
+// wrapping the page.
+//
+//   | Model   | Context | Strength       |
+//   |:--------|--------:|:--------------:|
+//   | Fable 5 |    400K | Deep reasoning |
+FlowMarkdown(text: reply)''';
+
+const String _linksSnip = '''
+// Links report intent — the package never launches URLs, and a null
+// onLinkTap renders them as plain prose. Bare https:// and www. URLs
+// autolink with GFM's trimming rules.
+FlowMarkdown(
+  text: reply,
+  onLinkTap: (href) => openInBrowser(href),
+)
+
+// In a thread the callback carries the message too:
+FlowThread(
+  messages: messages,
+  onLinkTap: (message, href) => openInBrowser(href),
+)''';
+
+const String _documentSnip = '''
 // Assistant text parts render markdown by default — pass
 // markdown: false on FlowThread/FlowMessage for literal text.
 FlowThread(

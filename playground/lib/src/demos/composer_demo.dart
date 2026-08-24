@@ -4,7 +4,22 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_content.dart';
 
-const String composerSnippet = '''
+String composerSnippet([String? variant]) => switch (variant) {
+  'streaming' => _streaming,
+  _ => _default,
+};
+
+const String _streaming = '''
+// While a reply streams the send disc reads as stop — onStop is the
+// only intent it reports; sending resumes when the stream settles.
+FlowComposer(
+  controller: input,
+  isStreaming: true,
+  onSend: send,
+  onStop: stop,
+)''';
+
+const String _default = '''
 FlowComposer(
   controller: input,
   placeholder: 'How can I help you today?',

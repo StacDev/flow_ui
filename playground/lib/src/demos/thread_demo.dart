@@ -4,7 +4,38 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-const String threadSnippet = '''
+String threadSnippet([String? variant]) => switch (variant) {
+  'streaming' => _streaming,
+  'short' => _short,
+  _ => _default,
+};
+
+const String _streaming = '''
+// Streaming is data: rebuild with the newest message grown and the
+// thread stays anchored to it. Status walks
+// pending → streaming → complete.
+FlowThread(
+  messages: [
+    ...history,
+    FlowMessageData(
+      id: 'reply',
+      role: FlowMessageRole.assistant,
+      parts: [FlowTextPart(streamedSoFar)],
+      status: FlowMessageStatus.streaming,
+    ),
+  ],
+)''';
+
+const String _short = '''
+// A conversation that still fits its viewport reads from the top, the
+// AI-app convention; the thread flips to bottom-anchored only once it
+// outgrows the viewport.
+SizedBox(
+  height: 480,
+  child: FlowThread(messages: fewMessages),
+)''';
+
+const String _default = '''
 // A scrollable conversation — reads from the top, anchoring to the
 // newest message once it outgrows the viewport. Give it
 // bounded height; inside FlowChatView that comes for free.
