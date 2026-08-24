@@ -1,0 +1,38 @@
+# The playground is a single-page Flutter app with path URLs, so
+# /playground/composer is a route inside the app, not a file on disk. The
+# site ships a 404.html, which turns off Cloudflare Pages' automatic SPA
+# fallback — without these rewrites a shared link or a refresh lands on
+# the docs' 404 and the app never boots.
+#
+# Two details are load-bearing, both learned from `wrangler pages dev`:
+#
+#   * One line per PlaygroundItem slug, not `/playground/*`. Pages rejects
+#     the splat outright ("infinite loop detected", rule ignored) because
+#     it strips `.html` and `/index` from the destination and then sees it
+#     match the source again. Exact paths can't collide with an asset.
+#   * The destination is the directory, not `/playground/index.html`.
+#     Naming index.html makes Pages normalise it into a 308 to
+#     `/playground/`, which throws the component away and lands every deep
+#     link on the default. The directory form rewrites in place, 200, URL
+#     intact.
+#
+# Adding a component means adding a line — see
+# playground/lib/src/playground_item.dart.
+/playground/full-chat           /playground/  200
+/playground/composer            /playground/  200
+/playground/modal-selector      /playground/  200
+/playground/message             /playground/  200
+/playground/streaming-message   /playground/  200
+/playground/code-block          /playground/  200
+/playground/markdown            /playground/  200
+/playground/error-state         /playground/  200
+/playground/add-to-chat         /playground/  200
+/playground/pill                /playground/  200
+/playground/attachments         /playground/  200
+/playground/thread              /playground/  200
+/playground/message-actions     /playground/  200
+/playground/streaming-text      /playground/  200
+/playground/shimmer-text        /playground/  200
+/playground/thinking-indicator  /playground/  200
+/playground/suggestions         /playground/  200
+/playground/greeting            /playground/  200

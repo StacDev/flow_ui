@@ -8,10 +8,24 @@ import 'stage.dart';
 import 'top_bar.dart';
 
 /// The playground's single screen: top bar over sidebar + canvas + code
-/// panel. Owns the selection, the stage device, and the panel state; the
-/// theme lives with the app so the whole MaterialApp flips.
+/// panel. Owns the stage device, the panel state and the per-item variant
+/// memory; the component on the stage comes from the route, and the theme
+/// lives with the app so the whole MaterialApp flips.
 class PlaygroundShell extends StatefulWidget {
-  const PlaygroundShell({super.key, required this.onThemeModeChanged});
+  const PlaygroundShell({
+    super.key,
+    required this.item,
+    required this.onSelect,
+    required this.onThemeModeChanged,
+  });
+
+  /// The component on the stage — the route's `:component`. The shell
+  /// reads it, the router owns it: picking a row navigates, and
+  /// navigating (the browser's back button included) restages.
+  final PlaygroundItem item;
+
+  /// Selection intent; the app turns it into a route change.
+  final ValueChanged<PlaygroundItem> onSelect;
 
   final ValueChanged<ThemeMode> onThemeModeChanged;
 
@@ -20,7 +34,6 @@ class PlaygroundShell extends StatefulWidget {
 }
 
 class _PlaygroundShellState extends State<PlaygroundShell> {
-  PlaygroundItem _selected = PlaygroundItem.fullChat;
   StageDevice _device = StageDevice.web;
   bool _codeOpen = true;
 
@@ -28,9 +41,9 @@ class _PlaygroundShellState extends State<PlaygroundShell> {
   final Map<PlaygroundItem, String> _variants = {};
 
   String? get _variant {
-    final variants = variantsFor(_selected);
+    final variants = variantsFor(widget.item);
     if (variants.isEmpty) return null;
-    return _variants[_selected] ?? variants.first.$1;
+    return _variants[widget.item] ?? variants.first.$1;
   }
 
   @override
@@ -50,22 +63,19 @@ class _PlaygroundShellState extends State<PlaygroundShell> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Sidebar(
-                  selected: _selected,
-                  onSelect: (item) => setState(() => _selected = item),
-                ),
+                Sidebar(selected: widget.item, onSelect: widget.onSelect),
                 Expanded(
                   child: Stage(
                     device: _device,
-                    item: _selected,
+                    item: widget.item,
                     variant: _variant,
                     onVariantChanged: (id) =>
-                        setState(() => _variants[_selected] = id),
+                        setState(() => _variants[widget.item] = id),
                   ),
                 ),
                 CodePanel(
                   open: _codeOpen,
-                  item: _selected,
+                  item: widget.item,
                   variant: _variant,
                   onClose: () => setState(() => _codeOpen = false),
                 ),

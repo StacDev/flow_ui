@@ -29,3 +29,6 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# wrangler pages dev, used to verify the playground redirects locally
+.wrangler/

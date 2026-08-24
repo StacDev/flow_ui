@@ -11,7 +11,7 @@ import 'playground_item.dart';
 ///     /playground/?embed=composer&variant=streaming&theme=dark
 ///
 /// `embed` is a [PlaygroundItem] in kebab-case (`full-chat`,
-/// `model-selector`…; the enum name itself is accepted too). `variant`
+/// `modal-selector`…; the enum name itself is accepted too). `variant`
 /// must be one of the item's [variantsFor] ids and falls back to the
 /// default otherwise. `theme` is `light` or `dark` — fixed for the
 /// session; the docs page reloads the iframe when its theme flips. Left
@@ -37,7 +37,7 @@ class EmbedRequest {
 
     PlaygroundItem? item;
     for (final candidate in PlaygroundItem.values) {
-      if (candidate.name == id || _kebab(candidate.name) == id) {
+      if (candidate.name == id || candidate.slug == id) {
         item = candidate;
         break;
       }
@@ -59,11 +59,6 @@ class EmbedRequest {
       },
     );
   }
-
-  static String _kebab(String name) => name.replaceAllMapped(
-    RegExp('[A-Z]'),
-    (match) => '-${match[0]!.toLowerCase()}',
-  );
 }
 
 /// The embed app: the same FlowTheme setup as the playground, one demo on
