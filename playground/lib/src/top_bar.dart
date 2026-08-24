@@ -1,9 +1,10 @@
+import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'flow_logo.dart';
-import 'shell_palette.dart';
+import 'shell_text.dart';
 import 'stage.dart';
 
 /// The 54px chrome bar: logo cluster on the left, then the Light/Dark and
@@ -26,14 +27,14 @@ class TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     return Container(
       height: 54,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: shell.topBarBg,
-        border: Border(bottom: BorderSide(color: shell.border)),
+        color: colors.surfaceBright,
+        border: Border(bottom: BorderSide(color: colors.outlineVariant)),
       ),
       child: Row(
         children: [
@@ -45,7 +46,7 @@ class TopBar extends StatelessWidget {
               size: 15,
               weight: FontWeight.w700,
               letterSpacing: -0.15,
-              color: shell.text,
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(width: 9),
@@ -56,7 +57,7 @@ class TopBar extends StatelessWidget {
               style: shellText(
                 size: 11.5,
                 weight: FontWeight.w500,
-                color: shell.sectionLabel,
+                color: colors.onSurfaceMuted,
               ),
             ),
           ),
@@ -106,12 +107,10 @@ class ShellSegmented<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
-
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: shell.chip,
+        color: context.flowColors.surfaceContainer,
         borderRadius: const BorderRadius.all(Radius.circular(9)),
       ),
       child: Row(
@@ -144,7 +143,8 @@ class _Segment<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
+    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -153,12 +153,20 @@ class _Segment<T> extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: active ? shell.segmentActiveBg : Colors.transparent,
+            // The pill must lift off the track in both themes, and no one
+            // token does that: in light it is the raised white card, while
+            // in dark surfaceBright would sink below the track's ink wash,
+            // so it lifts with the strongest wash instead.
+            color: active
+                ? (dark ? colors.surfaceContainerHighest : colors.surfaceBright)
+                : Colors.transparent,
             borderRadius: const BorderRadius.all(Radius.circular(7)),
             boxShadow: active
                 ? [
                     BoxShadow(
-                      color: shell.segmentShadow,
+                      color: dark
+                          ? const Color(0x59000000)
+                          : const Color(0x1A000000),
                       offset: const Offset(0, 1),
                       blurRadius: 2,
                     ),
@@ -170,7 +178,7 @@ class _Segment<T> extends StatelessWidget {
             style: shellText(
               size: 12.5,
               weight: FontWeight.w500,
-              color: active ? shell.text : shell.segmentRest,
+              color: active ? colors.onSurface : colors.onSurfaceMuted,
             ),
           ),
         ),
@@ -194,7 +202,7 @@ class _CodeToggleState extends State<_CodeToggle> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -207,13 +215,15 @@ class _CodeToggleState extends State<_CodeToggle> {
           height: 30,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: widget.active || _hovered ? shell.chip : Colors.transparent,
+            color: widget.active || _hovered
+                ? colors.surfaceContainer
+                : Colors.transparent,
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Icon(
             PhosphorIconsRegular.code,
             size: 17,
-            color: widget.active ? shell.text : shell.segmentRest,
+            color: widget.active ? colors.onSurface : colors.onSurfaceMuted,
           ),
         ),
       ),

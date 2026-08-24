@@ -1,10 +1,11 @@
+import 'package:flow_ui/flow_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'open_docs.dart';
 import 'playground_item.dart';
-import 'shell_palette.dart';
+import 'shell_text.dart';
 
 /// The 214px navigation rail: an Examples section, then the component
 /// list, and — on the web, where the docs share the origin — a Docs link
@@ -17,15 +18,15 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
     final examples = PlaygroundItem.values.where((i) => i.isExample);
     final components = PlaygroundItem.values.where((i) => !i.isExample);
 
     return Container(
       width: 214,
       decoration: BoxDecoration(
-        color: shell.sidebarBg,
-        border: Border(right: BorderSide(color: shell.border)),
+        color: colors.surfaceBright,
+        border: Border(right: BorderSide(color: colors.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,7 +57,7 @@ class Sidebar extends StatelessWidget {
           if (kIsWeb)
             Container(
               decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: shell.border)),
+                border: Border(top: BorderSide(color: colors.outlineVariant)),
               ),
               padding: const EdgeInsets.fromLTRB(10, 9, 10, 13),
               child: Column(
@@ -105,7 +106,7 @@ class _FooterLinkState extends State<_FooterLink> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -116,7 +117,7 @@ class _FooterLinkState extends State<_FooterLink> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           decoration: BoxDecoration(
-            color: _hovered ? shell.navHover : Colors.transparent,
+            color: _hovered ? colors.surfaceContainerLow : Colors.transparent,
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Row(
@@ -124,7 +125,7 @@ class _FooterLinkState extends State<_FooterLink> {
               Icon(
                 widget.icon,
                 size: 15,
-                color: _hovered ? shellAccent : shell.iconRest,
+                color: _hovered ? colors.primary : colors.onSurfaceMuted,
               ),
               const SizedBox(width: 9),
               Expanded(
@@ -135,14 +136,16 @@ class _FooterLinkState extends State<_FooterLink> {
                   style: shellText(
                     size: 13.5,
                     weight: FontWeight.w500,
-                    color: _hovered ? shell.text : shell.navText,
+                    color: _hovered
+                        ? colors.onSurface
+                        : colors.onSurfaceVariant,
                   ),
                 ),
               ),
               Icon(
                 PhosphorIconsRegular.arrowUpRight,
                 size: 13,
-                color: shell.iconRest,
+                color: colors.onSurfaceMuted,
               ),
             ],
           ),
@@ -160,8 +163,6 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
-
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(10, first ? 0 : 16, 10, 6),
       child: Text(
@@ -170,7 +171,7 @@ class _SectionLabel extends StatelessWidget {
           size: 10.5,
           weight: FontWeight.w600,
           letterSpacing: 0.84,
-          color: shell.sectionLabel,
+          color: context.flowColors.onSurfaceMuted,
         ),
       ),
     );
@@ -197,13 +198,13 @@ class _NavRowState extends State<_NavRow> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     final Color background;
     if (widget.active) {
-      background = shell.navActiveBg;
+      background = colors.surfaceContainer;
     } else if (_hovered) {
-      background = shell.navHover;
+      background = colors.surfaceContainerLow;
     } else {
       background = Colors.transparent;
     }
@@ -226,7 +227,7 @@ class _NavRowState extends State<_NavRow> {
               Icon(
                 widget.item.icon,
                 size: 15,
-                color: widget.active ? shellAccent : shell.iconRest,
+                color: widget.active ? colors.primary : colors.onSurfaceMuted,
               ),
               const SizedBox(width: 9),
               Expanded(
@@ -237,7 +238,9 @@ class _NavRowState extends State<_NavRow> {
                   style: shellText(
                     size: 13.5,
                     weight: FontWeight.w500,
-                    color: widget.active ? shell.text : shell.navText,
+                    color: widget.active
+                        ? colors.onSurface
+                        : colors.onSurfaceVariant,
                   ),
                 ),
               ),
