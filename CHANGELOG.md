@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (unreleased)
+
+- **Component styles** — Material's component-theme tier, on flow_ui's
+  tokens: every major widget now takes an optional style object of
+  color and text overrides (`FlowComposerStyle`, `FlowMessageStyle`,
+  `FlowMarkdownStyle`, `FlowCodeBlockStyle`, `FlowErrorStateStyle`,
+  `FlowMessageActionsStyle`, `FlowPillStyle`, `FlowSuggestionStyle`,
+  joining `FlowMenuStyle`), and `FlowTheme` carries an app-wide default
+  for each (`FlowTheme.markdownStyle`, …). Resolution is field by field —
+  the widget's style wins over the theme's, tokens beneath both; text
+  fields merge over their role's base. `FlowMarkdownStyle` opens up the
+  markdown surface per element: heading cuts, the link color, the
+  inline-code chip, quote, table and rule inks. All additive — nothing
+  breaks.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut

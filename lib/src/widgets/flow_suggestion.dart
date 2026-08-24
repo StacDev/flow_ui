@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_suggestion_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_state_colors.dart';
 
@@ -34,6 +35,7 @@ class FlowSuggestion extends StatefulWidget {
     this.tooltip,
     this.padding,
     this.borderRadius,
+    this.style,
   });
 
   /// The suggestion text, on one line — it ellipsizes rather than wrapping.
@@ -59,6 +61,10 @@ class FlowSuggestion extends StatefulWidget {
 
   /// The row's corner. Defaults to the design's 8.
   final BorderRadius? borderRadius;
+
+  /// Per-instance restyling, merged over [FlowTheme.suggestionStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowSuggestionStyle? style;
 
   @override
   State<FlowSuggestion> createState() => _FlowSuggestionState();
@@ -89,12 +95,14 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
   Widget build(BuildContext context) {
     final colors = context.flowColors;
     final enabled = widget.enabled && widget.onTap != null;
+    final style =
+        context.flowTheme.suggestionStyle?.merge(widget.style) ?? widget.style;
 
     // Plain rows rest a step down; outlined rows carry full ink. Hover
     // lifts both to full ink so the affordance stays.
-    final restForeground = widget.outlined
-        ? colors.onSurface
-        : colors.onSurfaceVariant;
+    final restForeground =
+        style?.foregroundColor ??
+        (widget.outlined ? colors.onSurface : colors.onSurfaceVariant);
     final Color foreground;
     if (!enabled) {
       foreground = flowDisabledColor(restForeground);
@@ -107,21 +115,23 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
     final shape = RoundedRectangleBorder(
       borderRadius: widget.borderRadius ?? _rowRadius,
       side: widget.outlined
-          ? BorderSide(color: colors.outlineVariant)
+          ? BorderSide(color: style?.borderColor ?? colors.outlineVariant)
           : BorderSide.none,
     );
 
     Widget row = Material(
-      color: widget.outlined
-          ? colors.onSurface.withValues(alpha: _outlinedFillOpacity)
-          : Colors.transparent,
+      color:
+          style?.backgroundColor ??
+          (widget.outlined
+              ? colors.onSurface.withValues(alpha: _outlinedFillOpacity)
+              : Colors.transparent),
       shape: shape,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: enabled ? widget.onTap : null,
         onHover: enabled ? (value) => setState(() => _hovered = value) : null,
         customBorder: shape,
-        hoverColor: colors.surfaceContainerLow,
+        hoverColor: style?.hoverColor ?? colors.surfaceContainerLow,
         child: Padding(
           padding: widget.padding ?? _rowPadding,
           child: SizedBox(
@@ -132,9 +142,9 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
                   widget.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.flowTypography.labelLarge.copyWith(
-                    color: foreground,
-                  ),
+                  style: context.flowTypography.labelLarge
+                      .copyWith(color: foreground)
+                      .merge(style?.labelStyle),
                 );
                 // The hovered row in the group's column form points onward
                 // with an arrow at its far end — the design's web

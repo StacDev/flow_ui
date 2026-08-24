@@ -148,6 +148,17 @@ FlowTheme(
 )
 ```
 
+## Restyling
+
+`FlowCodeBlockStyle` overrides the block's chrome without touching the
+global tokens: `backgroundColor` (transparent lets the code sit on the
+host's own surface), `borderColor` (transparent renders it borderless),
+`hoverBorderColor`, `headerStyle`, and `codeStyle` (both merged over
+their defaults). Token inks inside the code stay with the theme's
+`FlowSyntaxColors`. Install one on `FlowTheme.codeBlockStyle` for every
+block — markdown fences included; the widget's `style` wins field by
+field.
+
 ## Key API
 
 - `FlowCodeBlock` — `code`, `language` (id or alias, case-insensitive),

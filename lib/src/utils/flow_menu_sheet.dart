@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
-import '../widgets/flow_menu_style.dart';
 import 'flow_circle_button.dart';
 import 'flow_menu_core.dart';
 

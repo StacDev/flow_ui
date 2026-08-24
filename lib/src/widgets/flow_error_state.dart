@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_error_state_style.dart';
 import '../theme/flow_theme.dart';
 
 /// A failure surface: an error glyph and a host-written explanation on a
@@ -36,6 +37,7 @@ class FlowErrorState extends StatelessWidget {
     this.retryLabel,
     this.padding,
     this.borderRadius,
+    this.style,
   });
 
   /// Host-localized headline, e.g. 'Connection error'. Null lets
@@ -59,6 +61,10 @@ class FlowErrorState extends StatelessWidget {
 
   /// The card's corner. Defaults to the design's 12.
   final BorderRadius? borderRadius;
+
+  /// Per-instance restyling, merged over [FlowTheme.errorStateStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowErrorStateStyle? style;
 
   /// The card: the message bubble's 12px corner over the outlined
   /// suggestion's 2% ink wash, edged in the error ink at 40% — a
@@ -98,12 +104,15 @@ class FlowErrorState extends StatelessWidget {
     final rowText = title ?? message;
     final below = title == null ? null : message;
 
+    final effective = context.flowTheme.errorStateStyle?.merge(style) ?? style;
+
     final rowStyle = title != null
-        ? typography.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-            color: colors.onSurface,
-          )
-        : typography.bodyMedium.copyWith(color: colors.onSurfaceVariant);
+        ? typography.labelMedium
+              .copyWith(fontWeight: FontWeight.w600, color: colors.onSurface)
+              .merge(effective?.titleStyle)
+        : typography.bodyMedium
+              .copyWith(color: colors.onSurfaceVariant)
+              .merge(effective?.messageStyle);
 
     Widget? rowLabel;
     if (rowText != null) {
@@ -124,10 +133,14 @@ class FlowErrorState extends StatelessWidget {
     return Container(
       padding: padding ?? _cardPadding,
       decoration: BoxDecoration(
-        color: colors.onSurface.withValues(alpha: _groundOpacity),
+        color:
+            effective?.backgroundColor ??
+            colors.onSurface.withValues(alpha: _groundOpacity),
         borderRadius: borderRadius ?? _radius,
         border: Border.all(
-          color: colors.error.withValues(alpha: _borderOpacity),
+          color:
+              effective?.borderColor ??
+              colors.error.withValues(alpha: _borderOpacity),
         ),
       ),
       child: Column(
@@ -144,7 +157,7 @@ class FlowErrorState extends StatelessWidget {
                   child: Icon(
                     Icons.error_outline,
                     size: _iconSize,
-                    color: colors.error,
+                    color: effective?.glyphColor ?? colors.error,
                   ),
                 ),
               ),
@@ -161,9 +174,9 @@ class FlowErrorState extends StatelessWidget {
                 liveRegion: true,
                 child: Text(
                   below,
-                  style: typography.bodyMedium.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+                  style: typography.bodyMedium
+                      .copyWith(color: colors.onSurfaceVariant)
+                      .merge(effective?.messageStyle),
                 ),
               ),
             ),
