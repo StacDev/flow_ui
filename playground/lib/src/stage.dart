@@ -1,17 +1,18 @@
 import 'dart:math' as math;
 
+import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_registry.dart';
 import 'playground_item.dart';
-import 'shell_palette.dart';
+import 'shell_text.dart';
 
 /// Which frame the canvas stages the demo in.
 enum StageDevice { web, mobile }
 
-/// The canvas: the warm-grey work area with the demo stage centred on it —
+/// The canvas: the theme's page ground with the demo stage centred on it —
 /// a fluid rail in web mode, a phone mock in mobile mode — and, for items
 /// with variants, the floating pill switcher over the top edge.
 class Stage extends StatelessWidget {
@@ -30,7 +31,6 @@ class Stage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
     final demo = demoFor(item, variant: variant);
     final variants = variantsFor(item);
 
@@ -79,7 +79,7 @@ class Stage extends StatelessWidget {
     }
 
     return ColoredBox(
-      color: shell.canvas,
+      color: context.flowColors.surface,
       child: Stack(
         children: [
           Positioned.fill(child: content),
@@ -116,13 +116,13 @@ class _VariantPills extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: shell.topBarBg,
-        border: Border.all(color: shell.pillBorder),
+        color: colors.surfaceBright,
+        border: Border.all(color: colors.outline),
         borderRadius: const BorderRadius.all(Radius.circular(9)),
         boxShadow: const [
           BoxShadow(
@@ -147,7 +147,9 @@ class _VariantPills extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: id == selected ? shell.chip : Colors.transparent,
+                    color: id == selected
+                        ? colors.surfaceContainer
+                        : Colors.transparent,
                     borderRadius: const BorderRadius.all(Radius.circular(7)),
                   ),
                   child: Text(
@@ -155,7 +157,9 @@ class _VariantPills extends StatelessWidget {
                     style: shellText(
                       size: 12.5,
                       weight: FontWeight.w500,
-                      color: id == selected ? shell.text : shell.segmentRest,
+                      color: id == selected
+                          ? colors.onSurface
+                          : colors.onSurfaceMuted,
                     ),
                   ),
                 ),
@@ -186,7 +190,7 @@ class _PhoneStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final screenHeight = math
         .min(_screenHeight, math.max(320, maxHeight - _bezel * 2))
@@ -245,7 +249,7 @@ class _PhoneStage extends StatelessWidget {
             child: Container(
               width: _screenWidth,
               height: screenHeight,
-              color: shell.stageBg,
+              color: colors.surface,
               child: Stack(
                 children: [
                   // The screen reports a phone: its size override makes
@@ -273,11 +277,11 @@ class _PhoneStage extends StatelessWidget {
                                 // The navigator generates this route once and
                                 // keeps its builder for the route's lifetime,
                                 // so nothing per-build may be captured here:
-                                // the demo and palette are read through
+                                // the demo and colors are read through
                                 // `context` so component, variant, and theme
                                 // changes reach the screen.
                                 builder: (context) => Material(
-                                  color: ShellPalette.of(context).stageBg,
+                                  color: context.flowColors.surface,
                                   child: Column(
                                     children: [
                                       const _StatusBar(),
@@ -321,7 +325,7 @@ class _PhoneStage extends StatelessWidget {
                         width: 118,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: shell.text.withValues(alpha: 0.9),
+                          color: colors.onSurface.withValues(alpha: 0.9),
                           borderRadius: const BorderRadius.all(
                             Radius.circular(3),
                           ),
@@ -364,7 +368,7 @@ class _StatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final ink = context.flowColors.onSurface;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(26, 16, 26, 4),
@@ -377,7 +381,7 @@ class _StatusBar extends StatelessWidget {
               size: 14.5,
               weight: FontWeight.w600,
               letterSpacing: 0.15,
-              color: shell.text,
+              color: ink,
             ),
           ),
           Row(
@@ -389,12 +393,12 @@ class _StatusBar extends StatelessWidget {
                   height: height,
                   margin: const EdgeInsetsDirectional.only(start: 1.5),
                   decoration: BoxDecoration(
-                    color: shell.text,
+                    color: ink,
                     borderRadius: const BorderRadius.all(Radius.circular(1)),
                   ),
                 ),
               const SizedBox(width: 6),
-              Icon(PhosphorIconsRegular.wifiHigh, size: 15, color: shell.text),
+              Icon(PhosphorIconsRegular.wifiHigh, size: 15, color: ink),
               const SizedBox(width: 6),
               // Battery.
               Container(
@@ -402,12 +406,12 @@ class _StatusBar extends StatelessWidget {
                 height: 11,
                 padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  border: Border.all(color: shell.text, width: 1.5),
+                  border: Border.all(color: ink, width: 1.5),
                   borderRadius: const BorderRadius.all(Radius.circular(3.5)),
                 ),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: shell.text,
+                    color: ink,
                     borderRadius: const BorderRadius.all(Radius.circular(1.5)),
                   ),
                 ),
@@ -425,27 +429,35 @@ class _MobileNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: shell.border)),
+        border: Border(bottom: BorderSide(color: colors.outlineVariant)),
       ),
       child: Row(
         children: [
-          Icon(PhosphorIconsRegular.arrowLeft, size: 18, color: shell.navText),
+          Icon(
+            PhosphorIconsRegular.arrowLeft,
+            size: 18,
+            color: colors.onSurfaceVariant,
+          ),
           const SizedBox(width: 12),
           Text(
             'AI Chat',
             style: shellText(
               size: 16,
               weight: FontWeight.w600,
-              color: shell.text,
+              color: colors.onSurface,
             ),
           ),
           const Spacer(),
-          Icon(PhosphorIconsRegular.gearSix, size: 17, color: shell.navText),
+          Icon(
+            PhosphorIconsRegular.gearSix,
+            size: 17,
+            color: colors.onSurfaceVariant,
+          ),
         ],
       ),
     );

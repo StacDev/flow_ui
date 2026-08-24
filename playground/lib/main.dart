@@ -38,8 +38,8 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
       title: 'Flow UI Playground · Flutter UI library for AI Chat Interfaces',
       debugShowCheckedModeBanner: false,
       themeMode: _mode,
-      // The chrome paints itself from ShellPalette; the FlowTheme
-      // extensions are for the component demos on the stage.
+      // Chrome and stage demos alike paint from the FlowTheme extensions,
+      // so the workbench and the exhibit flip together.
       theme: ThemeData(
         brightness: Brightness.light,
         extensions: [FlowTheme.light()],

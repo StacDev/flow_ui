@@ -13,7 +13,7 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_registry.dart';
 import 'playground_item.dart';
-import 'shell_palette.dart';
+import 'shell_text.dart';
 
 /// The slide-in code panel, resizable by its left edge. The snippet is
 /// typeset in the package's code block style — the built-in highlighter
@@ -85,7 +85,7 @@ class _CodePanelState extends State<CodePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = ShellPalette.of(context);
+    final colors = context.flowColors;
     final code = snippetFor(widget.item, variant: widget.variant);
 
     return AnimatedContainer(
@@ -96,9 +96,9 @@ class _CodePanelState extends State<CodePanel> {
       width: widget.open ? _width : 0,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: shell.codeBg,
+        color: colors.surfaceBright,
         border: widget.open
-            ? Border(left: BorderSide(color: shell.border))
+            ? Border(left: BorderSide(color: colors.outlineVariant))
             : const Border(),
       ),
       // Fixed-width inner pane so the content doesn't reflow while the
@@ -112,7 +112,7 @@ class _CodePanelState extends State<CodePanel> {
           maxWidth: _width,
           child: Stack(
             children: [
-              Positioned.fill(child: _pane(shell, code)),
+              Positioned.fill(child: _pane(code)),
               // The resize handle rides the pane's left edge: drag to
               // widen between the min and max.
               PositionedDirectional(
@@ -149,11 +149,7 @@ class _CodePanelState extends State<CodePanel> {
   }
 
   /// The header's 24px action chip — copy and close share the form.
-  Widget _headerChip(
-    ShellPalette shell, {
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
+  Widget _headerChip({required VoidCallback onTap, required Widget child}) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -163,7 +159,7 @@ class _CodePanelState extends State<CodePanel> {
           height: 24,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: shell.codeChip,
+            color: context.flowColors.surfaceContainer,
             borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
           child: child,
@@ -172,7 +168,8 @@ class _CodePanelState extends State<CodePanel> {
     );
   }
 
-  Widget _pane(ShellPalette shell, String code) {
+  Widget _pane(String code) {
+    final colors = context.flowColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -186,7 +183,7 @@ class _CodePanelState extends State<CodePanel> {
                   size: 12,
                   weight: FontWeight.w600,
                   letterSpacing: 0.5,
-                  color: shell.codeHeaderText,
+                  color: colors.onSurfaceMuted,
                 ),
               ),
               const Spacer(),
@@ -196,25 +193,21 @@ class _CodePanelState extends State<CodePanel> {
               Tooltip(
                 message: 'Copy code',
                 child: _headerChip(
-                  shell,
                   onTap: () => _copy(code),
                   child: Icon(
                     _copied ? Icons.check : Icons.copy_outlined,
                     size: 14,
-                    color: _copied
-                        ? context.flowColors.primary
-                        : shell.codeHeaderText,
+                    color: _copied ? colors.primary : colors.onSurfaceMuted,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               _headerChip(
-                shell,
                 onTap: widget.onClose,
                 child: Icon(
                   PhosphorIconsRegular.x,
                   size: 14,
-                  color: shell.codeHeaderText,
+                  color: colors.onSurfaceMuted,
                 ),
               ),
             ],
