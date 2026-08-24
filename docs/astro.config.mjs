@@ -2,9 +2,10 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
-/** Dev-only: serve /playground/ from public/playground/index.html. Real
- * static hosts (and the production deploy) resolve directory indexes
- * themselves; Astro's dev server does not. */
+/** Dev-only: serve /playground/ and its component routes from
+ * public/playground/index.html. Real static hosts resolve directory
+ * indexes themselves, and the deploy rewrites the component paths through
+ * public/_redirects; Astro's dev server does neither. */
 const playgroundDevIndex = {
 	name: 'playground-dev-index',
 	hooks: {
@@ -15,6 +16,10 @@ const playgroundDevIndex = {
 					req.url = '/playground/index.html';
 				} else if (req.url?.startsWith('/playground/?')) {
 					req.url = req.url.replace('/playground/?', '/playground/index.html?');
+				} else if (/^\/playground\/[^.?]+(\?|$)/.test(req.url ?? '')) {
+					// A component path like /playground/composer. Extensionless
+					// only, so main.dart.js, canvaskit/ and assets/ pass through.
+					req.url = req.url.replace(/^\/playground\/[^?]*/, '/playground/index.html');
 				}
 				next();
 			});

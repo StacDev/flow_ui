@@ -87,4 +87,24 @@ enum PlaygroundItem {
 
   /// Examples sit in their own sidebar section above the components.
   final bool isExample;
+
+  /// The item's URL id: the enum name in kebab-case (`fullChat` →
+  /// `full-chat`). One id serves both contracts — the playground's path
+  /// (`/playground/full-chat`) and the docs' embed query
+  /// (`?embed=full-chat`) — so they can't drift apart, and renaming a
+  /// value moves both.
+  String get slug =>
+      name.replaceAllMapped(_camelBoundary, (m) => '-${m[0]!.toLowerCase()}');
+}
+
+final RegExp _camelBoundary = RegExp('[A-Z]');
+
+/// The item [PlaygroundItem.slug] names, or null when nothing matches —
+/// the caller decides what an unknown id means: the router redirects to
+/// the default, the embed renders its "Unknown demo" surface.
+PlaygroundItem? playgroundItemForSlug(String slug) {
+  for (final item in PlaygroundItem.values) {
+    if (item.slug == slug) return item;
+  }
+  return null;
 }

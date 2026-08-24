@@ -40,6 +40,14 @@ dependencies:
   flutter_svg: ^2.0.10
   # The icon set the design is drawn in.
   phosphoricons_flutter: ^1.0.0
+  # Path URLs for the components: /playground/composer, not a hash route.
+  # flutter.dev-published — the app may take third-party deps; the package
+  # still may not.
+  go_router: ^18.0.0
+  # usePathUrlStrategy(), a documented no-op off the web. Declared rather
+  # than leaned on through go_router, for depend_on_referenced_packages.
+  flutter_web_plugins:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
