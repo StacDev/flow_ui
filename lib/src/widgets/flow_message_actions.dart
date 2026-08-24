@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_message_actions_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_state_colors.dart';
 
@@ -85,6 +86,7 @@ class FlowMessageActions extends StatelessWidget {
     required this.actions,
     this.iconSize = 16,
     this.padding,
+    this.style,
   });
 
   /// The design's strip packs the frames a hairline apart — a component
@@ -100,8 +102,14 @@ class FlowMessageActions extends StatelessWidget {
   /// Around the whole row; defaults to none.
   final EdgeInsetsGeometry? padding;
 
+  /// Per-instance restyling, merged over [FlowTheme.messageActionsStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowMessageActionsStyle? style;
+
   @override
   Widget build(BuildContext context) {
+    final effective =
+        context.flowTheme.messageActionsStyle?.merge(style) ?? style;
     // The design's action strip: glyphs on 20px frames, packed a hairline
     // step apart.
     final row = Row(
@@ -109,7 +117,11 @@ class FlowMessageActions extends StatelessWidget {
       children: [
         for (var i = 0; i < actions.length; i++) ...[
           if (i > 0) const SizedBox(width: _gap),
-          _ActionButton(action: actions[i], iconSize: iconSize),
+          _ActionButton(
+            action: actions[i],
+            iconSize: iconSize,
+            style: effective,
+          ),
         ],
       ],
     );
@@ -119,10 +131,15 @@ class FlowMessageActions extends StatelessWidget {
 }
 
 class _ActionButton extends StatefulWidget {
-  const _ActionButton({required this.action, required this.iconSize});
+  const _ActionButton({
+    required this.action,
+    required this.iconSize,
+    this.style,
+  });
 
   final FlowMessageAction action;
   final double iconSize;
+  final FlowMessageActionsStyle? style;
 
   @override
   State<_ActionButton> createState() => _ActionButtonState();
@@ -145,15 +162,17 @@ class _ActionButtonState extends State<_ActionButton> {
 
     // Rest at the muted ink — the design's 50% for message-action glyphs —
     // lifting to full ink on hover so the affordance stays.
+    final style = widget.style;
+    final rest = style?.iconColor ?? colors.onSurfaceMuted;
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(colors.onSurfaceMuted);
+      foreground = flowDisabledColor(rest);
     } else if (action.selected) {
-      foreground = colors.primary;
+      foreground = style?.selectedColor ?? colors.primary;
     } else if (_hovered) {
-      foreground = colors.onSurface;
+      foreground = style?.hoverIconColor ?? colors.onSurface;
     } else {
-      foreground = colors.onSurfaceMuted;
+      foreground = rest;
     }
 
     // Transparent Material so ink and hover fills render anywhere,
@@ -164,7 +183,7 @@ class _ActionButtonState extends State<_ActionButton> {
         onTap: action.onPressed,
         onHover: enabled ? (value) => setState(() => _hovered = value) : null,
         borderRadius: _frameRadius,
-        hoverColor: colors.surfaceContainerHigh,
+        hoverColor: style?.hoverColor ?? colors.surfaceContainerHigh,
         child: Padding(
           padding: const EdgeInsets.all(_framePadding),
           child: Icon(

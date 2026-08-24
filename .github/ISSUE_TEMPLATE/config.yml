@@ -1,14 +1,1 @@
 blank_issues_enabled: true
-contact_links:
-  - name: 📚 Documentation
-    url: https://flowui.stac.dev/
-    about: Component guides, theming, and the API surface.
-  - name: 🧩 Playground
-    url: https://flowui.stac.dev/playground
-    about: Reproduce it live against the latest build — every component has a stage with variant pills and code snippets.
-  - name: 🗺️ Roadmap
-    url: https://flowui.stac.dev/roadmap
-    about: Check whether the component you want is already planned.
-  - name: 🤓 API reference
-    url: https://pub.dev/documentation/flow_ui/latest/
-    about: Generated dartdoc for every public widget and token.

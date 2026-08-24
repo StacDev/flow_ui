@@ -78,6 +78,14 @@ keep concurrent pills few:
 
 <FlowDemo demo="pill" variant="composer" height={260} title="Toggled from the add menu" />
 
+## Restyling
+
+`FlowPillStyle` overrides the pill's colors without touching the global
+tokens: `backgroundColor`, `hoverColor`, `borderColor`, `iconColor`,
+`labelStyle` (merged over the default label), and `removeColor`. Install
+one on `FlowTheme.pillStyle` for every pill; the widget's `style` wins
+field by field.
+
 ## Key API
 
 - `icon` — always drawn; the pill's whole identity in the icon-only

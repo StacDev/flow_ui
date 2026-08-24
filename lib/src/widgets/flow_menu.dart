@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
 import '../utils/flow_menu_sheet.dart';
 import '../utils/flow_state_colors.dart';
-import 'flow_menu_style.dart';
 
 /// One entry in a [FlowMenu]: an option or a divider.
 @immutable
@@ -119,6 +119,11 @@ class FlowMenu extends StatefulWidget {
 }
 
 class _FlowMenuState extends State<FlowMenu> {
+  /// The effective style: the widget's over [FlowTheme.menuStyle]'s,
+  /// tokens beneath both.
+  FlowMenuStyle? get _style =>
+      context.flowTheme.menuStyle?.merge(widget.menuStyle) ?? widget.menuStyle;
+
   /// The design's trigger: an 18px glyph centered on a 32px disc, washed
   /// with the ladder's 6% `surfaceContainer` rung on hover.
   static const double _triggerIconSize = 18;
@@ -135,14 +140,14 @@ class _FlowMenuState extends State<FlowMenu> {
       selected: option.selected,
       enabled: option.enabled,
       large: large,
-      style: widget.menuStyle,
+      style: _style,
       onTap: () => widget.onSelected?.call(option.id),
     );
   }
 
   /// The anchored menu's children.
   List<Widget> _menuChildren(BuildContext context) {
-    final style = widget.menuStyle;
+    final style = _style;
     return [
       for (final entry in widget.entries)
         switch (entry) {
@@ -192,7 +197,7 @@ class _FlowMenuState extends State<FlowMenu> {
   }
 
   void _openSheet() {
-    final style = widget.menuStyle;
+    final style = _style;
     showFlowMenuSheet(
       context: context,
       style: style,
@@ -243,15 +248,10 @@ class _FlowMenuState extends State<FlowMenu> {
     }
 
     return MenuAnchor(
-      style: flowMenuStyle(context, style: widget.menuStyle),
+      style: flowMenuStyle(context, style: _style),
       menuChildren: asSheet
           ? const []
-          : [
-              FlowMenuCard(
-                style: widget.menuStyle,
-                children: _menuChildren(context),
-              ),
-            ],
+          : [FlowMenuCard(style: _style, children: _menuChildren(context))],
       builder: (context, controller, _) {
         Widget trigger = Material(
           type: MaterialType.transparency,

@@ -83,6 +83,16 @@ The composer renders a pending-attachments row above the field — pass
 `attachments:` and `onRemoveAttachment:`. The [Attachments](/components/attachments/)
 page shows the full flow, from the "+" menu to the sent message.
 
+## Restyling
+
+`FlowComposerStyle` overrides the composer's colors without touching the
+global tokens: `backgroundColor` (the raised card's fill), `outlineColor`
+(flattens the gradient hairline to one solid color in every state),
+`sendBackgroundColor` and `sendForegroundColor` (the send/stop disc),
+`textStyle` (merged over the field's default), and `hintColor`. Install
+one on `FlowTheme.composerStyle` for every composer; the widget's `style`
+wins field by field.
+
 ## Key API
 
 - `onSend` — required; receives the trimmed draft, never empty text.

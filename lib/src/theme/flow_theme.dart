@@ -1,5 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_code_block_style.dart';
+import '../styles/flow_composer_style.dart';
+import '../styles/flow_error_state_style.dart';
+import '../styles/flow_markdown_style.dart';
+import '../styles/flow_menu_style.dart';
+import '../styles/flow_message_actions_style.dart';
+import '../styles/flow_message_style.dart';
+import '../styles/flow_pill_style.dart';
+import '../styles/flow_suggestion_style.dart';
 import 'flow_colors.dart';
 import 'flow_syntax_colors.dart';
 import 'flow_typography.dart';
@@ -22,6 +31,11 @@ import 'flow_typography.dart';
 /// matching the ambient [ThemeData.brightness] is used, so flow_ui works
 /// with zero host setup.
 ///
+/// Beyond the tokens, the theme can carry component styles — app-wide
+/// defaults for a widget family's look ([menuStyle], [markdownStyle], …).
+/// A widget's own style object wins over the theme's, field by field, and
+/// the tokens sit beneath both.
+///
 /// Spacing and corner radii are not tokens: following Material's structure,
 /// each component bakes its own metrics from the design file and exposes
 /// per-widget overrides (`padding:`, `borderRadius:`) where hosts retheme.
@@ -30,6 +44,15 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     required this.colors,
     this.typography = FlowTypography.standard,
     this.syntax,
+    this.composerStyle,
+    this.messageStyle,
+    this.menuStyle,
+    this.markdownStyle,
+    this.codeBlockStyle,
+    this.errorStateStyle,
+    this.messageActionsStyle,
+    this.pillStyle,
+    this.suggestionStyle,
   });
 
   /// Light preset.
@@ -49,16 +72,62 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   /// default can't see.
   final FlowSyntaxColors? syntax;
 
+  /// App-wide default for every `FlowComposer`.
+  final FlowComposerStyle? composerStyle;
+
+  /// App-wide default for every `FlowMessage` — threads included.
+  final FlowMessageStyle? messageStyle;
+
+  /// App-wide default for every `FlowMenu` and `FlowModelSelector`.
+  final FlowMenuStyle? menuStyle;
+
+  /// App-wide default for every `FlowMarkdown` — assistant turns included.
+  final FlowMarkdownStyle? markdownStyle;
+
+  /// App-wide default for every `FlowCodeBlock` — markdown fences and
+  /// code parts included.
+  final FlowCodeBlockStyle? codeBlockStyle;
+
+  /// App-wide default for every `FlowErrorState` — failed turns included.
+  final FlowErrorStateStyle? errorStateStyle;
+
+  /// App-wide default for every `FlowMessageActions`.
+  final FlowMessageActionsStyle? messageActionsStyle;
+
+  /// App-wide default for every `FlowPill`.
+  final FlowPillStyle? pillStyle;
+
+  /// App-wide default for every `FlowSuggestion`.
+  final FlowSuggestionStyle? suggestionStyle;
+
   @override
   FlowTheme copyWith({
     FlowColors? colors,
     FlowTypography? typography,
     FlowSyntaxColors? syntax,
+    FlowComposerStyle? composerStyle,
+    FlowMessageStyle? messageStyle,
+    FlowMenuStyle? menuStyle,
+    FlowMarkdownStyle? markdownStyle,
+    FlowCodeBlockStyle? codeBlockStyle,
+    FlowErrorStateStyle? errorStateStyle,
+    FlowMessageActionsStyle? messageActionsStyle,
+    FlowPillStyle? pillStyle,
+    FlowSuggestionStyle? suggestionStyle,
   }) {
     return FlowTheme(
       colors: colors ?? this.colors,
       typography: typography ?? this.typography,
       syntax: syntax ?? this.syntax,
+      composerStyle: composerStyle ?? this.composerStyle,
+      messageStyle: messageStyle ?? this.messageStyle,
+      menuStyle: menuStyle ?? this.menuStyle,
+      markdownStyle: markdownStyle ?? this.markdownStyle,
+      codeBlockStyle: codeBlockStyle ?? this.codeBlockStyle,
+      errorStateStyle: errorStateStyle ?? this.errorStateStyle,
+      messageActionsStyle: messageActionsStyle ?? this.messageActionsStyle,
+      pillStyle: pillStyle ?? this.pillStyle,
+      suggestionStyle: suggestionStyle ?? this.suggestionStyle,
     );
   }
 
@@ -69,6 +138,33 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       colors: colors.lerp(other.colors, t),
       typography: typography.lerp(other.typography, t),
       syntax: syntax == null ? other.syntax : syntax!.lerp(other.syntax, t),
+      composerStyle: composerStyle == null
+          ? other.composerStyle
+          : composerStyle!.lerp(other.composerStyle, t),
+      messageStyle: messageStyle == null
+          ? other.messageStyle
+          : messageStyle!.lerp(other.messageStyle, t),
+      menuStyle: menuStyle == null
+          ? other.menuStyle
+          : menuStyle!.lerp(other.menuStyle, t),
+      markdownStyle: markdownStyle == null
+          ? other.markdownStyle
+          : markdownStyle!.lerp(other.markdownStyle, t),
+      codeBlockStyle: codeBlockStyle == null
+          ? other.codeBlockStyle
+          : codeBlockStyle!.lerp(other.codeBlockStyle, t),
+      errorStateStyle: errorStateStyle == null
+          ? other.errorStateStyle
+          : errorStateStyle!.lerp(other.errorStateStyle, t),
+      messageActionsStyle: messageActionsStyle == null
+          ? other.messageActionsStyle
+          : messageActionsStyle!.lerp(other.messageActionsStyle, t),
+      pillStyle: pillStyle == null
+          ? other.pillStyle
+          : pillStyle!.lerp(other.pillStyle, t),
+      suggestionStyle: suggestionStyle == null
+          ? other.suggestionStyle
+          : suggestionStyle!.lerp(other.suggestionStyle, t),
     );
   }
 }

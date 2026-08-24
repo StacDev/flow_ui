@@ -2,13 +2,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../styles/flow_message_style.dart';
 import '../theme/flow_theme.dart';
 import 'flow_attachment_group.dart';
 import 'flow_code_block.dart';
 import 'flow_error_state.dart';
 import 'flow_markdown.dart';
-import 'flow_thinking_indicator.dart';
 import 'flow_streaming_text.dart';
+import 'flow_thinking_indicator.dart';
 
 /// Renders a [FlowCustomPart]; return null to skip it.
 ///
@@ -56,6 +57,7 @@ class FlowMessage extends StatelessWidget {
     this.thinkingLabel,
     this.bubbleRadius,
     this.bubblePadding,
+    this.style,
   }) : assert(
          maxBubbleWidthFraction > 0 && maxBubbleWidthFraction <= 1,
          'maxBubbleWidthFraction must be in (0, 1]',
@@ -140,6 +142,10 @@ class FlowMessage extends StatelessWidget {
   /// Inside the user bubble. Defaults to the design's 16/10.
   final EdgeInsetsGeometry? bubblePadding;
 
+  /// Per-instance restyling, merged over [FlowTheme.messageStyle]'s
+  /// fields; nulls fall through to the theme tokens.
+  final FlowMessageStyle? style;
+
   /// The user bubble's ground, as an alpha over the ink — the same wash the
   /// design gives every tint that sits directly on the page, so it reads
   /// correctly in both themes.
@@ -179,6 +185,7 @@ class FlowMessage extends StatelessWidget {
 
   Widget _buildUser(BuildContext context) {
     final colors = context.flowColors;
+    final effective = context.flowTheme.messageStyle?.merge(style) ?? style;
 
     final bubble = Container(
       padding:
@@ -188,14 +195,18 @@ class FlowMessage extends StatelessWidget {
             vertical: _bubbleVerticalPadding,
           ),
       decoration: BoxDecoration(
+        // A failed turn keeps the error treatment regardless of style.
         color: _isError
             ? colors.errorContainer
-            : colors.onSurface.withValues(alpha: _bubbleOpacity),
+            : effective?.bubbleColor ??
+                  colors.onSurface.withValues(alpha: _bubbleOpacity),
         borderRadius: bubbleRadius ?? _bubbleRadius,
       ),
       child: _buildParts(
         context,
-        _isError ? colors.onErrorContainer : colors.onSurface,
+        _isError
+            ? colors.onErrorContainer
+            : effective?.bubbleTextColor ?? colors.onSurface,
         height: _bubbleTextHeight,
       ),
     );
