@@ -9,10 +9,10 @@ npm run dev      # http://localhost:4321
 npm run build    # static site in dist/
 ```
 
-`predev`/`prebuild` copy the package's bundled Google Sans faces from the repo's
-`fonts/` into `public/fonts/` (gitignored) — repo fonts stay the single
-source. Brand colors in `src/styles/theme.css` mirror the package's design
-tokens in `lib/src/theme/flow_colors.dart`.
+Google Sans loads from Google Fonts via the `<link>` in `astro.config.mjs` —
+the same source the package fetches from at runtime. Brand colors in
+`src/styles/theme.css` mirror the package's design tokens in
+`lib/src/theme/flow_colors.dart`.
 
 `npm run playground` builds the repo's `playground/` Flutter app for the
 web into `public/playground/` — served at `/playground/<component>` (path

@@ -19,6 +19,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Serves the design system's faces — Google Sans and Google Sans Code —
+  # fetched from Google Fonts on first use and cached on the device. The one
+  # dependency outside flutter.dev's own packages; no font files ship here.
+  google_fonts: ^8.2.1
   material_ui: ^1.0.0
 
 dev_dependencies:
@@ -26,38 +30,3 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-flutter:
-  # Google Sans is the typeface of the Flow UI design file, and Google Sans
-  # Code its code face. Both ship with the package (SIL Open Font License,
-  # see fonts/OFL-GoogleSans.txt and fonts/OFL-GoogleSansCode.txt) so the
-  # default theme renders as designed without the host bundling a font —
-  # and without a font dependency.
-  #
-  # Static instances rather than the variable TTFs: Flutter maps FontWeight
-  # to the nearest declared weight, so a weight axis would not be
-  # interpolated. Google Sans carries the four weights the type scale and
-  # the playground chrome reach for; Google Sans Code is small enough to
-  # carry all five of its cuts.
-  fonts:
-    - family: GoogleSans
-      fonts:
-        - asset: fonts/GoogleSans-Regular.ttf
-          weight: 400
-        - asset: fonts/GoogleSans-Medium.ttf
-          weight: 500
-        - asset: fonts/GoogleSans-SemiBold.ttf
-          weight: 600
-        - asset: fonts/GoogleSans-Bold.ttf
-          weight: 700
-    - family: GoogleSansCode
-      fonts:
-        - asset: fonts/GoogleSansCode-Light.ttf
-          weight: 300
-        - asset: fonts/GoogleSansCode-Regular.ttf
-          weight: 400
-        - asset: fonts/GoogleSansCode-Medium.ttf
-          weight: 500
-        - asset: fonts/GoogleSansCode-SemiBold.ttf
-          weight: 600
-        - asset: fonts/GoogleSansCode-Bold.ttf
-          weight: 700

@@ -73,9 +73,12 @@ MaterialApp(
 )
 ```
 
-The default typography ships with the package — Google Sans and Google Sans
-Code, bundled under the SIL Open Font License — so the theme renders as
-designed with no font setup.
+The default typography — Google Sans and Google Sans Code — arrives through
+[google_fonts](https://pub.dev/packages/google_fonts): each cut is fetched
+from Google Fonts on first use and cached on the device, so the theme renders
+as designed with no font setup. An app that must render offline on first
+launch can ship the files under a `google_fonts/` asset folder, which the
+package checks before the network.
 
 ## Build a chat screen
 
@@ -293,7 +296,7 @@ cd playground && flutter run -d chrome
 
 ## License
 
-Code is released under the [MIT License](LICENSE). The bundled fonts are
-licensed separately under the SIL Open Font License —
-[Google Sans](fonts/OFL-GoogleSans.txt) and
-[Google Sans Code](fonts/OFL-GoogleSansCode.txt).
+Code is released under the [MIT License](LICENSE). Google Sans and Google
+Sans Code are Google's, under the [SIL Open Font
+License](https://openfontlicense.org), and are fetched from Google Fonts
+rather than bundled.

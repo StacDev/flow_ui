@@ -1,6 +1,8 @@
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../theme/flow_typography.dart';
+
 /// Internal — not exported from the package barrel.
 ///
 /// The inline-code chip, painted rather than composed: Flutter gives a
@@ -65,7 +67,7 @@ class FlowChipText extends StatelessWidget {
     final defaults = DefaultTextStyle.of(context);
     var style = defaults.style;
     if (MediaQuery.boldTextOf(context)) {
-      style = style.merge(const TextStyle(fontWeight: FontWeight.bold));
+      style = FlowTypography.recut(style, fontWeight: FontWeight.bold);
     }
     final registrar = SelectionContainer.maybeOf(context);
     final selectionStyle = DefaultSelectionStyle.of(context);

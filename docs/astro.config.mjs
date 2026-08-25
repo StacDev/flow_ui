@@ -43,6 +43,20 @@ export default defineConfig({
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
 			head: [
+				// Google Sans, from Google Fonts — the same source the package fetches
+				// its faces from at runtime; nothing is bundled.
+				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+				{
+					tag: 'link',
+					attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true },
+				},
+				{
+					tag: 'link',
+					attrs: {
+						rel: 'stylesheet',
+						href: 'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap',
+					},
+				},
 				// Social-preview image on every page — Starlight emits the rest
 				// of the OG/Twitter tags; the image is ours to provide.
 				{
