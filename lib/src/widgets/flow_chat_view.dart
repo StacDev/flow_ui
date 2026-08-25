@@ -144,7 +144,9 @@ class FlowChatView extends StatefulWidget {
   /// Around the composer block. Defaults to the design's 16 at the sides —
   /// kept *outside* [maxContentWidth], so the composer still reaches the
   /// full rail where there is room — with 40 below on wide layouts and 24
-  /// on compact ones. An explicit value is used as given on both.
+  /// on compact ones, measured from the bottom of the safe area so a home
+  /// indicator's inset is absorbed rather than added to. An explicit value
+  /// is used as given on both, safe area included.
   final EdgeInsetsGeometry? padding;
 
   @override
@@ -250,6 +252,12 @@ class _FlowChatViewState extends State<FlowChatView> {
 
   @override
   Widget build(BuildContext context) {
+    // Read above the SafeArea below, which consumes this padding: inside it
+    // the value always reads zero. It is also the *applied* inset rather
+    // than viewPadding, so it correctly drops to zero when the keyboard
+    // covers the home indicator.
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+
     return GestureDetector(
       // Taps that reach the surface itself — dead space, the thread, a
       // settled message — dismiss the keyboard, the chat convention.
@@ -292,7 +300,7 @@ class _FlowChatViewState extends State<FlowChatView> {
                           )
                         : _threadArea(context),
                   ),
-                  ..._composerZone(compact),
+                  ..._composerZone(compact, safeBottom),
                 ],
               ],
             );
@@ -438,7 +446,7 @@ class _FlowChatViewState extends State<FlowChatView> {
   /// content rail, inside the surface padding. Skipped entirely when there
   /// is nothing to put below the thread, so a read-only surface doesn't
   /// carry a strip of padding where its composer would have been.
-  List<Widget> _composerZone(bool compact) {
+  List<Widget> _composerZone(bool compact, double safeBottom) {
     final suggestions = widget.empty ? widget.suggestions : null;
     if (widget.composer == null &&
         widget.aboveComposer == null &&
@@ -446,13 +454,19 @@ class _FlowChatViewState extends State<FlowChatView> {
       return const [];
     }
 
+    // The design's inset measures from the bottom of the *safe* area, so
+    // it absorbs the home indicator's inset rather than stacking on top of
+    // it — a phone would otherwise stand the composer 24 above a 34pt
+    // indicator, which reads as a gap the design never drew. Simulated
+    // phone frames report no inset and keep the full 24.
+    final designBottom = compact ? _bottomInsetCompact : _bottomInsetWide;
     final padding =
         widget.padding ??
         EdgeInsetsDirectional.fromSTEB(
           _sideInset,
           0,
           _sideInset,
-          compact ? _bottomInsetCompact : _bottomInsetWide,
+          math.max(0, designBottom - safeBottom),
         );
 
     final column = <Widget>[];

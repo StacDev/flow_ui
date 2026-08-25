@@ -2,6 +2,13 @@
 
 ## 0.3.0 (unreleased)
 
+- **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
+  area. The design's 24 (compact) and 40 (wide) are now measured from the
+  bottom of the safe area, so a phone's home indicator is absorbed rather
+  than added to — a device showed 58 where the design draws 24. Simulated
+  frames and desktop, which report no inset, are unchanged, and the full
+  inset returns above an open keyboard.
+
 - **Component styles** — Material's component-theme tier, on flow_ui's
   tokens: every major widget now takes an optional style object of
   color and text overrides (`FlowComposerStyle`, `FlowMessageStyle`,
