@@ -1,18 +1,14 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// The faces the presets are drawn in — Google Sans for prose, Google Sans
-/// Code for code — served by the `google_fonts` package rather than bundled:
-/// each cut is fetched from Google Fonts the first time a role that needs it
-/// is built, then cached on the device. A host that must render offline on
-/// first launch can ship the files under a `google_fonts/` asset folder,
-/// which the package checks before the network.
+/// Google Sans for prose and Google Sans Code for code, served by
+/// `google_fonts`: each cut is fetched from Google Fonts on first use and
+/// cached on the device, or read from a `google_fonts/` asset folder when
+/// the host ships one.
 ///
-/// google_fonts registers every cut of a face as its own font family
-/// (`GoogleSans_semiBold`, …), which is why the roles are built through the
-/// package and why [FlowTypography.recut] exists: a plain
-/// `copyWith(fontWeight:)` on a token keeps the regular cut's family and
-/// leaves the engine to fake the weight.
+/// google_fonts registers each cut as its own font family (`GoogleSans_600`,
+/// …), so the roles are built through the package and re-weighted with
+/// [FlowTypography.recut] rather than `copyWith(fontWeight:)`.
 const String _fontFamily = 'GoogleSans';
 const String _monoFontFamily = 'GoogleSansCode';
 
@@ -26,9 +22,8 @@ TextStyle _mono(double size, FontWeight weight, double height) =>
       height: height,
     );
 
-/// The mono roles' standard cuts — file-level so the constructor can fall
-/// back to them, which keeps [FlowTypography]'s pre-code constructor calls
-/// compiling unchanged.
+/// Defaults for the mono roles, resolved by the [FlowTypography.code] and
+/// [FlowTypography.codeInline] getters.
 final TextStyle _standardCode = _mono(13, FontWeight.w400, 1.6);
 final TextStyle _standardCodeInline = _mono(14, FontWeight.w400, 1.5);
 
@@ -229,34 +224,34 @@ class FlowTypography {
     return copyWith(code: reface(code), codeInline: reface(codeInline));
   }
 
-  /// [style] re-cut at [fontWeight] and/or [fontStyle], in the right file.
+  /// [style] at [fontWeight] and/or [fontStyle], in the matching cut.
   ///
-  /// google_fonts registers each cut of a face as its own font family, so
-  /// `style.copyWith(fontWeight: FontWeight.w600)` on a standard token would
-  /// keep the regular cut's family and have the engine fake the weight. This
-  /// resolves the matching cut instead, loading it if needed. A style in any
-  /// other face — one from [withFontFamily], say — passes through `copyWith`
-  /// unchanged.
+  /// google_fonts registers each cut as its own font family, so `copyWith`
+  /// on a standard token would leave the engine faking the weight; this
+  /// loads the real cut instead. Styles in any other face pass through
+  /// `copyWith`.
   static TextStyle recut(
     TextStyle style, {
     FontWeight? fontWeight,
     FontStyle? fontStyle,
   }) {
-    // google_fonts leaves the bare family name as the fallback of every
-    // style it builds, which is how a token's face is recognised here.
-    return switch (style.fontFamilyFallback?.firstOrNull) {
-      _fontFamily => GoogleFonts.googleSans(
+    // google_fonts names each cut `<family>_<variant>`.
+    final family = style.fontFamily ?? '';
+    if (family.startsWith('${_fontFamily}_')) {
+      return GoogleFonts.googleSans(
         textStyle: style,
         fontWeight: fontWeight,
         fontStyle: fontStyle,
-      ),
-      _monoFontFamily => GoogleFonts.googleSansCode(
+      );
+    }
+    if (family.startsWith('${_monoFontFamily}_')) {
+      return GoogleFonts.googleSansCode(
         textStyle: style,
         fontWeight: fontWeight,
         fontStyle: fontStyle,
-      ),
-      _ => style.copyWith(fontWeight: fontWeight, fontStyle: fontStyle),
-    };
+      );
+    }
+    return style.copyWith(fontWeight: fontWeight, fontStyle: fontStyle);
   }
 
   FlowTypography copyWith({

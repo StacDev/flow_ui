@@ -9,8 +9,7 @@
 
 /* ---------------------------------------------------------------- fonts */
 
-/* Google Sans arrives from Google Fonts via the <link> in astro.config.mjs —
-   the same source the package fetches its faces from at runtime. */
+/* Google Sans loads from Google Fonts via the <link> in astro.config.mjs. */
 
 /* -------------------------------------------------------------- palette */
 

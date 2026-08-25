@@ -43,8 +43,7 @@ export default defineConfig({
 			customCss: ['./src/styles/theme.css'],
 			logo: { src: './src/assets/flow-ui-logo.svg', alt: '' },
 			head: [
-				// Google Sans, from Google Fonts — the same source the package fetches
-				// its faces from at runtime; nothing is bundled.
+				// Google Sans from Google Fonts — the same source the package fetches at runtime.
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
 				{
 					tag: 'link',

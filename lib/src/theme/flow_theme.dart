@@ -66,9 +66,8 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   final FlowColors colors;
   final FlowTypography? _typography;
 
-  /// The type scale — [FlowTypography.standard] unless the host installed
-  /// one. Resolved on read: the standard scale is built through google_fonts
-  /// at runtime, which a `const` default can't hold.
+  /// The type scale — [FlowTypography.standard] unless the host set one.
+  /// Resolved on read, since the standard scale isn't `const`.
   FlowTypography get typography => _typography ?? FlowTypography.standard;
 
   /// Syntax token colors for code blocks. Null resolves to the preset

@@ -19,9 +19,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Serves the design system's faces — Google Sans and Google Sans Code —
-  # fetched from Google Fonts on first use and cached on the device. The one
-  # dependency outside flutter.dev's own packages; no font files ship here.
+  # Google Sans and Google Sans Code, fetched from Google Fonts at runtime —
+  # the one dependency outside flutter.dev's packages; no font files ship.
   google_fonts: ^8.2.1
   material_ui: ^1.0.0
 
