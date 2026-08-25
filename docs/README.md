@@ -9,7 +9,7 @@ npm run dev      # http://localhost:4321
 npm run build    # static site in dist/
 ```
 
-`predev`/`prebuild` copy the package's bundled Figtree faces from the repo's
+`predev`/`prebuild` copy the package's bundled Google Sans faces from the repo's
 `fonts/` into `public/fonts/` (gitignored) — repo fonts stay the single
 source. Brand colors in `src/styles/theme.css` mirror the package's design
 tokens in `lib/src/theme/flow_colors.dart`.

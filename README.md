@@ -73,8 +73,9 @@ MaterialApp(
 )
 ```
 
-The default typography ships with the package — Figtree, bundled under the
-SIL Open Font License — so the theme renders as designed with no font setup.
+The default typography ships with the package — Google Sans and Google Sans
+Code, bundled under the SIL Open Font License — so the theme renders as
+designed with no font setup.
 
 ## Build a chat screen
 
@@ -292,5 +293,7 @@ cd playground && flutter run -d chrome
 
 ## License
 
-Code is released under the [MIT License](LICENSE). The bundled Figtree font
-is licensed separately under the [SIL Open Font License](fonts/OFL.txt).
+Code is released under the [MIT License](LICENSE). The bundled fonts are
+licensed separately under the SIL Open Font License —
+[Google Sans](fonts/OFL-GoogleSans.txt) and
+[Google Sans Code](fonts/OFL-GoogleSansCode.txt).

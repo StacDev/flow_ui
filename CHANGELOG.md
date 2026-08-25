@@ -2,6 +2,13 @@
 
 ## 0.3.0 (unreleased)
 
+- **Typefaces** — Google Sans replaces Figtree as the prose face, and
+  Google Sans Code replaces Geist Mono as the code face. Both ship with
+  the package under the SIL OFL (`fonts/OFL-GoogleSans.txt`,
+  `fonts/OFL-GoogleSansCode.txt`). The bundled family names are now
+  `GoogleSans` and `GoogleSansCode`; a host that named `Figtree` or
+  `GeistMono` directly should update.
+
 - **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
   area. The design's 24 (compact) and 40 (wide) are now measured from the
   bottom of the safe area, so a phone's home indicator is absorbed rather

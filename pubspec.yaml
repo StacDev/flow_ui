@@ -27,38 +27,37 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
-  # Figtree is the typeface of the Flow UI design file, and Geist Mono its
-  # code face. Both ship with the package (SIL Open Font License, see
-  # fonts/OFL.txt and fonts/OFL-GeistMono.txt) so the default theme renders
-  # as designed without the host bundling a font — and without a font
-  # dependency.
+  # Google Sans is the typeface of the Flow UI design file, and Google Sans
+  # Code its code face. Both ship with the package (SIL Open Font License,
+  # see fonts/OFL-GoogleSans.txt and fonts/OFL-GoogleSansCode.txt) so the
+  # default theme renders as designed without the host bundling a font —
+  # and without a font dependency.
   #
   # Static instances rather than the variable TTFs: Flutter maps FontWeight
   # to the nearest declared weight, so a weight axis would not be
-  # interpolated. Geist Mono carries only the three weights the mono roles
-  # reach for, to keep what every host app inherits small.
+  # interpolated. Google Sans carries the four weights the type scale and
+  # the playground chrome reach for; Google Sans Code is small enough to
+  # carry all five of its cuts.
   fonts:
-    - family: Figtree
+    - family: GoogleSans
       fonts:
-        - asset: fonts/Figtree-Light.ttf
-          weight: 300
-        - asset: fonts/Figtree-Regular.ttf
+        - asset: fonts/GoogleSans-Regular.ttf
           weight: 400
-        - asset: fonts/Figtree-Medium.ttf
+        - asset: fonts/GoogleSans-Medium.ttf
           weight: 500
-        - asset: fonts/Figtree-SemiBold.ttf
+        - asset: fonts/GoogleSans-SemiBold.ttf
           weight: 600
-        - asset: fonts/Figtree-Bold.ttf
+        - asset: fonts/GoogleSans-Bold.ttf
           weight: 700
-        - asset: fonts/Figtree-ExtraBold.ttf
-          weight: 800
-        - asset: fonts/Figtree-Black.ttf
-          weight: 900
-    - family: GeistMono
+    - family: GoogleSansCode
       fonts:
-        - asset: fonts/GeistMono-Regular.ttf
+        - asset: fonts/GoogleSansCode-Light.ttf
+          weight: 300
+        - asset: fonts/GoogleSansCode-Regular.ttf
           weight: 400
-        - asset: fonts/GeistMono-Medium.ttf
+        - asset: fonts/GoogleSansCode-Medium.ttf
           weight: 500
-        - asset: fonts/GeistMono-SemiBold.ttf
+        - asset: fonts/GoogleSansCode-SemiBold.ttf
           weight: 600
+        - asset: fonts/GoogleSansCode-Bold.ttf
+          weight: 700

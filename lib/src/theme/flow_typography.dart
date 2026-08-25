@@ -1,14 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
 /// The typefaces the presets are drawn in, bundled with this package under
-/// `fonts/` (SIL Open Font License — see `fonts/OFL.txt` and
-/// `fonts/OFL-GeistMono.txt`): Figtree for prose, Geist Mono for code.
+/// `fonts/` (SIL Open Font License — see `fonts/OFL-GoogleSans.txt` and
+/// `fonts/OFL-GoogleSansCode.txt`): Google Sans for prose, Google Sans Code
+/// for code.
 ///
 /// Declared with `package:` so the families resolve to `packages/flow_ui/…`
 /// and a host gets the design's typefaces without adding a font of their
 /// own.
-const String _fontFamily = 'Figtree';
-const String _monoFontFamily = 'GeistMono';
+const String _fontFamily = 'GoogleSans';
+const String _monoFontFamily = 'GoogleSansCode';
 const String _fontPackage = 'flow_ui';
 
 /// The mono roles' standard cuts — file-level so they can double as the
@@ -114,7 +115,7 @@ class FlowTypography {
   final TextStyle labelSmall;
   final TextStyle labelSmallEmphasised;
 
-  /// Code, set in the bundled Geist Mono — the code block's body. A step
+  /// Code, set in the bundled Google Sans Code — the code block's body. A step
   /// under prose (13) on a taller line (1.6), so a block reads as inset
   /// material rather than continuing the paragraph.
   final TextStyle code;
@@ -122,7 +123,8 @@ class FlowTypography {
   /// The mono face at prose size, for future inline code spans.
   final TextStyle codeInline;
 
-  /// The Flow type scale: Figtree, with the code roles in Geist Mono.
+  /// The Flow type scale: Google Sans, with the code roles in Google Sans
+  /// Code.
   static const FlowTypography standard = FlowTypography(
     displayLarge: TextStyle(
       fontFamily: _fontFamily,
@@ -316,7 +318,7 @@ class FlowTypography {
     ),
   );
 
-  /// The same scale set in [fontFamily] instead of the bundled Figtree.
+  /// The same scale set in [fontFamily] instead of the bundled Google Sans.
   /// The mono roles keep their own face — swap those with
   /// [withCodeFontFamily].
   ///

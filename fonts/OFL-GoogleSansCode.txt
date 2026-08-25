@@ -1,8 +1,8 @@
-Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
+Copyright 2025 The Google Sans Code Project Authors (github.com/googlefonts/googlesans-code)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
-https://openfontlicense.org
+http://scripts.sil.org/OFL
 
 
 -----------------------------------------------------------

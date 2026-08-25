@@ -32,7 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
   material_ui: ^1.0.0
-  # The component library under demo — also supplies Figtree, the face the
+  # The component library under demo — also supplies Google Sans, the face the
   # playground chrome is set in.
   flow_ui:
     path: ../
