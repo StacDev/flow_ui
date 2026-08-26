@@ -4,15 +4,15 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// Role names follow Material 3's [ColorScheme] (primary / secondary /
 /// tertiary / error groups, surface containers, outline, inverse), so a host
-/// can map an existing M3 scheme straight onto flow_ui. [onSurfaceMuted] is
-/// the one addition: the Flow design system draws content at three ink
-/// levels, and M3 only names two.
+/// can map an existing M3 scheme straight onto flow_ui. Flow adds a third
+/// ink level, [onSurfaceMuted], and [success] and [warning] groups beside
+/// [error].
 ///
-/// The presets come from the Flow UI design file. Two things about them are
-/// worth knowing before overriding one:
+/// The presets come from the Flow UI design file. Three things about them
+/// are worth knowing before overriding one:
 ///
 /// * **The ink ramp is translucent.** [onSurfaceVariant] (75%),
-///   [onSurfaceMuted] (50%), [outline] (14%) and [outlineVariant] (6%) are
+///   [onSurfaceMuted] (50%), [outline] (7%) and [outlineVariant] (12%) are
 ///   the foreground ink at an alpha, not resolved colors. The design uses the
 ///   same label and the same hairline on the page *and* on the raised card,
 ///   which only works if they composite.
@@ -21,6 +21,10 @@ import 'package:material_ui/material_ui.dart';
 ///   reads correctly on the page and on the raised card. Only [surface]
 ///   and [surfaceBright] — the grounds everything else sits on — are
 ///   opaque.
+/// * **Accent containers are washes of their accent.** Each `Container` is
+///   its accent at an alpha — 8% for primary, secondary and tertiary, 6%
+///   for error, success and warning — and each `onContainer` is the accent
+///   itself.
 @immutable
 class FlowColors {
   const FlowColors({
@@ -40,6 +44,14 @@ class FlowColors {
     required this.onError,
     required this.errorContainer,
     required this.onErrorContainer,
+    required this.success,
+    required this.onSuccess,
+    required this.successContainer,
+    required this.onSuccessContainer,
+    required this.warning,
+    required this.onWarning,
+    required this.warningContainer,
+    required this.onWarningContainer,
     required this.surface,
     required this.surfaceBright,
     required this.onSurface,
@@ -58,22 +70,20 @@ class FlowColors {
     required this.inversePrimary,
   });
 
-  // Primary — brand / interactive accent. The design carries a single accent
-  // and uses it at the same value in both themes.
+  // Primary — brand / interactive accent: the rose, at the same value in
+  // both themes.
   final Color primary;
   final Color onPrimary;
   final Color primaryContainer;
   final Color onPrimaryContainer;
 
-  // Secondary — muted, supporting accent. Neutral here: the design's user
-  // bubble and its label are the ink family, not a second hue.
+  // Secondary — supporting accent: indigo.
   final Color secondary;
   final Color onSecondary;
   final Color secondaryContainer;
   final Color onSecondaryContainer;
 
-  // Tertiary — contrasting complementary accent. Derived: the design names
-  // no third accent, so this is the deep end of the primary's hue.
+  // Tertiary — the hotter pink beside the rose; markdown links.
   final Color tertiary;
   final Color onTertiary;
   final Color tertiaryContainer;
@@ -84,6 +94,18 @@ class FlowColors {
   final Color onError;
   final Color errorContainer;
   final Color onErrorContainer;
+
+  // Success — completed, approved, confirmed.
+  final Color success;
+  final Color onSuccess;
+  final Color successContainer;
+  final Color onSuccessContainer;
+
+  // Warning — caution and pending attention.
+  final Color warning;
+  final Color onWarning;
+  final Color warningContainer;
+  final Color onWarningContainer;
 
   // Surface — backgrounds and the content on them.
 
@@ -125,11 +147,13 @@ class FlowColors {
 
   // Outline — borders and separators.
 
-  /// Hairline around a raised card — 14% ink in light, 20% in dark; dark
-  /// hairlines need the extra step to hold the edge.
+  /// Faint hairline — 7% ink in light, 10% in dark: separators, rules, a
+  /// pill or code block at rest.
   final Color outline;
 
-  /// Fainter hairline: separators, a chip at rest.
+  /// Firm hairline — 12% ink in light, 16% in dark: the edge of a tile, a
+  /// retry pill, the send disc at rest. Dark hairlines need the extra step
+  /// to hold the edge.
   final Color outlineVariant;
 
   // Inverse — elements on the opposite brightness (snackbars, tooltips).
@@ -141,56 +165,72 @@ class FlowColors {
   static const FlowColors light = FlowColors(
     primary: Color(0xFFE071A7),
     onPrimary: Color(0xFFFFFFFF),
-    primaryContainer: Color(0xFFF6E9ED),
-    onPrimaryContainer: Color(0xFF8C3A67),
-    secondary: Color(0xFF525251),
+    primaryContainer: Color(0x14E071A7),
+    onPrimaryContainer: Color(0xFFE071A7),
+    secondary: Color(0xFF3730A3),
     onSecondary: Color(0xFFFFFFFF),
-    secondaryContainer: Color(0xFFF0F0EE),
-    onSecondaryContainer: Color(0xFF1A1A19),
-    tertiary: Color(0xFFA8497B),
+    secondaryContainer: Color(0x143730A3),
+    onSecondaryContainer: Color(0xFF3730A3),
+    tertiary: Color(0xFFFF67B0),
     onTertiary: Color(0xFFFFFFFF),
-    tertiaryContainer: Color(0xFFF3E4EC),
-    onTertiaryContainer: Color(0xFF5C2743),
-    error: Color(0xFFDC2626),
+    tertiaryContainer: Color(0x14FF67B0),
+    onTertiaryContainer: Color(0xFFFF67B0),
+    error: Color(0xFFC14A4A),
     onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFFFEE2E2),
-    onErrorContainer: Color(0xFF7F1D1D),
+    errorContainer: Color(0x0FC14A4A),
+    onErrorContainer: Color(0xFFC14A4A),
+    success: Color(0xFF249655),
+    onSuccess: Color(0xFFFFFFFF),
+    successContainer: Color(0x0F249655),
+    onSuccessContainer: Color(0xFF249655),
+    warning: Color(0xFFEE8D34),
+    onWarning: Color(0xFFFFFFFF),
+    warningContainer: Color(0x0FEE8D34),
+    onWarningContainer: Color(0xFFEE8D34),
     surface: Color(0xFFF9F9F7),
     surfaceBright: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF1A1A19),
-    onSurfaceVariant: Color(0xBF1A1A19),
-    onSurfaceMuted: Color(0x801A1A19),
-    onSurfaceDisabled: Color(0x4D1A1A19),
-    surfaceContainerLowest: Color(0x051A1A19),
-    surfaceContainerLow: Color(0x0A1A1A19),
-    surfaceContainer: Color(0x0F1A1A19),
-    surfaceContainerHigh: Color(0x141A1A19),
-    surfaceContainerHighest: Color(0x1A1A1A19),
-    outline: Color(0x241A1A19),
-    outlineVariant: Color(0x0F1A1A19),
-    inverseSurface: Color(0xFF1E1E1E),
-    onInverseSurface: Color(0xFFF9F9F7),
-    inversePrimary: Color(0xFFE071A7),
+    onSurface: Color(0xFF111110),
+    onSurfaceVariant: Color(0xBF111110),
+    onSurfaceMuted: Color(0x80111110),
+    onSurfaceDisabled: Color(0x4D111110),
+    surfaceContainerLowest: Color(0x05111110),
+    surfaceContainerLow: Color(0x0A111110),
+    surfaceContainer: Color(0x0F111110),
+    surfaceContainerHigh: Color(0x14111110),
+    surfaceContainerHighest: Color(0x1A111110),
+    outline: Color(0x12111110),
+    outlineVariant: Color(0x1F111110),
+    inverseSurface: Color(0xFF111110),
+    onInverseSurface: Color(0xFFFFFFFF),
+    inversePrimary: Color(0xFFF5E9EE),
   );
 
-  /// Dark preset: the same palette with the ink inverted to white.
+  /// Dark preset: white ink on `#171717`, the accents lifted to hold on it.
   static const FlowColors dark = FlowColors(
     primary: Color(0xFFE071A7),
-    onPrimary: Color(0xFF1E1E1E),
-    primaryContainer: Color(0xFF432B37),
-    onPrimaryContainer: Color(0xFFF5CFE1),
-    secondary: Color(0xFFC5C5C5),
-    onSecondary: Color(0xFF1E1E1E),
-    secondaryContainer: Color(0xFF202020),
-    onSecondaryContainer: Color(0xFFFFFFFF),
-    tertiary: Color(0xFFDE9CC0),
-    onTertiary: Color(0xFF3D1F2E),
-    tertiaryContainer: Color(0xFF4E3040),
-    onTertiaryContainer: Color(0xFFF6DCE9),
-    error: Color(0xFFEF4444),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0x14E071A7),
+    onPrimaryContainer: Color(0xFFE071A7),
+    secondary: Color(0xFF6366F1),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0x146366F1),
+    onSecondaryContainer: Color(0xFF6366F1),
+    tertiary: Color(0xFFFF67B0),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0x14FF67B0),
+    onTertiaryContainer: Color(0xFFFF67B0),
+    error: Color(0xFFD95C5C),
     onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFF7F1D1D),
-    onErrorContainer: Color(0xFFFECACA),
+    errorContainer: Color(0x0FD95C5C),
+    onErrorContainer: Color(0xFFD95C5C),
+    success: Color(0xFF2FA866),
+    onSuccess: Color(0xFFFFFFFF),
+    successContainer: Color(0x0F2FA866),
+    onSuccessContainer: Color(0xFF2FA866),
+    warning: Color(0xFFEE8D34),
+    onWarning: Color(0xFFFFFFFF),
+    warningContainer: Color(0x0FEE8D34),
+    onWarningContainer: Color(0xFFEE8D34),
     surface: Color(0xFF171717),
     surfaceBright: Color(0xFF1E1E1E),
     onSurface: Color(0xFFFFFFFF),
@@ -202,10 +242,10 @@ class FlowColors {
     surfaceContainer: Color(0x0FFFFFFF),
     surfaceContainerHigh: Color(0x14FFFFFF),
     surfaceContainerHighest: Color(0x1AFFFFFF),
-    outline: Color(0x33FFFFFF),
-    outlineVariant: Color(0x0FFFFFFF),
+    outline: Color(0x1AFFFFFF),
+    outlineVariant: Color(0x29FFFFFF),
     inverseSurface: Color(0xFFF9F9F7),
-    onInverseSurface: Color(0xFF1A1A19),
+    onInverseSurface: Color(0xFF111110),
     inversePrimary: Color(0xFF8C3A67),
   );
 
@@ -226,6 +266,14 @@ class FlowColors {
     Color? onError,
     Color? errorContainer,
     Color? onErrorContainer,
+    Color? success,
+    Color? onSuccess,
+    Color? successContainer,
+    Color? onSuccessContainer,
+    Color? warning,
+    Color? onWarning,
+    Color? warningContainer,
+    Color? onWarningContainer,
     Color? surface,
     Color? surfaceBright,
     Color? onSurface,
@@ -260,6 +308,14 @@ class FlowColors {
       onError: onError ?? this.onError,
       errorContainer: errorContainer ?? this.errorContainer,
       onErrorContainer: onErrorContainer ?? this.onErrorContainer,
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      successContainer: successContainer ?? this.successContainer,
+      onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
+      warning: warning ?? this.warning,
+      onWarning: onWarning ?? this.onWarning,
+      warningContainer: warningContainer ?? this.warningContainer,
+      onWarningContainer: onWarningContainer ?? this.onWarningContainer,
       surface: surface ?? this.surface,
       surfaceBright: surfaceBright ?? this.surfaceBright,
       onSurface: onSurface ?? this.onSurface,
@@ -326,6 +382,30 @@ class FlowColors {
       onErrorContainer: Color.lerp(
         onErrorContainer,
         other.onErrorContainer,
+        t,
+      )!,
+      success: Color.lerp(success, other.success, t)!,
+      onSuccess: Color.lerp(onSuccess, other.onSuccess, t)!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
+      onSuccessContainer: Color.lerp(
+        onSuccessContainer,
+        other.onSuccessContainer,
+        t,
+      )!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      onWarning: Color.lerp(onWarning, other.onWarning, t)!,
+      warningContainer: Color.lerp(
+        warningContainer,
+        other.warningContainer,
+        t,
+      )!,
+      onWarningContainer: Color.lerp(
+        onWarningContainer,
+        other.onWarningContainer,
         t,
       )!,
       surface: Color.lerp(surface, other.surface, t)!,

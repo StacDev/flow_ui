@@ -73,20 +73,21 @@
 	--flow-card: #1e1e1e;
 	--flow-bubble: #262626;
 	--flow-card-shadow: none;
-	/* FlowColors.dark: outline 20% white, onSurface 4% wash, onPrimary. */
-	--flow-outline: rgba(255, 255, 255, 0.2);
+	/* FlowColors.dark: outlineVariant 16% white, outline 10%, onSurface 4% wash,
+	   onPrimary. */
+	--flow-outline: rgba(255, 255, 255, 0.16);
 	--flow-outline-hi: rgba(255, 255, 255, 0.22);
-	--flow-outline-lo: rgba(255, 255, 255, 0.07);
+	--flow-outline-lo: rgba(255, 255, 255, 0.1);
 	--flow-ink-wash: rgba(255, 255, 255, 0.04);
-	--flow-on-accent: #1e1e1e;
+	--flow-on-accent: #ffffff;
 }
 
-/* Light: FlowColors.light — #F9F9F7 warm paper, #1A1A19 ink. */
+/* Light: FlowColors.light — #F9F9F7 warm paper, #111110 ink. */
 :root[data-theme='light'] {
 	--sl-color-accent-low: #f6e9ed;
 	--sl-color-accent: #e071a7;
 	--sl-color-accent-high: #8c3a67;
-	--sl-color-white: #1a1a19;
+	--sl-color-white: #111110;
 	--sl-color-gray-1: #262625;
 	--sl-color-gray-2: #454544;
 	--sl-color-gray-3: #6c6c6a;
@@ -103,12 +104,13 @@
 	--flow-panel: #f3f3f1;
 	--flow-card: #ffffff;
 	--flow-bubble: #f0f0ee;
-	--flow-card-shadow: 0 1px 2px rgba(26, 26, 25, 0.04), 0 8px 24px -12px rgba(26, 26, 25, 0.08);
-	/* FlowColors.light: outline 14% ink, onSurface 4% wash, onPrimary. */
-	--flow-outline: rgba(26, 26, 25, 0.14);
-	--flow-outline-hi: rgba(26, 26, 25, 0.18);
-	--flow-outline-lo: rgba(26, 26, 25, 0.08);
-	--flow-ink-wash: rgba(26, 26, 25, 0.04);
+	--flow-card-shadow: 0 1px 2px rgba(17, 17, 16, 0.04), 0 8px 24px -12px rgba(17, 17, 16, 0.08);
+	/* FlowColors.light: outlineVariant 12% ink, outline 7%, onSurface 4% wash,
+	   onPrimary. */
+	--flow-outline: rgba(17, 17, 16, 0.12);
+	--flow-outline-hi: rgba(17, 17, 16, 0.18);
+	--flow-outline-lo: rgba(17, 17, 16, 0.07);
+	--flow-ink-wash: rgba(17, 17, 16, 0.04);
 	--flow-on-accent: #ffffff;
 }
 

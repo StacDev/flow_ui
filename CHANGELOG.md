@@ -2,6 +2,15 @@
 
 ## 0.3.0 (unreleased)
 
+- **Colors** — presets retuned to the design file: ink `#111110`, an indigo
+  `secondary`, a hot-pink `tertiary` (markdown links follow), a softer
+  `error`, and new `success` and `warning` groups. Accent containers are
+  now washes of their accent (8% accents, 6% statuses) with the accent as
+  the `on` colour. **Breaking:** `outline` and `outlineVariant` swap
+  meaning — `outline` is the faint hairline (7%), `outlineVariant` the firm
+  one (12%) — and the eight new roles are required constructor parameters
+  (`copyWith` on a preset is unaffected).
+
 - **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
   area. The design's 24 (compact) and 40 (wide) are now measured from the
   bottom of the safe area, so a phone's home indicator is absorbed rather
