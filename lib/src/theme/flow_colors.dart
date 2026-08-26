@@ -147,13 +147,12 @@ class FlowColors {
 
   // Outline — borders and separators.
 
-  /// Faint hairline — 7% ink in light, 10% in dark: separators, rules, a
+  /// Faint hairline — 7% ink in light, 8% in dark: separators, rules, a
   /// pill or code block at rest.
   final Color outline;
 
-  /// Firm hairline — 12% ink in light, 16% in dark: the edge of a tile, a
-  /// retry pill, the send disc at rest. Dark hairlines need the extra step
-  /// to hold the edge.
+  /// Firm hairline — 12% ink in both themes: the edge of a tile, a retry
+  /// pill, the send disc at rest.
   final Color outlineVariant;
 
   // Inverse — elements on the opposite brightness (snackbars, tooltips).
@@ -205,32 +204,33 @@ class FlowColors {
     inversePrimary: Color(0xFFF5E9EE),
   );
 
-  /// Dark preset: white ink on `#171717`, the accents lifted to hold on it.
+  /// Dark preset: white ink on `#171717`, the accents lifted to hold on it
+  /// and carrying the raised card's `#1E1E1E` as their `on` ink.
   static const FlowColors dark = FlowColors(
     primary: Color(0xFFE071A7),
-    onPrimary: Color(0xFFFFFFFF),
+    onPrimary: Color(0xFF1E1E1E),
     primaryContainer: Color(0x14E071A7),
     onPrimaryContainer: Color(0xFFE071A7),
-    secondary: Color(0xFF6366F1),
-    onSecondary: Color(0xFFFFFFFF),
-    secondaryContainer: Color(0x146366F1),
-    onSecondaryContainer: Color(0xFF6366F1),
+    secondary: Color(0xFF77A8FD),
+    onSecondary: Color(0xFF1E1E1E),
+    secondaryContainer: Color(0x1477A8FD),
+    onSecondaryContainer: Color(0xFF77A8FD),
     tertiary: Color(0xFFFF67B0),
-    onTertiary: Color(0xFFFFFFFF),
+    onTertiary: Color(0xFF1E1E1E),
     tertiaryContainer: Color(0x14FF67B0),
     onTertiaryContainer: Color(0xFFFF67B0),
-    error: Color(0xFFD95C5C),
-    onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0x0FD95C5C),
-    onErrorContainer: Color(0xFFD95C5C),
-    success: Color(0xFF2FA866),
-    onSuccess: Color(0xFFFFFFFF),
-    successContainer: Color(0x0F2FA866),
-    onSuccessContainer: Color(0xFF2FA866),
-    warning: Color(0xFFEE8D34),
-    onWarning: Color(0xFFFFFFFF),
-    warningContainer: Color(0x0FEE8D34),
-    onWarningContainer: Color(0xFFEE8D34),
+    error: Color(0xFFFF6565),
+    onError: Color(0xFF1E1E1E),
+    errorContainer: Color(0x0FFF6565),
+    onErrorContainer: Color(0xFFFF6565),
+    success: Color(0xFF50D59D),
+    onSuccess: Color(0xFF1E1E1E),
+    successContainer: Color(0x0F50D59D),
+    onSuccessContainer: Color(0xFF50D59D),
+    warning: Color(0xFFFF9A3E),
+    onWarning: Color(0xFF1E1E1E),
+    warningContainer: Color(0x0FFF9A3E),
+    onWarningContainer: Color(0xFFFF9A3E),
     surface: Color(0xFF171717),
     surfaceBright: Color(0xFF1E1E1E),
     onSurface: Color(0xFFFFFFFF),
@@ -242,11 +242,11 @@ class FlowColors {
     surfaceContainer: Color(0x0FFFFFFF),
     surfaceContainerHigh: Color(0x14FFFFFF),
     surfaceContainerHighest: Color(0x1AFFFFFF),
-    outline: Color(0x1AFFFFFF),
-    outlineVariant: Color(0x29FFFFFF),
-    inverseSurface: Color(0xFFF9F9F7),
-    onInverseSurface: Color(0xFF111110),
-    inversePrimary: Color(0xFF8C3A67),
+    outline: Color(0x14FFFFFF),
+    outlineVariant: Color(0x1FFFFFFF),
+    inverseSurface: Color(0xFFFFFFFF),
+    onInverseSurface: Color(0xFF1E1E1E),
+    inversePrimary: Color(0xFF2B2025),
   );
 
   FlowColors copyWith({

@@ -46,13 +46,13 @@
 	--flow-card: #1e1e1e;
 	--flow-bubble: #262626;
 	--flow-card-shadow: none;
-	/* FlowColors.dark: outlineVariant 16% white, outline 10%, onSurface 4% wash,
+	/* FlowColors.dark: outlineVariant 12% white, outline 8%, onSurface 4% wash,
 	   onPrimary. */
-	--flow-outline: rgba(255, 255, 255, 0.16);
-	--flow-outline-hi: rgba(255, 255, 255, 0.22);
-	--flow-outline-lo: rgba(255, 255, 255, 0.1);
+	--flow-outline: rgba(255, 255, 255, 0.12);
+	--flow-outline-hi: rgba(255, 255, 255, 0.18);
+	--flow-outline-lo: rgba(255, 255, 255, 0.08);
 	--flow-ink-wash: rgba(255, 255, 255, 0.04);
-	--flow-on-accent: #ffffff;
+	--flow-on-accent: #1e1e1e;
 }
 
 /* Light: FlowColors.light — #F9F9F7 warm paper, #111110 ink. */

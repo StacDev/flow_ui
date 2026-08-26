@@ -9,7 +9,9 @@
   the `on` colour. **Breaking:** `outline` and `outlineVariant` swap
   meaning — `outline` is the faint hairline (7%), `outlineVariant` the firm
   one (12%) — and the eight new roles are required constructor parameters
-  (`copyWith` on a preset is unaffected).
+  (`copyWith` on a preset is unaffected). The dark preset follows: lifted
+  accents that carry `#1E1E1E` as their `on` ink, and hairlines brought
+  down to 8% and 12%.
 
 - **Typefaces** — Google Sans replaces Figtree and Google Sans Code replaces
   Geist Mono. Neither is bundled: the package depends on `google_fonts`,
