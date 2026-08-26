@@ -8,14 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Two hard constraints shape everything here:
 
-- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree and Geist Mono (`fonts/`, SIL OFL) because the design system is set in them, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
+- **One third-party dependency: `google_fonts`.** `dependencies:` in `pubspec.yaml` holds the Flutter SDK, Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev — and `google_fonts` (material.io), which fetches Google Sans and Google Sans Code from Google Fonts at runtime. Nothing else, and no font files ship with the package. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
 The theme, the conversation components (message, thread, streaming text, actions, loading), the composer and its menus, attachments with their preview, suggestions, and the chat surface are implemented; the roadmap below tracks the rest. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.
 
 ## Layout
 
-- Package at the repo root: `lib/`, `test/`, `fonts/`, `pubspec.yaml`.
+- Package at the repo root: `lib/`, `test/`, `pubspec.yaml`.
 - `playground/` — the Flow UI Playground: a full Flutter app depending on the package via `path: ../`. Use it to demo and manually exercise components (every component has a stage demo, with variant pills and code snippets).
 
 ## Commands

@@ -42,8 +42,12 @@ MaterialApp(
 	back to a preset matched to the ambient `ThemeData.brightness`.
 </Aside>
 
-Figtree — the face the design system is set in — ships inside the package,
-so there is nothing to add to your own `pubspec.yaml` fonts section.
+Google Sans — the face the design system is set in — is fetched through
+`google_fonts` on first use, so there is nothing to add to your `pubspec.yaml`
+fonts section. The fetch needs network access: `android.permission.INTERNET`
+in the main Android manifest (Flutter grants it only to debug and profile)
+and the `com.apple.security.network.client` entitlement in a sandboxed macOS
+app. To render offline on first launch, ship the files under `google_fonts/`.
 
 ## Render a conversation
 
