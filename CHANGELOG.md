@@ -2,17 +2,16 @@
 
 ## 0.3.0 (unreleased)
 
-- **Typefaces** — Google Sans replaces Figtree as the prose face, and
-  Google Sans Code replaces Geist Mono as the code face. Neither is
-  bundled: the package now depends on `google_fonts`, which fetches each
-  cut from Google Fonts on first use and caches it on the device (ship
-  the files under a `google_fonts/` asset folder for offline-first apps).
-  `FlowTypography.standard` is built at runtime as a result —
-  `FlowTheme.typography` still defaults to it — and the new
-  `FlowTypography.recut` re-cuts a token at another weight or style in
-  the right font file, which `copyWith(fontWeight:)` can no longer do on
-  the standard scale. Hosts that named `Figtree` or `GeistMono` directly
-  should update.
+- **Typefaces** — Google Sans replaces Figtree and Google Sans Code replaces
+  Geist Mono. Neither is bundled: the package depends on `google_fonts`,
+  which fetches each cut on first use and caches it (ship the files under a
+  `google_fonts/` asset folder for offline-first apps). The fetch needs
+  `android.permission.INTERNET` in the main Android manifest and the
+  `com.apple.security.network.client` entitlement in a sandboxed macOS app.
+  `FlowTypography.standard` is now built at runtime, and the new
+  `FlowTypography.recut` re-cuts a token at another weight or style, which
+  `copyWith(fontWeight:)` no longer can on the standard scale. Hosts that
+  named `Figtree` or `GeistMono` directly should update.
 
 - **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
   area. The design's 24 (compact) and 40 (wide) are now measured from the

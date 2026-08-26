@@ -75,10 +75,12 @@ MaterialApp(
 
 The default typography — Google Sans and Google Sans Code — arrives through
 [google_fonts](https://pub.dev/packages/google_fonts): each cut is fetched
-from Google Fonts on first use and cached on the device, so the theme renders
-as designed with no font setup. An app that must render offline on first
-launch can ship the files under a `google_fonts/` asset folder, which the
-package checks before the network.
+on first use and cached on the device, so there is no font to bundle. The
+fetch needs network access: `android.permission.INTERNET` in an Android
+app's main manifest (Flutter's template grants it only to debug and profile)
+and the `com.apple.security.network.client` entitlement in a sandboxed macOS
+app; without it text falls back to the platform face. To render offline on
+first launch, ship the files under a `google_fonts/` asset folder.
 
 ## Build a chat screen
 
@@ -297,6 +299,5 @@ cd playground && flutter run -d chrome
 ## License
 
 Code is released under the [MIT License](LICENSE). Google Sans and Google
-Sans Code are Google's, under the [SIL Open Font
-License](https://openfontlicense.org), and are fetched from Google Fonts
-rather than bundled.
+Sans Code are fetched from Google Fonts under the
+[SIL Open Font License](https://openfontlicense.org), not bundled.
