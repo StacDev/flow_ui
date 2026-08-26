@@ -2,12 +2,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Google Sans for prose and Google Sans Code for code, served by
-/// `google_fonts`: each cut is fetched from Google Fonts on first use and
-/// cached on the device, or read from a `google_fonts/` asset folder when
-/// the host ships one.
+/// `google_fonts`: each cut is fetched on first use and cached, or read from
+/// a `google_fonts/` asset folder when the host ships one.
 ///
 /// google_fonts registers each cut as its own font family (`GoogleSans_600`,
-/// …), so the roles are built through the package and re-weighted with
+/// …), so roles are built through the package and re-weighted with
 /// [FlowTypography.recut] rather than `copyWith(fontWeight:)`.
 const String _fontFamily = 'GoogleSans';
 const String _monoFontFamily = 'GoogleSansCode';
@@ -227,9 +226,8 @@ class FlowTypography {
   /// [style] at [fontWeight] and/or [fontStyle], in the matching cut.
   ///
   /// google_fonts registers each cut as its own font family, so `copyWith`
-  /// on a standard token would leave the engine faking the weight; this
-  /// loads the real cut instead. Styles in any other face pass through
-  /// `copyWith`.
+  /// on a token would leave the engine faking the weight; this loads the
+  /// real cut. Styles in any other face pass through `copyWith`.
   static TextStyle recut(
     TextStyle style, {
     FontWeight? fontWeight,
