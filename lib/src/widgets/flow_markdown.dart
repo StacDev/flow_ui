@@ -809,8 +809,12 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           .copyWith(color: base.color)
           .merge(_mdStyle?.inlineCodeStyle);
     }
-    if (run.bold) style = style.copyWith(fontWeight: FontWeight.w600);
-    if (run.italic) style = style.copyWith(fontStyle: FontStyle.italic);
+    if (run.bold) {
+      style = FlowTypography.recut(style, fontWeight: FontWeight.w600);
+    }
+    if (run.italic) {
+      style = FlowTypography.recut(style, fontStyle: FontStyle.italic);
+    }
 
     final linked = run.linkHref != null && widget.onLinkTap != null;
     final decorations = <TextDecoration>[

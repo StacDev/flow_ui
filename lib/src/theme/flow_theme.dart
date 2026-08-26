@@ -42,7 +42,7 @@ import 'flow_typography.dart';
 class FlowTheme extends ThemeExtension<FlowTheme> {
   const FlowTheme({
     required this.colors,
-    this.typography = FlowTypography.standard,
+    this._typography,
     this.syntax,
     this.composerStyle,
     this.messageStyle,
@@ -64,7 +64,11 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       const FlowTheme(colors: FlowColors.dark, syntax: FlowSyntaxColors.dark);
 
   final FlowColors colors;
-  final FlowTypography typography;
+  final FlowTypography? _typography;
+
+  /// The type scale — [FlowTypography.standard] unless the host set one.
+  /// Resolved on read, since the standard scale isn't `const`.
+  FlowTypography get typography => _typography ?? FlowTypography.standard;
 
   /// Syntax token colors for code blocks. Null resolves to the preset
   /// matching the ambient brightness — unlike [typography], the right
@@ -117,7 +121,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   }) {
     return FlowTheme(
       colors: colors ?? this.colors,
-      typography: typography ?? this.typography,
+      typography: typography ?? _typography,
       syntax: syntax ?? this.syntax,
       composerStyle: composerStyle ?? this.composerStyle,
       messageStyle: messageStyle ?? this.messageStyle,

@@ -73,8 +73,14 @@ MaterialApp(
 )
 ```
 
-The default typography ships with the package — Figtree, bundled under the
-SIL Open Font License — so the theme renders as designed with no font setup.
+The default typography — Google Sans and Google Sans Code — arrives through
+[google_fonts](https://pub.dev/packages/google_fonts): each cut is fetched
+on first use and cached on the device, so there is no font to bundle. The
+fetch needs network access: `android.permission.INTERNET` in an Android
+app's main manifest (Flutter's template grants it only to debug and profile)
+and the `com.apple.security.network.client` entitlement in a sandboxed macOS
+app; without it text falls back to the platform face. To render offline on
+first launch, ship the files under a `google_fonts/` asset folder.
 
 ## Build a chat screen
 
@@ -292,5 +298,6 @@ cd playground && flutter run -d chrome
 
 ## License
 
-Code is released under the [MIT License](LICENSE). The bundled Figtree font
-is licensed separately under the [SIL Open Font License](fonts/OFL.txt).
+Code is released under the [MIT License](LICENSE). Google Sans and Google
+Sans Code are fetched from Google Fonts under the
+[SIL Open Font License](https://openfontlicense.org), not bundled.

@@ -8,8 +8,7 @@ dist/
 # generated types
 .astro/
 
-# synced/built at build time from the repo (see scripts/)
-public/fonts/
+# built at build time from the repo (see scripts/)
 public/playground/
 public/api/
 

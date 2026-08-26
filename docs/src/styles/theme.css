@@ -1,7 +1,7 @@
 /* flow_ui docs theme.
  *
  * Design language: the Flow palette (lib/src/theme/flow_colors.dart) —
- * warm paper & near-black ink, one rose accent — set in Figtree and laid
+ * warm paper & near-black ink, one rose accent — set in Google Sans and laid
  * out in the modern docs idiom: display-scale headlines, ink-neutral pill
  * buttons, lifted borderless panels, whisper hairlines, minimal chrome.
  * Rose is the accent voice (links, active states, the mark), never a slab.
@@ -9,39 +9,12 @@
 
 /* ---------------------------------------------------------------- fonts */
 
-@font-face {
-	font-family: 'Figtree';
-	src: url('/fonts/Figtree-Regular.ttf') format('truetype');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Figtree';
-	src: url('/fonts/Figtree-Medium.ttf') format('truetype');
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Figtree';
-	src: url('/fonts/Figtree-SemiBold.ttf') format('truetype');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Figtree';
-	src: url('/fonts/Figtree-Bold.ttf') format('truetype');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
+/* Google Sans loads from Google Fonts via the <link> in astro.config.mjs. */
 
 /* -------------------------------------------------------------- palette */
 
 :root {
-	--sl-font: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+	--sl-font: 'Google Sans', ui-sans-serif, system-ui, sans-serif;
 	--sl-nav-height: 4rem;
 	--sl-nav-pad-x: 1.5rem;
 }

@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_attachment.dart';
 import '../theme/flow_theme.dart';
+import '../theme/flow_typography.dart';
 import '../utils/flow_attachment_error.dart';
 import '../utils/flow_circle_button.dart';
 import 'flow_attachment_preview.dart';
@@ -481,10 +482,10 @@ class _TypePill extends StatelessWidget {
               padding: _pillPadding,
               child: Text(
                 kind,
-                style: context.flowTypography.labelSmall.copyWith(
-                  color: colors.surfaceBright,
+                style: FlowTypography.recut(
+                  context.flowTypography.labelSmall,
                   fontWeight: FontWeight.w600,
-                ),
+                ).copyWith(color: colors.surfaceBright),
               ),
             ),
           ),

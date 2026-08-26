@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_error_state_style.dart';
 import '../theme/flow_theme.dart';
+import '../theme/flow_typography.dart';
 
 /// A failure surface: an error glyph and a host-written explanation on a
 /// hairline card, with an optional retry pill.
@@ -107,9 +108,10 @@ class FlowErrorState extends StatelessWidget {
     final effective = context.flowTheme.errorStateStyle?.merge(style) ?? style;
 
     final rowStyle = title != null
-        ? typography.labelMedium
-              .copyWith(fontWeight: FontWeight.w600, color: colors.onSurface)
-              .merge(effective?.titleStyle)
+        ? FlowTypography.recut(
+            typography.labelMedium,
+            fontWeight: FontWeight.w600,
+          ).copyWith(color: colors.onSurface).merge(effective?.titleStyle)
         : typography.bodyMedium
               .copyWith(color: colors.onSurfaceVariant)
               .merge(effective?.messageStyle);
@@ -252,10 +254,10 @@ class _RetryButtonState extends State<_RetryButton> {
                   const SizedBox(width: _glyphGap),
                   Text(
                     label,
-                    style: typography.labelMedium.copyWith(
+                    style: FlowTypography.recut(
+                      typography.labelMedium,
                       fontWeight: FontWeight.w600,
-                      color: foreground,
-                    ),
+                    ).copyWith(color: foreground),
                   ),
                 ],
               ],
