@@ -21,11 +21,12 @@ class GeminiApi {
   /// Streams the reply to [history] as text deltas.
   ///
   /// [history] is the conversation so far, oldest first; user turns are
-  /// sent as `user`, assistant turns as `model`, and everything that isn't
-  /// a successful turn with text (system turns, failed turns) is skipped.
-  /// Throws a
-  /// [GeminiApiException] with the API's own message when the request is
-  /// refused.
+  /// sent as `user`, assistant turns as `model`, and everything that
+  /// isn't a successful turn (system turns, failed turns) is skipped.
+  ///
+  /// Attached images ride along as `inlineData`: flow_ui hands back the
+  /// bytes it read, this encodes them. Throws a [GeminiApiException] with
+  /// the API's own message when the request is refused.
   Stream<String> streamReply(List<FlowMessageData> history) async* {
     if (apiKey.isEmpty) {
       throw GeminiApiException(
@@ -74,27 +75,61 @@ class GeminiApi {
   static List<Map<String, Object?>> _contentsFrom(
     List<FlowMessageData> history,
   ) {
-    return [
-      for (final message in history)
-        // A failed turn can carry the partial text streamed before the
-        // error; replaying it as a successful `model` message would make
-        // Gemini continue from its own aborted reply.
-        if (message.role != FlowMessageRole.system &&
-            message.status != FlowMessageStatus.error)
-          if (_textOf(message) case final text when text.isNotEmpty)
-            {
-              'role': message.role == FlowMessageRole.user ? 'user' : 'model',
-              'parts': [
-                {'text': text},
-              ],
-            },
-    ];
+    final contents = <Map<String, Object?>>[];
+    for (final message in history) {
+      // A failed turn can carry the partial text streamed before the
+      // error; replaying it as a successful `model` message would make
+      // Gemini continue from its own aborted reply.
+      if (message.role == FlowMessageRole.system ||
+          message.status == FlowMessageStatus.error) {
+        continue;
+      }
+      final parts = _partsOf(message);
+      if (parts.isEmpty) continue;
+      contents.add({
+        'role': message.role == FlowMessageRole.user ? 'user' : 'model',
+        'parts': parts,
+      });
+    }
+    return contents;
   }
 
-  static String _textOf(FlowMessageData message) => [
-    for (final part in message.parts)
-      if (part is FlowTextPart) part.text,
-  ].join('\n');
+  /// A turn's text and its images, in Gemini's shape.
+  ///
+  /// The bytes come straight off the [FlowAttachment]s flow_ui built when
+  /// the user picked or dropped the file — the package reads and decodes,
+  /// and leaves both the original bytes and their type on the attachment
+  /// for exactly this. Anything without bytes, or without an image type,
+  /// is display-only and skipped.
+  static List<Map<String, Object?>> _partsOf(FlowMessageData message) {
+    final parts = <Map<String, Object?>>[];
+
+    // Walked in order, so what the model reads matches what the bubble
+    // shows: the picture first and the caption under it, the way the
+    // turn was composed.
+    for (final part in message.parts) {
+      switch (part) {
+        case FlowTextPart(:final text) when text.isNotEmpty:
+          parts.add({'text': text});
+        case FlowAttachmentPart(:final attachments):
+          for (final attachment in attachments) {
+            final bytes = attachment.bytes;
+            final mimeType = attachment.mimeType;
+            if (bytes == null || mimeType == null) continue;
+            if (!mimeType.startsWith('image/')) continue;
+            // inlineData is capped by the request size (~20MB), and
+            // base64 inflates by a third — the composer's 10MB ceiling
+            // keeps a single image well inside it.
+            parts.add({
+              'inlineData': {'mimeType': mimeType, 'data': base64Encode(bytes)},
+            });
+          }
+        default:
+          break;
+      }
+    }
+    return parts;
+  }
 
   static String _textFrom(String data) {
     try {

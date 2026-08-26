@@ -123,11 +123,66 @@ FlowComposer(
 )
 ```
 
+## Getting them
+
+Everything above renders attachments you already hold. Two things in the
+package produce them:
+
+- [`FlowComposer.onAttachmentsPicked`](/components/composer/#attach) —
+  the attach button opens the platform's file dialog and hands back
+  decoded `FlowAttachment`s.
+- [`FlowChatView.onAttachmentsDropped`](/components/chat-view/#drag-and-drop)
+  — the surface accepts drops (web only) and hands back the same.
+- [`FlowComposer.onAttachmentsDropped`](/components/composer/#drop-on-the-card)
+  — the same drop, scoped to the composer card instead of the page.
+- [`FlowComposer.onAttachmentsPasted`](/components/composer/#paste) — an
+  image pasted into the field (web only).
+
+Both take a `FlowAttachmentOptions` saying what is accepted and how it is
+decoded, and report what they refused through `onAttachmentRejected`.
+Neither holds anything: the attachments come back to you, and you pass
+them to `FlowComposer.attachments`.
+
+### Sending them
+
+An attachment the package produced carries the file it read on `bytes`,
+with `mimeType` alongside — the platform's own type where it reports one
+(the web does), and the extension's where it doesn't (every native picker
+hands back a path and nothing else). That is what you upload with:
+
+```dart title="Attached images, on their way to a model"
+for (final part in message.parts)
+  if (part is FlowAttachmentPart)
+    for (final attachment in part.attachments)
+      if (attachment.bytes case final bytes?)
+        parts.add({
+          'inlineData': {
+            'mimeType': attachment.mimeType,
+            'data': base64Encode(bytes),
+          },
+        });
+```
+
+flow_ui never reads either field — it draws `thumbnail` and stops. They
+exist because attaching a file is half a feature without a way to send
+it. Building a `FlowAttachment` by hand from a URL leaves both null;
+building one from bytes you already have (Android's keyboard media, say)
+should fill them in, so it uploads like a picked file.
+
+The bytes are the *encoded* file, held for as long as the attachment is:
+a pending strip keeps every original in memory until it is sent or
+removed. That was already true of the thumbnail's `MemoryImage` — the
+field hands you the same list rather than a second copy.
+
+The [example app](https://github.com/StacDev/flow_ui/tree/main/example)
+does exactly this against Gemini.
+
 ## Key API
 
 - `FlowAttachment` — `id`, `thumbnail` (any `ImageProvider`), `preview`
   (a full-resolution image for the viewer; defaults to `thumbnail`),
-  `kind`, `label`, and `tooltip` (falls back to `label`).
+  `kind`, `label`, `tooltip` (falls back to `label`), and — for anything
+  the package read itself — `bytes` and `mimeType`.
 - `FlowAttachmentGroup` — `attachments`, `layout`
   (`FlowAttachmentLayout.scroll` default / `.wrap`), `onRemove`, `onTap`,
   and the host-supplied tooltips, plus the tile metrics: `size` (80; 64

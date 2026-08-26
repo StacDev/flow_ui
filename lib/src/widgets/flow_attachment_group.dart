@@ -358,7 +358,12 @@ class _AttachmentTileState extends State<_AttachmentTile> {
         child: thumbnail == null
             ? null
             : Image(
-                image: ResizeImage.resizeIfNeeded(cachePixels, null, thumbnail),
+                // Unless the host already bounded it: ResizeImage asserts
+                // rather than nesting, and a second cap here would turn
+                // a perfectly good provider into the failure glyph.
+                image: thumbnail is ResizeImage
+                    ? thumbnail
+                    : ResizeImage.resizeIfNeeded(cachePixels, null, thumbnail),
                 fit: BoxFit.cover,
                 filterQuality: FilterQuality.medium,
                 // A dead provider must not paint the framework's red error box.

@@ -21,7 +21,7 @@
 - [ ] `flutter analyze lib` and `flutter analyze` in `example/` and `playground/` are clean
 - [ ] `dart format .` applied
 - [ ] Exercised in the playground — with a stage demo added or updated if this is a new component or variant
-- [ ] No new entries under `dependencies:` in `pubspec.yaml` (Flutter SDK and flutter.dev packages only)
+- [ ] Any new entry under `dependencies:` in `pubspec.yaml` is flutter.dev-published, forces no configuration on hosts that never use the feature, and is argued in this PR
 - [ ] Nothing model-facing — no prompts, schemas, or provider/network calls
 - [ ] New public API is exported from `lib/flow_ui.dart` and documented in `docs/` and the README table
 - [ ] `CHANGELOG.md` updated for user-facing changes, with breaking changes called out

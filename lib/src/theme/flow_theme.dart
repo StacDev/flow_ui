@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../styles/flow_chat_view_style.dart';
 import '../styles/flow_code_block_style.dart';
 import '../styles/flow_composer_style.dart';
 import '../styles/flow_error_state_style.dart';
@@ -53,6 +54,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     this.messageActionsStyle,
     this.pillStyle,
     this.suggestionStyle,
+    this.chatViewStyle,
   });
 
   /// Light preset.
@@ -100,6 +102,10 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   /// App-wide default for every `FlowSuggestion`.
   final FlowSuggestionStyle? suggestionStyle;
 
+  /// App-wide default for `FlowChatView.style` — the drop treatment's
+  /// gradient, glyph and label.
+  final FlowChatViewStyle? chatViewStyle;
+
   @override
   FlowTheme copyWith({
     FlowColors? colors,
@@ -114,6 +120,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     FlowMessageActionsStyle? messageActionsStyle,
     FlowPillStyle? pillStyle,
     FlowSuggestionStyle? suggestionStyle,
+    FlowChatViewStyle? chatViewStyle,
   }) {
     return FlowTheme(
       colors: colors ?? this.colors,
@@ -128,6 +135,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       messageActionsStyle: messageActionsStyle ?? this.messageActionsStyle,
       pillStyle: pillStyle ?? this.pillStyle,
       suggestionStyle: suggestionStyle ?? this.suggestionStyle,
+      chatViewStyle: chatViewStyle ?? this.chatViewStyle,
     );
   }
 
@@ -165,6 +173,9 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       suggestionStyle: suggestionStyle == null
           ? other.suggestionStyle
           : suggestionStyle!.lerp(other.suggestionStyle, t),
+      chatViewStyle: chatViewStyle == null
+          ? other.chatViewStyle
+          : chatViewStyle!.lerp(other.chatViewStyle, t),
     );
   }
 }

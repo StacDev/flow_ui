@@ -26,6 +26,25 @@ FlowComposer(
   isStreaming: generating,
   onSend: send,
   onStop: stop,
+  // The attach button, picking included: tapping opens the platform's
+  // file dialog and this comes back with the files read and decoded.
+  // Holding them is still the host's — pass them back in through
+  // attachments. Pass onAttach instead to own the picking yourself.
+  onAttachmentsPicked: (picked) => setState(() => pending.addAll(picked)),
+  // Drag-and-drop scoped to the card, which lights up while a file is
+  // over it. FlowChatView.onAttachmentsDropped is the same thing over
+  // the whole surface; wire either, or both — the innermost wins.
+  onAttachmentsDropped: (dropped) => setState(() => pending.addAll(dropped)),
+  // And Ctrl+V / Cmd+V, while the field has focus.
+  onAttachmentsPasted: (pasted) => setState(() => pending.addAll(pasted)),
+  attachmentOptions: const FlowAttachmentOptions(
+    accept: [FlowAttachmentTypeGroup.images],
+    maxFileSize: 10 * 1024 * 1024,
+  ),
+  onAttachmentRejected: (name, reason) => showRejection(name, reason),
+  attachTooltip: 'Attach files',
+  attachments: pending,
+  onRemoveAttachment: removePending,
   leadingActions: [
     FlowMenu(
       icon: PhosphorIconsRegular.plus,
@@ -62,6 +81,7 @@ class _ComposerDemoState extends State<ComposerDemo> {
   final TextEditingController _input = TextEditingController();
   String _modelId = 'opus-5-1';
   String _effortId = 'extra';
+  final List<FlowAttachment> _attachments = [];
 
   @override
   void dispose() {
@@ -80,6 +100,21 @@ class _ComposerDemoState extends State<ComposerDemo> {
           isStreaming: widget.variant == 'streaming',
           onSend: (_) {},
           onStop: () {},
+          // The real dialog: tapping attach opens the browser's file
+          // picker and these come back read and decoded.
+          onAttachmentsPicked: (picked) =>
+              setState(() => _attachments.addAll(picked)),
+          // Drop scoped to the card: drag an image anywhere else on the
+          // stage and nothing happens — over the composer it lights up.
+          onAttachmentsDropped: (dropped) =>
+              setState(() => _attachments.addAll(dropped)),
+          // Focus the field and paste a screenshot.
+          onAttachmentsPasted: (pasted) =>
+              setState(() => _attachments.addAll(pasted)),
+          attachTooltip: 'Attach files',
+          attachments: List.of(_attachments),
+          onRemoveAttachment: (id) =>
+              setState(() => _attachments.removeWhere((a) => a.id == id)),
           leadingActions: [
             FlowMenu(
               icon: PhosphorIconsRegular.plus,

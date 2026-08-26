@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Two hard constraints shape everything here:
 
-- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree and Geist Mono (`fonts/`, SIL OFL) because the design system is set in them, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
+- **flutter.dev packages only.** `dependencies:` in `pubspec.yaml` contains the Flutter SDK and packages published by **flutter.dev** — `material_ui` (Material's home since Flutter 3.47) and its transitive set, plus `file_selector`, the plugin behind the composer's attach button. Nothing outside that publisher, ever. Adding one is a decision, not a convenience: it must be flutter.dev-published, it must not force configuration on hosts that never touch the feature (no manifest permissions, no plist strings — this is why `file_selector` and not `image_picker`), and the PR has to argue it. Dev dependencies (`flutter_test`, `flutter_lints`) are fine. Bundled *assets* are not dependencies: the package ships Figtree and Geist Mono (`fonts/`, SIL OFL) because the design system is set in them, declared under `flutter: fonts:` and referenced as `package: 'flow_ui'`.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
 The theme, the conversation components (message, thread, streaming text, actions, loading), the composer and its menus, attachments with their preview, suggestions, and the chat surface are implemented; the roadmap below tracks the rest. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.
@@ -81,7 +81,7 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 | 12 | Message composer | | ✅ |
 | 13 | Model selector | effort & overflow submenus; sheet on phones | ✅ |
 | 14 | Menu | icon-trigger menu: groups, submenus, toggles; sheet on phones | ✅ |
-| 15 | Attachments | images and files, type pill; videos pending | ✅ |
+| 15 | Attachments | images and files, type pill; built-in picker and web file drop; videos pending | ✅ |
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |
 | 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |

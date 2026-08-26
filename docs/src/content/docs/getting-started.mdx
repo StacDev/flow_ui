@@ -8,20 +8,34 @@ sidebar:
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Flow UI is an open-source Flutter UI library to build production-grade
-Chat & AI assistant interfaces — a plain Flutter package, no codegen, no
-transitive dependency tree. Its components draw the conversation state you
-hand them and report what the user did through callbacks; everything
-model-shaped stays in your app.
+Chat & AI assistant interfaces — a plain Flutter package, no codegen, and
+nothing in its dependency tree that Flutter's own team doesn't publish.
+Its components draw the conversation state you hand them and report what
+the user did through callbacks; everything model-shaped stays in your
+app.
 
 ## Install
 
-One line in your pubspec — the package depends on nothing but the Flutter
-SDK:
+One line in your pubspec:
 
 ```yaml title="pubspec.yaml"
 dependencies:
   flow_ui: ^0.2.0
 ```
+
+That brings in the Flutter SDK, `material_ui`, and `file_selector` — the
+flutter.dev plugin behind the composer's attach button. Nothing else, and
+nothing outside flutter.dev.
+
+<Aside type="caution" title="macOS: one entitlement, if you attach files">
+Apps that wire up `FlowComposer.onAttachmentsPicked` need
+`com.apple.security.files.user-selected.read-only` in **both**
+`macos/Runner/DebugProfile.entitlements` and
+`macos/Runner/Release.entitlements`, or the file dialog opens onto
+nothing. Nothing else asks anything of your build — no Android
+permission, no iOS plist string — and apps that never attach files
+configure nothing at all.
+</Aside>
 
 ## Wire the theme
 

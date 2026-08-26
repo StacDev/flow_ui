@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// A file the host wants shown as a tile.
@@ -15,6 +16,10 @@ import 'package:flutter/widgets.dart';
 /// images all work — the package never loads anything itself. Leave it null
 /// for a file with no image of its own, such as a document: the tile then
 /// draws its ground and, when [kind] is set, the type pill.
+///
+/// Attachments the package produced — from the composer's picker or a
+/// drop — also carry [bytes] and [mimeType], which is what a host uploads
+/// with. Nothing in flow_ui reads them.
 @immutable
 class FlowAttachment {
   const FlowAttachment({
@@ -24,6 +29,8 @@ class FlowAttachment {
     this.kind,
     this.label,
     this.tooltip,
+    this.bytes,
+    this.mimeType,
   });
 
   /// Reported through `onTap` and `onRemove`.
@@ -48,6 +55,26 @@ class FlowAttachment {
 
   /// Host-localized tooltip; falls back to [label].
   final String? tooltip;
+
+  /// The file as it was read, when the package read it — filled in for
+  /// anything picked through `FlowComposer.onAttachmentsPicked` or
+  /// dropped, and null for an attachment the host built from a URL.
+  ///
+  /// Nothing in flow_ui touches this: the package draws [thumbnail] and
+  /// stops. It is here because attaching a file is only half a feature
+  /// without a way to send it, and reaching back through the
+  /// [ImageProvider] to find the bytes again is not an API.
+  ///
+  /// The same list the [thumbnail] decodes from, so carrying it costs
+  /// nothing beyond what the tile already holds — but it is the *encoded*
+  /// file, so a pending strip holds every original in memory until it is
+  /// sent or removed.
+  final Uint8List? bytes;
+
+  /// The type of [bytes], e.g. 'image/png'. Reported by the platform
+  /// where it says, and otherwise derived from the file's extension, so
+  /// that an upload has something to declare either way.
+  final String? mimeType;
 
   /// The image to show full-screen: [preview] when supplied, otherwise
   /// [thumbnail]. Null when there is no image at all, which is what makes an

@@ -28,7 +28,11 @@ const List<(IconData, String)> _starters = [
 /// live — starts in the zero state, sends for real, streams a canned reply
 /// behind the thinking indicator, and carries the add and model menus.
 class FullChatDemo extends StatefulWidget {
-  const FullChatDemo({super.key});
+  const FullChatDemo({super.key, this.variant});
+
+  /// `drop` pins the drag-and-drop treatment on, so the overlay is
+  /// visible on stage and in docs embeds without a real drag.
+  final String? variant;
 
   @override
   State<FullChatDemo> createState() => _FullChatDemoState();
@@ -47,6 +51,11 @@ class _FullChatDemoState extends State<FullChatDemo> {
   String _effortId = 'extra';
   int _nextId = 0;
 
+  /// Picked and dropped images waiting to be sent. The package decodes
+  /// them; holding them is still the host's job.
+  final List<FlowAttachment> _pending = [];
+  String? _rejection;
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -55,13 +64,43 @@ class _FullChatDemoState extends State<FullChatDemo> {
     super.dispose();
   }
 
+  void _addAttachments(List<FlowAttachment> attachments) {
+    setState(() {
+      _rejection = null;
+      _pending.addAll(attachments);
+    });
+  }
+
+  /// The package has no copy for a refusal, by design — this is the
+  /// host's wording, shown under the composer for a beat.
+  void _reject(String name, FlowAttachmentRejection reason) {
+    final why = switch (reason) {
+      FlowAttachmentRejection.tooLarge => 'is too large',
+      FlowAttachmentRejection.unsupportedType => 'is not an image',
+      FlowAttachmentRejection.unreadable => 'could not be read',
+    };
+    setState(() => _rejection = '$name $why');
+  }
+
   void _send(String text) {
     _timer?.cancel();
     final id = 'sent${_nextId++}';
+    final sent = List.of(_pending);
     setState(() {
+      _pending.clear();
+      _rejection = null;
       _messages = [
         ..._messages,
-        FlowMessageData.text(id: id, role: FlowMessageRole.user, text: text),
+        FlowMessageData(
+          id: id,
+          role: FlowMessageRole.user,
+          parts: [
+            // Attachments above, caption below — parts render in order,
+            // so this list is the layout.
+            if (sent.isNotEmpty) FlowAttachmentPart(sent),
+            if (text.isNotEmpty) FlowTextPart(text),
+          ],
+        ),
         FlowMessageData(
           id: '$id-reply',
           role: FlowMessageRole.assistant,
@@ -115,7 +154,28 @@ class _FullChatDemoState extends State<FullChatDemo> {
 
   @override
   Widget build(BuildContext context) {
+    final rejection = _rejection;
     return FlowChatView(
+      // Real drag-and-drop — the playground runs on the web, the one
+      // platform the SDK gives file drop. The `drop` variant pins the
+      // treatment up so the stage and the docs embed can show it without
+      // anyone holding a file over the page.
+      onAttachmentsDropped: _addAttachments,
+      onAttachmentRejected: _reject,
+      dropActive: widget.variant == 'drop',
+      dropLabel: 'Drop files to add to chat',
+      aboveComposer: rejection == null
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                rejection,
+                textAlign: TextAlign.center,
+                style: context.flowTypography.bodySmall.copyWith(
+                  color: context.flowColors.error,
+                ),
+              ),
+            ),
       empty: _messages.isEmpty,
       greeting: const FlowGreeting(
         icon: PhosphorIconsRegular.sunHorizon,
@@ -145,6 +205,16 @@ class _FullChatDemoState extends State<FullChatDemo> {
         isStreaming: _generating,
         onSend: _send,
         onStop: _stop,
+        // The package opens the dialog and decodes what comes back.
+        onAttachmentsPicked: _addAttachments,
+        onAttachmentsPasted: _addAttachments,
+        onAttachmentRejected: _reject,
+        attachTooltip: 'Attach images',
+        attachments: List.of(_pending),
+        removeAttachmentTooltip: 'Remove',
+        previewCloseTooltip: 'Close',
+        onRemoveAttachment: (id) =>
+            setState(() => _pending.removeWhere((a) => a.id == id)),
         leadingActions: [
           FlowMenu(
             icon: PhosphorIconsRegular.plus,

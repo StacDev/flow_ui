@@ -4,9 +4,16 @@
 /// flow_ui renders state and reports intent through callbacks — it contains
 /// nothing model-facing and builds only on Flutter's own first-party
 /// packages.
+///
+/// The one thing it does reach out for is a file: the composer's attach
+/// button opens the platform's own dialog, and on the web the chat
+/// surface accepts drops. Both are opt-in, both hand back
+/// `FlowAttachment`s for the host to hold, and neither sends anything
+/// anywhere.
 library;
 
 export 'src/models/flow_attachment.dart';
+export 'src/models/flow_attachment_options.dart';
 export 'src/models/flow_message_data.dart';
 export 'src/models/flow_message_part.dart';
 export 'src/theme/flow_colors.dart';
@@ -16,10 +23,12 @@ export 'src/theme/flow_typography.dart';
 export 'src/widgets/flow_attachment_group.dart';
 export 'src/widgets/flow_attachment_preview.dart';
 export 'src/widgets/flow_chat_view.dart';
+export 'src/styles/flow_chat_view_style.dart';
 export 'src/widgets/flow_code_block.dart';
 export 'src/styles/flow_code_block_style.dart';
 export 'src/widgets/flow_composer.dart';
 export 'src/styles/flow_composer_style.dart';
+export 'src/widgets/flow_drop_target.dart';
 export 'src/widgets/flow_error_state.dart';
 export 'src/styles/flow_error_state_style.dart';
 export 'src/widgets/flow_greeting.dart';
