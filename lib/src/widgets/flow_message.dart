@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../models/flow_attachment.dart';
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import '../styles/flow_message_style.dart';
 import '../theme/flow_theme.dart';
+import '../utils/flow_attachment_error.dart';
+import '../utils/flow_shimmer_sweep.dart';
 import 'flow_attachment_group.dart';
+import 'flow_attachment_preview.dart';
 import 'flow_code_block.dart';
 import 'flow_error_state.dart';
 import 'flow_markdown.dart';
@@ -172,6 +176,18 @@ class FlowMessage extends StatelessWidget {
   static const double _assistantFooterGap = 12;
   static const double _leadingGap = 12;
 
+  /// A large-format image part: capped at 320 wide on the bubble world's
+  /// 12px corner, the landed picture fading in as it decodes.
+  static const double _imageMaxWidth = 320;
+
+  /// The failure glyph on a large-format picture, sized up from the
+  /// tile's 24 to suit the frame it sits in.
+  static const double _imageErrorGlyph = 32;
+  static const BorderRadius _imageRadius = BorderRadius.all(
+    Radius.circular(12),
+  );
+  static const Duration _imageFade = Duration(milliseconds: 180);
+
   bool get _isError => message.status == FlowMessageStatus.error;
 
   @override
@@ -317,9 +333,10 @@ class FlowMessage extends StatelessWidget {
                 style: style,
                 textAlign: TextAlign.center,
               ),
-              // System messages are centered notices; attachments, code
-              // and failures belong to user and assistant turns.
+              // System messages are centered notices; attachments, images,
+              // code and failures belong to user and assistant turns.
               FlowAttachmentPart() ||
+              FlowImagePart() ||
               FlowCodePart() ||
               FlowErrorPart() => const SizedBox.shrink(),
               FlowCustomPart() =>
@@ -327,6 +344,82 @@ class FlowMessage extends StatelessWidget {
                     const SizedBox.shrink(),
             },
         ],
+      ),
+    );
+  }
+
+  /// A large-format image, or its generating placeholder: the same
+  /// rounded frame at the part's aspect ratio, shimmering with the
+  /// container washes until the host re-renders with the picture set.
+  /// Tapping a landed image opens the full-screen preview, reusing the
+  /// attachments' viewer.
+  Widget _buildImagePart(BuildContext context, FlowImagePart part) {
+    final colors = context.flowColors;
+    final image = part.image;
+
+    final Widget child;
+    if (image == null) {
+      // Opaque under the mask — the sweep multiplies by the child's
+      // alpha, so the washes carry the translucency themselves.
+      child = FlowShimmerSweep(
+        baseColor: colors.surfaceContainerLow,
+        highlightColor: colors.surfaceContainerHigh,
+        child: const ColoredBox(
+          color: Color(0xFFFFFFFF),
+          child: SizedBox.expand(),
+        ),
+      );
+    } else {
+      Widget picture = Image(
+        image: image,
+        fit: BoxFit.cover,
+        // The package's rule for host-supplied images: a dead provider
+        // draws the shared failure treatment, never the framework's red
+        // error box, and never an unhandled exception per rebuild.
+        errorBuilder: flowAttachmentErrorBuilder(iconSize: _imageErrorGlyph),
+        // The frame holds the part's shape while the image decodes and
+        // fades in, so the layout never jumps.
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded) return child;
+          return AnimatedOpacity(
+            opacity: frame == null ? 0 : 1,
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : _imageFade,
+            child: child,
+          );
+        },
+      );
+      picture = GestureDetector(
+        onTap: () => showFlowAttachmentPreview(
+          context: context,
+          attachments: [
+            FlowAttachment(
+              id: 'image',
+              thumbnail: image,
+              label: part.semanticLabel,
+            ),
+          ],
+          closeTooltip: previewCloseTooltip,
+        ),
+        child: picture,
+      );
+      child = ColoredBox(color: colors.surfaceContainerLow, child: picture);
+    }
+
+    return Semantics(
+      label: part.semanticLabel,
+      image: image != null,
+      // Tapping a landed picture opens the full-screen preview, so it is
+      // a button as well as an image — otherwise the preview is
+      // undiscoverable to a screen reader.
+      button: image != null,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _imageMaxWidth),
+        child: ClipRRect(
+          borderRadius: _imageRadius,
+          child: AspectRatio(aspectRatio: part.aspectRatio, child: child),
+        ),
       ),
     );
   }
@@ -388,6 +481,7 @@ class FlowMessage extends StatelessWidget {
                   onTap: onAttachmentTap,
                   previewCloseTooltip: previewCloseTooltip,
                 ),
+        FlowImagePart() => _buildImagePart(context, part),
         FlowCodePart(:final code, :final language, :final filename) =>
           FlowCodeBlock(
             code: code,

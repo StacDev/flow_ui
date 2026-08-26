@@ -2,13 +2,83 @@
 
 ## 0.3.0 (unreleased)
 
+- **Attachment input** — the composer can now get the files itself.
+  `FlowComposer.onAttachmentsPicked` renders the attach button and opens
+  the platform's file dialog, handing back `FlowAttachment`s already read
+  and decoded. `FlowAttachmentOptions` says what is accepted and at what
+  decode caps, `FlowAttachmentTypeGroup` names types in all four families
+  the platforms disagree over, and `onAttachmentRejected` reports every
+  refusal with its reason. Holding the attachments is still the host's:
+  they come back through `attachments` as before.
+- **Drag and drop**, in either of two scopes.
+  `FlowChatView.onAttachmentsDropped` takes the whole surface, raising
+  the full-bleed treatment (`dropLabel`) while a file is over it;
+  `FlowComposer.onAttachmentsDropped` takes just the input card, which
+  lights up instead (`FlowComposerStyle.dropHighlightColor`). Both decode
+  through the same `attachmentOptions`, and wiring both is fine — the
+  innermost target under the pointer wins.
+- **Paste** — `FlowComposer.onAttachmentsPasted` takes an image pasted
+  into the field, decoded through the same `attachmentOptions` as a pick
+  or a drop. It fires only while the field has focus and only when the
+  clipboard holds a file, so text paste is untouched; a clipboard
+  carrying both a file and its name attaches the file and keeps the name
+  out of the draft. Web-only, like drop — Flutter's `Clipboard` reads
+  plain text and nothing else on every platform.
+- **Drop treatment, redrawn** — the page now frosts behind a vertical
+  wash with the glyph and the invitation straight on it, replacing the
+  flat tint and the centred card. `FlowChatViewStyle` (new, and on
+  `FlowTheme.chatViewStyle`) carries `dropGradient`, `dropIconColor` and
+  `dropLabelStyle`; `dropIcon` and `dropBlurSigma` join `dropLabel` as
+  widget parameters. The treatment also leaves the widget tree while
+  idle, so a surface nobody is dragging over no longer carries a live
+  `BackdropFilter`.
+- **Escape hatches** — `onAttach` renders the same attach button and
+  leaves the picking to the host, for a gallery sheet or a camera.
+  `dropActive` stays writable as an override, since drop detection is
+  web-only and desktop hosts still need their own. `FlowDropTarget`
+  exposes that detection for surfaces that are neither a `FlowChatView`
+  nor a `FlowComposer`. Android keyboard media insertion arrives too
+  (`onContentInserted`, the SDK's IME rich-content path), and the attach
+  button restyles through `FlowComposerStyle.attachIconColor`.
+- **Attachments carry their file** — `FlowAttachment.bytes` and
+  `FlowAttachment.mimeType`, filled in for anything the picker or a drop
+  produced. Nothing in flow_ui reads them; they are there because a host
+  that lets the package pick still has to be able to upload what it
+  picked, and digging the bytes back out of the `ImageProvider` is not an
+  API. The bytes are the same list the thumbnail decodes from, so they
+  cost nothing extra. `mimeType` is the platform's where it reports one
+  and the extension's where it doesn't, since the native pickers report
+  none. The example app sends attached images to Gemini with them.
+- **Fix** — an attachment tile now renders a thumbnail that is already a
+  `ResizeImage` instead of the failure glyph. `ResizeImage` asserts
+  rather than nesting, and the tile wraps whatever it is handed in one of
+  its own, sized to the tile and the display's pixel ratio; a host that
+  had bounded its provider first got a broken image. The tile now leaves
+  an already-bounded provider alone.
+- **Behaviour change** — a pending attachment now arms the send button on
+  its own, and `FlowComposer.onSend` can fire with empty text. A picture
+  with no caption is a message; before this, it could not be sent.
+- **New dependency** — `file_selector`, flutter.dev-published, is what
+  the built-in picker opens. It asks nothing of hosts that never attach
+  files: no Android permission, no iOS plist string. macOS apps that do
+  need `com.apple.security.files.user-selected.read-only` in both
+  `DebugProfile.entitlements` and `Release.entitlements`.
+- **Breaking**: `FlowMessagePart` is sealed, so the new `FlowImagePart`
+  makes any exhaustive `switch` over parts non-exhaustive until it gains
+  a case. `FlowShimmerText` also becomes a `StatelessWidget`, which
+  breaks a `GlobalKey<State<FlowShimmerText>>` if anyone held one.
+- **Image parts** — `FlowImagePart`, the large-format picture in a turn:
+  an AI-generated image presented as content, unlike
+  `FlowAttachmentPart`'s tiles. A null image renders the generating
+  state — a shimmering block at the part's aspect ratio — and the host
+  re-renders with the `ImageProvider` when it lands; tapping the picture
+  opens the full-screen preview.
 - **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
   area. The design's 24 (compact) and 40 (wide) are now measured from the
   bottom of the safe area, so a phone's home indicator is absorbed rather
   than added to — a device showed 58 where the design draws 24. Simulated
   frames and desktop, which report no inset, are unchanged, and the full
   inset returns above an open keyboard.
-
 - **Component styles** — Material's component-theme tier, on flow_ui's
   tokens: every major widget now takes an optional style object of
   color and text overrides (`FlowComposerStyle`, `FlowMessageStyle`,

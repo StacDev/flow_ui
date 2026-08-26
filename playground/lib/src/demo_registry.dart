@@ -26,7 +26,7 @@ import 'playground_item.dart';
 Widget demoFor(PlaygroundItem item, {String? variant}) {
   final key = ValueKey('${item.name}-$variant');
   return switch (item) {
-    PlaygroundItem.fullChat => FullChatDemo(key: key),
+    PlaygroundItem.fullChat => FullChatDemo(key: key, variant: variant),
     PlaygroundItem.composer => ComposerDemo(key: key, variant: variant),
     PlaygroundItem.modalSelector => ModelSelectorDemo(key: key),
     PlaygroundItem.message => MessageDemo(key: key, variant: variant),
@@ -60,6 +60,10 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
 /// has a single form. The first entry is the default.
 List<(String, String)> variantsFor(PlaygroundItem item) {
   return switch (item) {
+    PlaygroundItem.fullChat => const [
+      ('default', 'Default'),
+      ('drop', 'Drop files'),
+    ],
     PlaygroundItem.composer => const [
       ('default', 'Default'),
       ('streaming', 'Streaming'),
@@ -72,6 +76,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.streamingMessage => const [
       ('animated', 'Animated'),
       ('static', 'Static'),
+      ('image', 'Image'),
     ],
     PlaygroundItem.codeBlock => const [
       ('dart', 'Dart'),
@@ -143,7 +148,7 @@ bool demoFillsStage(PlaygroundItem item) => item == PlaygroundItem.fullChat;
 /// follows what the demo is showing.
 String snippetFor(PlaygroundItem item, {String? variant}) {
   return switch (item) {
-    PlaygroundItem.fullChat => _fullChatSnippet,
+    PlaygroundItem.fullChat => _fullChatSnippet(variant),
     PlaygroundItem.composer => composerSnippet(variant),
     PlaygroundItem.modalSelector => modelSelectorSnippet,
     PlaygroundItem.message => messageSnippet(variant),
@@ -164,7 +169,37 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
   };
 }
 
-const String _fullChatSnippet = '''
+String _fullChatSnippet(String? variant) => switch (variant) {
+  'drop' => _fullChatDropSnippet,
+  _ => _fullChatDefaultSnippet,
+};
+
+const String _fullChatDropSnippet = '''
+// onAttachmentsDropped turns on the surface's own drag-and-drop: it
+// raises the treatment while a file is over the page and comes back
+// with what landed, read and decoded. Web only — the SDK implements OS
+// file drop nowhere else — so desktop hosts bring their own detection
+// and flip dropActive, which stays writable for exactly that.
+FlowChatView(
+  onAttachmentsDropped: (dropped) =>
+      setState(() => pending.addAll(dropped)),
+  onAttachmentRejected: showRejection,
+  attachmentOptions: const FlowAttachmentOptions(
+    maxFileSize: 10 * 1024 * 1024,
+  ),
+  dropLabel: 'Drop images to attach',
+  // An override, not a switch: the treatment is up while this is true
+  // or a real drag is over the surface.
+  dropActive: dragHovering,
+  thread: FlowThread(messages: messages),
+  composer: FlowComposer(
+    onSend: send,
+    attachments: pending,
+    onRemoveAttachment: removePending,
+  ),
+)''';
+
+const String _fullChatDefaultSnippet = '''
 FlowChatView(
   empty: messages.isEmpty,
   greeting: const FlowGreeting(
@@ -195,6 +230,13 @@ FlowChatView(
     isStreaming: generating,
     onSend: send,
     onStop: stop,
+    // The attach button opens the platform's dialog and hands back
+    // decoded attachments; the host holds them.
+    onAttachmentsPicked: (picked) =>
+        setState(() => pending.addAll(picked)),
+    attachTooltip: 'Attach images',
+    attachments: pending,
+    onRemoveAttachment: removePending,
     leadingActions: [
       FlowMenu(
         icon: PhosphorIconsRegular.plus,
