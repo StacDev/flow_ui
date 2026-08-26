@@ -148,7 +148,7 @@ class _FlowPillState extends State<FlowPill> {
 
     final shape = RoundedRectangleBorder(
       borderRadius: widget.borderRadius ?? _radius,
-      side: BorderSide(color: style?.borderColor ?? colors.outlineVariant),
+      side: BorderSide(color: style?.borderColor ?? colors.outline),
     );
 
     // The X absorbs the end inset so the affordance reaches the pill's

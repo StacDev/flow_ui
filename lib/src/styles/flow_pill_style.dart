@@ -30,7 +30,7 @@ class FlowPillStyle {
   /// The fill while hovered. Defaults to `surfaceContainer`.
   final Color? hoverColor;
 
-  /// The pill's hairline. Defaults to `outlineVariant`.
+  /// The pill's hairline. Defaults to `outline`.
   final Color? borderColor;
 
   /// The leading icon. Defaults to `onSurfaceVariant`.

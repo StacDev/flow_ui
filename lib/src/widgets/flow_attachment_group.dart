@@ -332,7 +332,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
 
     final shape = RoundedRectangleBorder(
       borderRadius: widget.radius,
-      side: BorderSide(color: colors.outline),
+      side: BorderSide(color: colors.outlineVariant),
     );
 
     // Decode at tile resolution — a full-size photo behind an 80dp tile costs

@@ -17,7 +17,6 @@ import 'flow_state_colors.dart';
 /// triggers use while open.
 const double _borderOpacity = 0.2;
 const double _borderFadeOpacity = 0.12;
-const double _separatorOpacity = 0.1;
 
 /// The card's lift: the raised cards' soft ambient shadow, an alpha over
 /// the ink at the composer's blur.
@@ -93,8 +92,7 @@ Color flowMenuBorderColor(BuildContext context, FlowMenuStyle? style) =>
     context.flowColors.onSurface.withValues(alpha: _borderOpacity);
 
 Color flowMenuSeparatorColor(BuildContext context, FlowMenuStyle? style) =>
-    style?.separatorColor ??
-    context.flowColors.onSurface.withValues(alpha: _separatorOpacity);
+    style?.separatorColor ?? context.flowColors.outlineVariant;
 
 /// The row wash on hover and focus — the design's 6% ink, which is the
 /// `surfaceContainer` rung of the ladder, the same wash the open trigger

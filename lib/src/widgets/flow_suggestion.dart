@@ -115,7 +115,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
     final shape = RoundedRectangleBorder(
       borderRadius: widget.borderRadius ?? _rowRadius,
       side: widget.outlined
-          ? BorderSide(color: style?.borderColor ?? colors.outlineVariant)
+          ? BorderSide(color: style?.borderColor ?? colors.outline)
           : BorderSide.none,
     );
 

@@ -60,7 +60,7 @@ class FlowMenuStyle {
   /// one solid color. The sheet's default is ink at 20%.
   final Color? borderColor;
 
-  /// Rule between sections. Defaults to ink at 10%.
+  /// Rule between sections. Defaults to `outlineVariant`.
   final Color? separatorColor;
 
   /// Row fill on hover and focus. Defaults to `surfaceContainer`.

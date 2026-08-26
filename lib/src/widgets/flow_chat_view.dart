@@ -371,7 +371,7 @@ class _FlowChatViewState extends State<FlowChatView> {
                   // the opaque circle would paint over the stroke.
                   foregroundDecoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: colors.outlineVariant),
+                    border: Border.all(color: colors.outline),
                   ),
                   child: FlowCircleButton(
                     icon: Icons.arrow_downward,

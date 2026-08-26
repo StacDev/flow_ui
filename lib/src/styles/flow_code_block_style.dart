@@ -32,7 +32,7 @@ class FlowCodeBlockStyle {
   /// lets the code sit directly on the host's own surface.
   final Color? backgroundColor;
 
-  /// The card's hairline. Defaults to `outlineVariant`; transparent
+  /// The card's hairline. Defaults to `outline`; transparent
   /// renders the block borderless.
   final Color? borderColor;
 

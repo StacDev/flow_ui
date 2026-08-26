@@ -71,7 +71,7 @@ class FlowMarkdownStyle {
   /// A quote's prose ink. Defaults to `onSurfaceVariant`.
   final Color? quoteColor;
 
-  /// A quote's leading bar. Defaults to `outline`.
+  /// A quote's leading bar. Defaults to `outlineVariant`.
   final Color? quoteBarColor;
 
   /// Merged over a table header cell's default `bodyMediumDark`.
@@ -80,14 +80,14 @@ class FlowMarkdownStyle {
   /// Merged over a table body cell's default `bodyMedium`.
   final TextStyle? tableCellStyle;
 
-  /// The hairline under a table's header row. Defaults to `outline`.
+  /// The hairline under a table's header row. Defaults to `outlineVariant`.
   final Color? tableBorderColor;
 
   /// The hairline between a table's body rows. Defaults to
-  /// `outlineVariant`.
+  /// `outline`.
   final Color? tableDividerColor;
 
-  /// A horizontal rule. Defaults to `outlineVariant`.
+  /// A horizontal rule. Defaults to `outline`.
   final Color? ruleColor;
 
   /// A copy where [other]'s fields win over this style's.

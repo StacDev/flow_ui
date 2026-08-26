@@ -530,7 +530,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           decoration: BoxDecoration(
             border: BorderDirectional(
               start: BorderSide(
-                color: _mdStyle?.quoteBarColor ?? colors.outline,
+                color: _mdStyle?.quoteBarColor ?? colors.outlineVariant,
                 width: _quoteBarWidth,
               ),
             ),
@@ -601,7 +601,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           block,
           Container(
             height: _ruleThickness,
-            color: _mdStyle?.ruleColor ?? colors.outlineVariant,
+            color: _mdStyle?.ruleColor ?? colors.outline,
           ),
         );
 
@@ -760,7 +760,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: _mdStyle?.tableBorderColor ?? colors.outline,
+                  color: _mdStyle?.tableBorderColor ?? colors.outlineVariant,
                 ),
               ),
             ),
@@ -776,9 +776,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
                   : BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color:
-                              _mdStyle?.tableDividerColor ??
-                              colors.outlineVariant,
+                          color: _mdStyle?.tableDividerColor ?? colors.outline,
                         ),
                       ),
                     ),

@@ -245,7 +245,7 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
                 ? (style?.hoverBorderColor ??
                       style?.borderColor ??
                       colors.surfaceContainerHighest)
-                : (style?.borderColor ?? colors.outlineVariant),
+                : (style?.borderColor ?? colors.outline),
           ),
         ),
         child: Column(

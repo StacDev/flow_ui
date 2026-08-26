@@ -26,7 +26,7 @@ class FlowSuggestionStyle {
   /// transparent on the plain one.
   final Color? backgroundColor;
 
-  /// The outlined form's hairline. Defaults to `outlineVariant`; the
+  /// The outlined form's hairline. Defaults to `outline`; the
   /// plain form draws none regardless.
   final Color? borderColor;
 

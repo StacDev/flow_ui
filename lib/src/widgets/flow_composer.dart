@@ -265,7 +265,7 @@ class _FlowComposerState extends State<FlowComposer> {
           side: BorderSide(
             color: active
                 ? (style?.sendBackgroundColor ?? colors.primary)
-                : colors.outline,
+                : colors.outlineVariant,
           ),
         ),
       ),

@@ -122,7 +122,7 @@ class _VariantPills extends StatelessWidget {
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: colors.surfaceBright,
-        border: Border.all(color: colors.outline),
+        border: Border.all(color: colors.outlineVariant),
         borderRadius: const BorderRadius.all(Radius.circular(9)),
         boxShadow: const [
           BoxShadow(
@@ -434,7 +434,7 @@ class _MobileNav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colors.outlineVariant)),
+        border: Border(bottom: BorderSide(color: colors.outline)),
       ),
       child: Row(
         children: [

@@ -227,7 +227,7 @@ class _RetryButtonState extends State<_RetryButton> {
     final foreground = _hovered ? colors.onSurface : colors.onSurfaceVariant;
     final shape = RoundedRectangleBorder(
       borderRadius: _radius,
-      side: BorderSide(color: colors.outline),
+      side: BorderSide(color: colors.outlineVariant),
     );
 
     final label = widget.label;
