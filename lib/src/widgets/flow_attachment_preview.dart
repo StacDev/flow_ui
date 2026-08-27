@@ -95,8 +95,9 @@ Future<void> showFlowAttachmentPreview({
 /// A full-screen look at one attachment, with the rest of its group a swipe
 /// away, over a frosted view of the page beneath.
 ///
-/// Each image is zoomable and pannable; on a hardware keyboard Escape closes
-/// and the arrow keys page. Usually reached through
+/// Each image is zoomable and pannable. A tap on the frosted space around
+/// the picture closes the viewer, as the close button does; on a hardware
+/// keyboard Escape closes and the arrow keys page. Usually reached through
 /// [showFlowAttachmentPreview] rather than built directly.
 class FlowAttachmentPreview extends StatefulWidget {
   FlowAttachmentPreview({
@@ -245,6 +246,7 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
                           attachment: widget.attachments[index],
                           padding: _pagePadding,
                           onZoomChanged: _setZoomed,
+                          onDismiss: _close,
                         ),
                       ),
                     ),
@@ -299,11 +301,15 @@ class _ZoomablePage extends StatefulWidget {
     required this.attachment,
     required this.padding,
     required this.onZoomChanged,
+    required this.onDismiss,
   });
 
   final FlowAttachment attachment;
   final EdgeInsets padding;
   final ValueChanged<bool> onZoomChanged;
+
+  /// A tap that lands on the frosted space rather than the picture.
+  final VoidCallback onDismiss;
 
   @override
   State<_ZoomablePage> createState() => _ZoomablePageState();
@@ -343,24 +349,43 @@ class _ZoomablePageState extends State<_ZoomablePage> {
     // part of the transformed content, so zooming to 5x would blow a 24dp
     // gutter up to 120dp and widen the dead band at the pan extremes.
     final image = widget.attachment.previewImage;
-    return Padding(
-      padding: widget.padding,
-      child: InteractiveViewer(
-        transformationController: _transform,
-        minScale: 1,
-        maxScale: 5,
-        // An attachment with no image of its own can't be opened from its own
-        // tile, but paging can still land on one from a neighbour.
-        child: image == null
-            ? const FlowAttachmentError(iconSize: 48, filled: false)
-            : Image(
-                image: image,
-                fit: BoxFit.contain,
-                errorBuilder: flowAttachmentErrorBuilder(
-                  iconSize: 48,
-                  filled: false,
+    // Two tap targets, one inside the other, and the arena hands a tap to
+    // the innermost: on the picture it lands on the absorbing detector
+    // and nothing happens; anywhere else — the frosted space, the gutter
+    // outside the viewer — it reaches the outer one and closes. Drags and
+    // pinches are the viewer's and the pager's as before, since a tap
+    // recognizer only wins a pointer that never moved.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onDismiss,
+      child: Padding(
+        padding: widget.padding,
+        child: InteractiveViewer(
+          transformationController: _transform,
+          minScale: 1,
+          maxScale: 5,
+          // An attachment with no image of its own can't be opened from
+          // its own tile, but paging can still land on one from a
+          // neighbour.
+          child: image == null
+              ? const FlowAttachmentError(iconSize: 48, filled: false)
+              // Centred so the image's box is the picture's painted
+              // bounds rather than the whole viewport — under a tight
+              // constraint it would fill the page and swallow every tap.
+              : Center(
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Image(
+                      image: image,
+                      fit: BoxFit.contain,
+                      errorBuilder: flowAttachmentErrorBuilder(
+                        iconSize: 48,
+                        filled: false,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
