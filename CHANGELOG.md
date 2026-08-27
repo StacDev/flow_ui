@@ -55,6 +55,18 @@
   its own, sized to the tile and the display's pixel ratio; a host that
   had bounded its provider first got a broken image. The tile now leaves
   an already-bounded provider alone.
+- **Sent images** — a user turn's attachments now lift out of the bubble
+  and sit above it in a row from the trailing edge: each image a 116
+  square tile, cover-cropped, under an `outlineVariant` hairline that
+  strengthens to `outline` on hover; files as tiles. A picture with no
+  caption
+  draws no bubble. `FlowMessageStyle.attachmentCardBorderColor` and
+  `attachmentCardHoverBorderColor` restyle the hairline's two inks, and
+  `attachmentCardColor` adds a ground behind transparent images.
+  Assistant turns keep the inline tiles.
+- **Preview** — tapping the frosted space around the picture now closes
+  the full-screen viewer, alongside the close button and Escape. A tap on
+  the picture itself still does nothing.
 - **Behaviour change** — a pending attachment now arms the send button on
   its own, and `FlowComposer.onSend` can fire with empty text. A picture
   with no caption is a message; before this, it could not be sent.
@@ -72,7 +84,9 @@
   `FlowAttachmentPart`'s tiles. A null image renders the generating
   state — a shimmering block at the part's aspect ratio — and the host
   re-renders with the `ImageProvider` when it lands; tapping the picture
-  opens the full-screen preview.
+  opens the full-screen preview. The example app does exactly this with
+  Gemini's image model: pick it in the selector, ask for a picture, and
+  the block shimmers until the bytes arrive.
 - **Fix** — `FlowChatView`'s bottom inset no longer stacks on the safe
   area. The design's 24 (compact) and 40 (wide) are now measured from the
   bottom of the safe area, so a phone's home indicator is absorbed rather

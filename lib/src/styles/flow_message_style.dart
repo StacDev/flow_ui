@@ -14,7 +14,13 @@ import 'package:material_ui/material_ui.dart';
 /// ```
 @immutable
 class FlowMessageStyle {
-  const FlowMessageStyle({this.bubbleColor, this.bubbleTextColor});
+  const FlowMessageStyle({
+    this.bubbleColor,
+    this.bubbleTextColor,
+    this.attachmentCardColor,
+    this.attachmentCardBorderColor,
+    this.attachmentCardHoverBorderColor,
+  });
 
   /// The user bubble's fill. Defaults to ink at 4%. A failed user turn
   /// keeps the theme's `errorContainer` regardless.
@@ -24,12 +30,32 @@ class FlowMessageStyle {
   /// keeps the theme's `onErrorContainer` regardless.
   final Color? bubbleTextColor;
 
+  /// A ground behind a sent image, above the user bubble. Defaults to
+  /// none — the picture fills its tile — so this only shows through a
+  /// transparent PNG.
+  final Color? attachmentCardColor;
+
+  /// The sent image tile's hairline at rest. Defaults to
+  /// `outlineVariant`.
+  final Color? attachmentCardBorderColor;
+
+  /// The hairline while the pointer is over the tile. Defaults to
+  /// `outline`, the stronger ink — hover gains emphasis, as it does on
+  /// the composer and the suggestion rows.
+  final Color? attachmentCardHoverBorderColor;
+
   /// A copy where [other]'s fields win over this style's.
   FlowMessageStyle merge(FlowMessageStyle? other) {
     if (other == null) return this;
     return FlowMessageStyle(
       bubbleColor: other.bubbleColor ?? bubbleColor,
       bubbleTextColor: other.bubbleTextColor ?? bubbleTextColor,
+      attachmentCardColor: other.attachmentCardColor ?? attachmentCardColor,
+      attachmentCardBorderColor:
+          other.attachmentCardBorderColor ?? attachmentCardBorderColor,
+      attachmentCardHoverBorderColor:
+          other.attachmentCardHoverBorderColor ??
+          attachmentCardHoverBorderColor,
     );
   }
 
@@ -40,6 +66,21 @@ class FlowMessageStyle {
     return FlowMessageStyle(
       bubbleColor: Color.lerp(bubbleColor, other.bubbleColor, t),
       bubbleTextColor: Color.lerp(bubbleTextColor, other.bubbleTextColor, t),
+      attachmentCardColor: Color.lerp(
+        attachmentCardColor,
+        other.attachmentCardColor,
+        t,
+      ),
+      attachmentCardBorderColor: Color.lerp(
+        attachmentCardBorderColor,
+        other.attachmentCardBorderColor,
+        t,
+      ),
+      attachmentCardHoverBorderColor: Color.lerp(
+        attachmentCardHoverBorderColor,
+        other.attachmentCardHoverBorderColor,
+        t,
+      ),
     );
   }
 
@@ -48,9 +89,18 @@ class FlowMessageStyle {
     if (identical(this, other)) return true;
     return other is FlowMessageStyle &&
         other.bubbleColor == bubbleColor &&
-        other.bubbleTextColor == bubbleTextColor;
+        other.bubbleTextColor == bubbleTextColor &&
+        other.attachmentCardColor == attachmentCardColor &&
+        other.attachmentCardBorderColor == attachmentCardBorderColor &&
+        other.attachmentCardHoverBorderColor == attachmentCardHoverBorderColor;
   }
 
   @override
-  int get hashCode => Object.hash(bubbleColor, bubbleTextColor);
+  int get hashCode => Object.hash(
+    bubbleColor,
+    bubbleTextColor,
+    attachmentCardColor,
+    attachmentCardBorderColor,
+    attachmentCardHoverBorderColor,
+  );
 }

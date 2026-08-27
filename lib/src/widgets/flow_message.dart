@@ -176,6 +176,18 @@ class FlowMessage extends StatelessWidget {
   static const double _assistantFooterGap = 12;
   static const double _leadingGap = 12;
 
+  /// A sent image, lifted out of the user bubble to sit above it: a 116
+  /// square tile with the picture cover-cropped inside, under the
+  /// bubble's 12px corner and an `outlineVariant` hairline that
+  /// strengthens to `outline` while the pointer is over it. Tiles run in
+  /// a row
+  /// from the trailing edge with the bubble world's 8 between them,
+  /// wrapping when a turn carries more than fit, and sit 12 above the
+  /// bubble.
+  static const double _sentImageSize = 116;
+  static const double _sentImageSpacing = 8;
+  static const double _sentAttachmentsGap = 12;
+
   /// A large-format image part: capped at 320 wide on the bubble world's
   /// 12px corner, the landed picture fading in as it decodes.
   static const double _imageMaxWidth = 320;
@@ -203,6 +215,16 @@ class FlowMessage extends StatelessWidget {
     final colors = context.flowColors;
     final effective = context.flowTheme.messageStyle?.merge(style) ?? style;
 
+    // Attachments lift out of the bubble and sit above it as cards, the
+    // way the picture and the caption read as two things in a chat: the
+    // file, then what was said about it. A turn that is only a picture
+    // draws no bubble at all.
+    final sent = [
+      for (final part in message.parts)
+        if (part is FlowAttachmentPart) ...part.attachments,
+    ];
+    final hasBubble = message.parts.any((part) => part is! FlowAttachmentPart);
+
     final bubble = Container(
       padding:
           bubblePadding ??
@@ -224,6 +246,7 @@ class FlowMessage extends StatelessWidget {
             ? colors.onErrorContainer
             : effective?.bubbleTextColor ?? colors.onSurface,
         height: _bubbleTextHeight,
+        liftAttachments: true,
       ),
     );
 
@@ -236,10 +259,18 @@ class FlowMessage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxWidth),
-              child: bubble,
-            ),
+            if (sent.isNotEmpty)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: _buildSentAttachments(context, sent, effective),
+              ),
+            if (sent.isNotEmpty && hasBubble)
+              const SizedBox(height: _sentAttachmentsGap),
+            if (hasBubble)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: bubble,
+              ),
             if (footer != null)
               Padding(
                 padding: const EdgeInsets.only(top: _userFooterGap),
@@ -426,7 +457,78 @@ class FlowMessage extends StatelessWidget {
 
   /// The message's parts as a column, text parts in [foreground] and, when
   /// [height] is given, on that line height instead of the reading one.
-  Widget _buildParts(BuildContext context, Color foreground, {double? height}) {
+  /// The sent-attachments block above a user bubble: every image as a
+  /// card, anything without a picture of its own as the tile it always
+  /// was, wrapping from the trailing edge.
+  Widget _buildSentAttachments(
+    BuildContext context,
+    List<FlowAttachment> attachments,
+    FlowMessageStyle? effective,
+  ) {
+    final images = [
+      for (final attachment in attachments)
+        if (attachment.previewImage != null) attachment,
+    ];
+    final files = [
+      for (final attachment in attachments)
+        if (attachment.previewImage == null) attachment,
+    ];
+
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: _sentImageSpacing,
+      runSpacing: _sentImageSpacing,
+      children: [
+        for (var i = 0; i < images.length; i++)
+          _buildSentImage(context, images, i, effective),
+        if (files.isNotEmpty)
+          FlowAttachmentGroup(
+            attachments: files,
+            layout: FlowAttachmentLayout.wrap,
+            onTap: onAttachmentTap,
+            previewCloseTooltip: previewCloseTooltip,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSentImage(
+    BuildContext context,
+    List<FlowAttachment> images,
+    int index,
+    FlowMessageStyle? effective,
+  ) {
+    final colors = context.flowColors;
+    final attachment = images[index];
+    final onAttachmentTap = this.onAttachmentTap;
+    return _SentImageTile(
+      image: attachment.previewImage!,
+      label: attachment.tooltip ?? attachment.label,
+      groundColor: effective?.attachmentCardColor,
+      borderColor:
+          effective?.attachmentCardBorderColor ?? colors.outlineVariant,
+      hoverBorderColor:
+          effective?.attachmentCardHoverBorderColor ?? colors.outline,
+      // The host's handler replaces the preview, as it does on the
+      // tiles; otherwise the built-in viewer opens on this picture with
+      // the turn's others a page away.
+      onTap: onAttachmentTap != null
+          ? () => onAttachmentTap(attachment.id)
+          : () => showFlowAttachmentPreview(
+              context: context,
+              attachments: images,
+              initialIndex: index,
+              closeTooltip: previewCloseTooltip,
+            ),
+    );
+  }
+
+  Widget _buildParts(
+    BuildContext context,
+    Color foreground, {
+    double? height,
+    bool liftAttachments = false,
+  }) {
     final typography = context.flowTypography;
     final style = typography.bodyLarge
         .copyWith(color: foreground, height: height)
@@ -472,6 +574,9 @@ class FlowMessage extends StatelessWidget {
         // of a long strip, and content already sent must not be hidden
         // behind a scroll with no scrollbar. Null, not an empty box, so an
         // empty list doesn't leave a gap before the next part.
+        // Lifted out of the user bubble by [_buildUser], which draws
+        // them above it instead.
+        FlowAttachmentPart() when liftAttachments => null,
         FlowAttachmentPart(:final attachments) =>
           attachments.isEmpty
               ? null
@@ -522,6 +627,84 @@ class FlowMessage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: children,
+    );
+  }
+}
+
+/// One sent image above a user bubble: a square tile, the picture
+/// cover-cropped inside, under a hairline that changes colour while the
+/// pointer is over it — the one bit of state the tile owns.
+class _SentImageTile extends StatefulWidget {
+  const _SentImageTile({
+    required this.image,
+    required this.label,
+    required this.groundColor,
+    required this.borderColor,
+    required this.hoverBorderColor,
+    required this.onTap,
+  });
+
+  final ImageProvider image;
+  final String? label;
+  final Color? groundColor;
+  final Color borderColor;
+  final Color hoverBorderColor;
+  final VoidCallback onTap;
+
+  @override
+  State<_SentImageTile> createState() => _SentImageTileState();
+}
+
+class _SentImageTileState extends State<_SentImageTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: FlowMessage._imageRadius,
+      side: BorderSide(
+        color: _hovered ? widget.hoverBorderColor : widget.borderColor,
+      ),
+    );
+
+    return Semantics(
+      label: widget.label,
+      image: true,
+      button: true,
+      // Transparent by default: the picture fills the tile, and a ground
+      // would only show through a transparent PNG. Material animates the
+      // shape change, so the hairline eases between its two inks.
+      child: Material(
+        color: widget.groundColor ?? const Color(0x00000000),
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          customBorder: shape,
+          onTap: widget.onTap,
+          onHover: (value) {
+            if (_hovered == value) return;
+            setState(() => _hovered = value);
+          },
+          child: SizedBox.square(
+            dimension: FlowMessage._sentImageSize,
+            child: Image(
+              image: widget.image,
+              fit: BoxFit.cover,
+              errorBuilder: flowAttachmentErrorBuilder(),
+              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded) return child;
+                return AnimatedOpacity(
+                  opacity: frame == null ? 0 : 1,
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : FlowMessage._imageFade,
+                  child: child,
+                );
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -83,8 +83,15 @@ FlowAttachmentGroup(
 ## In a message
 
 Attachments travel as message parts: `FlowAttachmentPart` in
-`FlowMessageData.parts`. Nothing to wire — tapping a sent attachment
-opens the preview:
+`FlowMessageData.parts`. In a **user** turn they lift out of the bubble
+and sit above it in a row from the trailing edge — each image a 116
+square tile, cover-cropped, under a hairline that strengthens from
+`outlineVariant` to `outline` while hovered; files as the tiles above —
+so the
+turn reads the way a chat does: the file, then what was said about it.
+A picture with no caption draws no bubble at all. Assistant turns keep
+the tiles inline. Nothing to wire — tapping a sent image opens the
+preview:
 
 ```dart title="An attachment part"
 FlowMessage(
@@ -190,5 +197,6 @@ does exactly this against Gemini.
   report ids, never indexes, so ids must be unique within the group —
   asserted in debug.
 - `showFlowAttachmentPreview` — the full-screen viewer, callable directly
-  when you override `onTap` or `onAttachmentTap`. Escape closes it and
+  when you override `onTap` or `onAttachmentTap`. A tap on the frosted
+  space around the picture closes it, as do the close button and Escape;
   the arrow keys page.

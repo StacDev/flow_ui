@@ -98,7 +98,8 @@ FlowMessage(
 Message content is typed parts, not strings: a sealed `FlowMessagePart`
 with `FlowTextPart`, `FlowAttachmentPart`, `FlowImagePart`, and
 `FlowCustomPart` subtypes (plus `FlowCodePart` and `FlowErrorPart`).
-`FlowAttachmentPart` renders thumbnail tiles — the sent-files treatment —
+`FlowAttachmentPart` renders sent files — lifted above a user bubble as
+image cards, tiles elsewhere —
 while `FlowImagePart` is the large-format picture, an AI-generated image
 presented as content: a null `image` renders the generating state, a
 shimmering block at the part's aspect ratio, and the host re-renders

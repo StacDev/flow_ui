@@ -72,6 +72,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('pair', 'Conversation'),
       ('ai', 'Assistant'),
       ('user', 'User'),
+      ('image', 'With image'),
     ],
     PlaygroundItem.streamingMessage => const [
       ('animated', 'Animated'),
