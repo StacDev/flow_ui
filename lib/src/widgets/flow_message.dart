@@ -502,7 +502,10 @@ class FlowMessage extends StatelessWidget {
     final attachment = images[index];
     final onAttachmentTap = this.onAttachmentTap;
     return _SentImageTile(
-      image: attachment.previewImage!,
+      // The thumbnail, not previewImage: the package's own attachments
+      // carry a preview bounded for the full-screen viewer, and drawing
+      // that in a 116 tile would decode the picture at 2048.
+      image: attachment.thumbnail ?? attachment.preview!,
       label: attachment.tooltip ?? attachment.label,
       groundColor: effective?.attachmentCardColor,
       borderColor:
@@ -688,7 +691,18 @@ class _SentImageTileState extends State<_SentImageTile> {
           child: SizedBox.square(
             dimension: FlowMessage._sentImageSize,
             child: Image(
-              image: widget.image,
+              // Decoded at tile resolution, as the attachment tiles are —
+              // unless the host already bounded it, since ResizeImage
+              // asserts rather than nesting.
+              image: widget.image is ResizeImage
+                  ? widget.image
+                  : ResizeImage.resizeIfNeeded(
+                      (FlowMessage._sentImageSize *
+                              MediaQuery.devicePixelRatioOf(context))
+                          .round(),
+                      null,
+                      widget.image,
+                    ),
               fit: BoxFit.cover,
               errorBuilder: flowAttachmentErrorBuilder(),
               frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {

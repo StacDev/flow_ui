@@ -50,8 +50,13 @@ class FlowAttachmentPart extends FlowMessagePart {
 /// re-renders with [image] set when the picture arrives, and the block
 /// becomes it.
 class FlowImagePart extends FlowMessagePart {
-  const FlowImagePart({this.image, this.aspectRatio = 1, this.semanticLabel})
-    : assert(aspectRatio > 0, 'aspectRatio must be positive');
+  const FlowImagePart({
+    this.image,
+    this.aspectRatio = 1,
+    this.semanticLabel,
+    this.bytes,
+    this.mimeType,
+  }) : assert(aspectRatio > 0, 'aspectRatio must be positive');
 
   /// The picture; any `ImageProvider`. Null while still generating.
   final ImageProvider? image;
@@ -63,6 +68,17 @@ class FlowImagePart extends FlowMessagePart {
   /// Host-written description, read to assistive tech for both the
   /// placeholder and the picture.
   final String? semanticLabel;
+
+  /// The picture as the host received it, and its type — the same pair
+  /// [FlowAttachment] carries, and for the same reason: a generated image
+  /// is only half rendered if the conversation cannot go on about it, and
+  /// reaching back through the [ImageProvider] for the bytes is not an
+  /// API. Nothing in flow_ui reads either; a host that has them should
+  /// pass them so the next turn can send the picture back.
+  final Uint8List? bytes;
+
+  /// The type of [bytes], e.g. 'image/png'.
+  final String? mimeType;
 }
 
 /// Fenced code, rendered by a `FlowCodeBlock`.

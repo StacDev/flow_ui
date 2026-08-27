@@ -206,7 +206,11 @@ class _ChatScreenState extends State<ChatScreen> {
     final generatesImages = _imageModels.contains(_model);
     var reply = '';
     Uint8List? picture;
+    String? pictureType;
     var aspectRatio = 1.0;
+    // Once the turn has failed its parts are the error card's, and a
+    // measurement that lands afterwards must not write over them.
+    var failed = false;
 
     // The turn as it stands. On an image model the picture slot is there
     // from the first delta: a null image is FlowImagePart's generating
@@ -222,6 +226,10 @@ class _ChatScreenState extends State<ChatScreen> {
           image: picture == null ? null : MemoryImage(picture!),
           aspectRatio: aspectRatio,
           semanticLabel: 'Generated image',
+          // Carried so the next turn can send the picture back with the
+          // history; GeminiApi inlines it the way it does an attachment.
+          bytes: picture,
+          mimeType: pictureType,
         ),
     ];
 
@@ -233,12 +241,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 switch (delta) {
                   case GeminiTextDelta(:final text):
                     reply += text;
-                  case GeminiImageDelta(:final bytes):
+                  case GeminiImageDelta(:final bytes, :final mimeType):
                     picture = bytes;
+                    pictureType = mimeType;
                     // The block holds its shape while the picture decodes;
                     // its real proportions come from the bytes, so measure
                     // them and re-render once known.
                     _measure(bytes).then((ratio) {
+                      if (failed) return;
                       if (ratio == null || !identical(picture, bytes)) return;
                       aspectRatio = ratio;
                       if (_messages.any((m) => m.id == id)) {
@@ -254,6 +264,7 @@ class _ChatScreenState extends State<ChatScreen> {
               },
               onError: (Object error) {
                 _reply = null;
+                failed = true;
                 _update(
                   id,
                   status: FlowMessageStatus.error,

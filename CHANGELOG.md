@@ -67,6 +67,11 @@
 - **Preview** — tapping the frosted space around the picture now closes
   the full-screen viewer, alongside the close button and Escape. A tap on
   the picture itself still does nothing.
+- **Image parts carry their file** — `FlowImagePart.bytes` and
+  `mimeType`, the pair `FlowAttachment` already had and for the same
+  reason: a generated picture is half rendered if the conversation cannot
+  go on about it. The example sends them back with the history, so a
+  follow-up can be about the picture the model drew.
 - **Behaviour change** — a pending attachment now arms the send button on
   its own, and `FlowComposer.onSend` can fire with empty text. A picture
   with no caption is a message; before this, it could not be sent.

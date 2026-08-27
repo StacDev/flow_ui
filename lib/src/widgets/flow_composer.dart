@@ -677,7 +677,10 @@ class _FlowComposerState extends State<FlowComposer> {
     // surface. A plain pass-through when nothing is wired, and off the
     // web.
     return FlowDropTarget(
-      onDropped: widget.onAttachmentsDropped,
+      // Gated like the picker, the paste and attachment removal: while
+      // the composer is disabled a drag must not light the card up or
+      // deliver anything.
+      onDropped: widget.enabled ? widget.onAttachmentsDropped : null,
       onHoverChanged: _handleDropHover,
       attachmentOptions: widget.attachmentOptions,
       onAttachmentRejected: widget.onAttachmentRejected,

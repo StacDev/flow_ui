@@ -155,17 +155,13 @@ class GeminiApi {
           parts.add({'text': text});
         case FlowAttachmentPart(:final attachments):
           for (final attachment in attachments) {
-            final bytes = attachment.bytes;
-            final mimeType = attachment.mimeType;
-            if (bytes == null || mimeType == null) continue;
-            if (!mimeType.startsWith('image/')) continue;
-            // inlineData is capped by the request size (~20MB), and
-            // base64 inflates by a third — the composer's 10MB ceiling
-            // keeps a single image well inside it.
-            parts.add({
-              'inlineData': {'mimeType': mimeType, 'data': base64Encode(bytes)},
-            });
+            _addImage(parts, attachment.bytes, attachment.mimeType);
           }
+        // A picture the model generated goes back up with the history,
+        // so a follow-up can be about it — 'make it warmer' needs the
+        // model to see what it drew.
+        case FlowImagePart(:final bytes, :final mimeType):
+          _addImage(parts, bytes, mimeType);
         default:
           break;
       }
@@ -198,6 +194,21 @@ class GeminiApi {
     } on FormatException {
       return const [];
     }
+  }
+
+  /// One `inlineData` part, when there is a picture to send. inlineData
+  /// is capped by the request size (~20MB) and base64 inflates by a
+  /// third, which the composer's 10MB ceiling keeps well inside.
+  static void _addImage(
+    List<Map<String, Object?>> parts,
+    Uint8List? bytes,
+    String? mimeType,
+  ) {
+    if (bytes == null || mimeType == null) return;
+    if (!mimeType.startsWith('image/')) return;
+    parts.add({
+      'inlineData': {'mimeType': mimeType, 'data': base64Encode(bytes)},
+    });
   }
 
   static String _errorMessage(String body, int statusCode) {

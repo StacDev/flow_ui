@@ -240,12 +240,12 @@ bool _accepts(
     if (group.uniformTypeIdentifiers.isNotEmpty) {
       var sawUnknown = false;
       for (final uti in group.uniformTypeIdentifiers) {
-        final prefix = _utiMimePrefixes[uti.toLowerCase()];
-        if (prefix == null) {
+        final prefixes = _utiMimePrefixes[uti.toLowerCase()];
+        if (prefixes == null) {
           sawUnknown = true;
           continue;
         }
-        if (effectiveMime != null && effectiveMime.startsWith(prefix)) {
+        if (effectiveMime != null && prefixes.any(effectiveMime.startsWith)) {
           return true;
         }
       }
@@ -263,27 +263,30 @@ bool _accepts(
   return false;
 }
 
-/// What the common uniform type identifiers accept, as a MIME prefix —
-/// the empty prefix is the roots that accept anything. Enough to judge
-/// the groups hosts actually write; anything absent defers.
-const Map<String, String> _utiMimePrefixes = <String, String>{
-  'public.item': '',
-  'public.data': '',
-  'public.content': '',
-  'public.image': 'image/',
-  'public.movie': 'video/',
-  'public.video': 'video/',
-  'public.audiovisual-content': 'video/',
-  'public.audio': 'audio/',
-  'public.text': 'text/',
-  'public.plain-text': 'text/plain',
-  'com.adobe.pdf': 'application/pdf',
-  'public.png': 'image/png',
-  'public.jpeg': 'image/jpeg',
-  'com.compuserve.gif': 'image/gif',
-  'public.heic': 'image/heic',
-  'public.heif': 'image/heif',
-  'org.webmproject.webp': 'image/webp',
+/// What the common uniform type identifiers accept, as MIME prefixes —
+/// the empty prefix is the roots that accept anything, and a list because
+/// some identifiers span more than one family: Apple's
+/// `public.audiovisual-content` is the parent of both `public.movie` and
+/// `public.audio`, so a group naming it takes either. Enough to judge the
+/// groups hosts actually write; anything absent defers.
+const Map<String, List<String>> _utiMimePrefixes = <String, List<String>>{
+  'public.item': <String>[''],
+  'public.data': <String>[''],
+  'public.content': <String>[''],
+  'public.image': <String>['image/'],
+  'public.movie': <String>['video/'],
+  'public.video': <String>['video/'],
+  'public.audiovisual-content': <String>['video/', 'audio/'],
+  'public.audio': <String>['audio/'],
+  'public.text': <String>['text/'],
+  'public.plain-text': <String>['text/plain'],
+  'com.adobe.pdf': <String>['application/pdf'],
+  'public.png': <String>['image/png'],
+  'public.jpeg': <String>['image/jpeg'],
+  'com.compuserve.gif': <String>['image/gif'],
+  'public.heic': <String>['image/heic'],
+  'public.heif': <String>['image/heif'],
+  'org.webmproject.webp': <String>['image/webp'],
 };
 
 /// Whether the file is something Flutter's decoders can draw, which is
