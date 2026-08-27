@@ -1,33 +1,30 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// The typefaces the presets are drawn in, bundled with this package under
-/// `fonts/` (SIL Open Font License — see `fonts/OFL.txt` and
-/// `fonts/OFL-GeistMono.txt`): Figtree for prose, Geist Mono for code.
+/// Google Sans for prose and Google Sans Code for code, served by
+/// `google_fonts`: each cut is fetched on first use and cached, or read from
+/// a `google_fonts/` asset folder when the host ships one.
 ///
-/// Declared with `package:` so the families resolve to `packages/flow_ui/…`
-/// and a host gets the design's typefaces without adding a font of their
-/// own.
-const String _fontFamily = 'Figtree';
-const String _monoFontFamily = 'GeistMono';
-const String _fontPackage = 'flow_ui';
+/// google_fonts registers each cut as its own font family (`GoogleSans_600`,
+/// …), so roles are built through the package and re-weighted with
+/// [FlowTypography.recut] rather than `copyWith(fontWeight:)`.
+const String _fontFamily = 'GoogleSans';
+const String _monoFontFamily = 'GoogleSansCode';
 
-/// The mono roles' standard cuts — file-level so they can double as the
-/// constructor defaults, which keeps [FlowTypography]'s pre-code
-/// constructor calls compiling unchanged.
-const TextStyle _standardCode = TextStyle(
-  fontFamily: _monoFontFamily,
-  package: _fontPackage,
-  fontSize: 13,
-  fontWeight: FontWeight.w400,
-  height: 1.6,
-);
-const TextStyle _standardCodeInline = TextStyle(
-  fontFamily: _monoFontFamily,
-  package: _fontPackage,
-  fontSize: 14,
-  fontWeight: FontWeight.w400,
-  height: 1.5,
-);
+TextStyle _sans(double size, FontWeight weight, double height) =>
+    GoogleFonts.googleSans(fontSize: size, fontWeight: weight, height: height);
+
+TextStyle _mono(double size, FontWeight weight, double height) =>
+    GoogleFonts.googleSansCode(
+      fontSize: size,
+      fontWeight: weight,
+      height: height,
+    );
+
+/// Defaults for the mono roles, resolved by the [FlowTypography.code] and
+/// [FlowTypography.codeInline] getters.
+final TextStyle _standardCode = _mono(13, FontWeight.w400, 1.6);
+final TextStyle _standardCodeInline = _mono(14, FontWeight.w400, 1.5);
 
 /// Text style tokens for flow_ui components.
 ///
@@ -71,8 +68,8 @@ class FlowTypography {
     required this.labelMediumEmphasised,
     required this.labelSmall,
     required this.labelSmallEmphasised,
-    this.code = _standardCode,
-    this.codeInline = _standardCodeInline,
+    this._code,
+    this._codeInline,
   });
 
   final TextStyle displayLarge;
@@ -114,209 +111,51 @@ class FlowTypography {
   final TextStyle labelSmall;
   final TextStyle labelSmallEmphasised;
 
-  /// Code, set in the bundled Geist Mono — the code block's body. A step
-  /// under prose (13) on a taller line (1.6), so a block reads as inset
-  /// material rather than continuing the paragraph.
-  final TextStyle code;
+  final TextStyle? _code;
+  final TextStyle? _codeInline;
+
+  /// Code, set in Google Sans Code — the code block's body. A step under
+  /// prose (13) on a taller line (1.6), so a block reads as inset material
+  /// rather than continuing the paragraph.
+  TextStyle get code => _code ?? _standardCode;
 
   /// The mono face at prose size, for future inline code spans.
-  final TextStyle codeInline;
+  TextStyle get codeInline => _codeInline ?? _standardCodeInline;
 
-  /// The Flow type scale: Figtree, with the code roles in Geist Mono.
-  static const FlowTypography standard = FlowTypography(
-    displayLarge: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 52,
-      fontWeight: FontWeight.w400,
-      height: 1.15,
-    ),
-    displayMedium: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 46,
-      fontWeight: FontWeight.w400,
-      height: 1.15,
-    ),
-    displaySmall: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 40,
-      fontWeight: FontWeight.w400,
-      height: 1.15,
-    ),
+  /// The Flow type scale: Google Sans, with the code roles in Google Sans
+  /// Code.
+  static final FlowTypography standard = FlowTypography(
+    displayLarge: _sans(52, FontWeight.w400, 1.15),
+    displayMedium: _sans(46, FontWeight.w400, 1.15),
+    displaySmall: _sans(40, FontWeight.w400, 1.15),
     // The greeting: 32 regular at 1.3.
-    headlineLarge: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 36,
-      fontWeight: FontWeight.w400,
-      height: 1.2,
-    ),
-    headlineMedium: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 32,
-      fontWeight: FontWeight.w400,
-      height: 1.2,
-    ),
-    headlineSmall: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 28,
-      fontWeight: FontWeight.w400,
-      height: 1.2,
-    ),
-    titleLarge: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 24,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    titleLargeEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
-      height: 1.3,
-    ),
-    titleMedium: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 21,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    titleMediumEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 21,
-      fontWeight: FontWeight.w600,
-      height: 1.3,
-    ),
-    titleSmall: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 18,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    titleSmallEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-      height: 1.3,
-    ),
-    bodyLarge: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      height: 1.5,
-    ),
-    bodyLargeEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      height: 1.5,
-    ),
-    bodyLargeDark: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      height: 1.5,
-    ),
-    bodyMediumEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.5,
-    ),
-    bodyMediumDark: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      height: 1.5,
-    ),
-    bodySmall: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      height: 1.5,
-    ),
-    bodySmallEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      height: 1.5,
-    ),
-    bodySmallDark: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 12,
-      fontWeight: FontWeight.w600,
-      height: 1.5,
-    ),
-    labelLarge: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    labelLargeEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      height: 1.3,
-    ),
-    labelMedium: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    labelMediumEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.3,
-    ),
-    labelSmall: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      height: 1.3,
-    ),
-    labelSmallEmphasised: TextStyle(
-      fontFamily: _fontFamily,
-      package: _fontPackage,
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      height: 1.3,
-    ),
+    headlineLarge: _sans(36, FontWeight.w400, 1.2),
+    headlineMedium: _sans(32, FontWeight.w400, 1.2),
+    headlineSmall: _sans(28, FontWeight.w400, 1.2),
+    titleLarge: _sans(24, FontWeight.w400, 1.3),
+    titleLargeEmphasised: _sans(24, FontWeight.w600, 1.3),
+    titleMedium: _sans(21, FontWeight.w400, 1.3),
+    titleMediumEmphasised: _sans(21, FontWeight.w600, 1.3),
+    titleSmall: _sans(18, FontWeight.w400, 1.3),
+    titleSmallEmphasised: _sans(18, FontWeight.w600, 1.3),
+    bodyLarge: _sans(16, FontWeight.w400, 1.5),
+    bodyLargeEmphasised: _sans(16, FontWeight.w500, 1.5),
+    bodyLargeDark: _sans(16, FontWeight.w600, 1.5),
+    bodyMedium: _sans(14, FontWeight.w400, 1.5),
+    bodyMediumEmphasised: _sans(14, FontWeight.w500, 1.5),
+    bodyMediumDark: _sans(14, FontWeight.w600, 1.5),
+    bodySmall: _sans(12, FontWeight.w400, 1.5),
+    bodySmallEmphasised: _sans(12, FontWeight.w500, 1.5),
+    bodySmallDark: _sans(12, FontWeight.w600, 1.5),
+    labelLarge: _sans(16, FontWeight.w400, 1.3),
+    labelLargeEmphasised: _sans(16, FontWeight.w500, 1.3),
+    labelMedium: _sans(14, FontWeight.w400, 1.3),
+    labelMediumEmphasised: _sans(14, FontWeight.w500, 1.3),
+    labelSmall: _sans(12, FontWeight.w400, 1.3),
+    labelSmallEmphasised: _sans(12, FontWeight.w500, 1.3),
   );
 
-  /// The same scale set in [fontFamily] instead of the bundled Figtree.
+  /// The same scale set in [fontFamily] instead of Google Sans.
   /// The mono roles keep their own face — swap those with
   /// [withCodeFontFamily].
   ///
@@ -382,6 +221,35 @@ class FlowTypography {
     );
 
     return copyWith(code: reface(code), codeInline: reface(codeInline));
+  }
+
+  /// [style] at [fontWeight] and/or [fontStyle], in the matching cut.
+  ///
+  /// google_fonts registers each cut as its own font family, so `copyWith`
+  /// on a token would leave the engine faking the weight; this loads the
+  /// real cut. Styles in any other face pass through `copyWith`.
+  static TextStyle recut(
+    TextStyle style, {
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+  }) {
+    // google_fonts names each cut `<family>_<variant>`.
+    final family = style.fontFamily ?? '';
+    if (family.startsWith('${_fontFamily}_')) {
+      return GoogleFonts.googleSans(
+        textStyle: style,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+      );
+    }
+    if (family.startsWith('${_monoFontFamily}_')) {
+      return GoogleFonts.googleSansCode(
+        textStyle: style,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+      );
+    }
+    return style.copyWith(fontWeight: fontWeight, fontStyle: fontStyle);
   }
 
   FlowTypography copyWith({

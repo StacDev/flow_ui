@@ -1,8 +1,8 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// A chrome text style in Figtree (bundled by flow_ui). The chrome keeps
-/// its own bespoke sizes from the Claude Design prototype, but draws them
-/// in the package's face and colors them from [FlowColors] tokens.
+/// A chrome text style in Google Sans. The chrome keeps its bespoke sizes
+/// from the Claude Design prototype and colors them from flow_ui's tokens.
 TextStyle shellText({
   double? size,
   FontWeight? weight,
@@ -10,9 +10,7 @@ TextStyle shellText({
   double? letterSpacing,
   double? height,
 }) {
-  return TextStyle(
-    fontFamily: 'Figtree',
-    package: 'flow_ui',
+  return GoogleFonts.googleSans(
     fontSize: size,
     fontWeight: weight,
     color: color,
