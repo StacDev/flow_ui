@@ -59,12 +59,21 @@ class _ChatScreenState extends State<ChatScreen> {
       label: 'Gemini 3.5 Flash Lite',
       description: 'Lightest and quickest',
     ),
+    FlowModelOption(
+      id: 'gemini-3.1-flash-image',
+      label: 'Gemini 3.1 Flash Image',
+      description: 'Generates pictures',
+    ),
   ];
+
+  /// The models that answer with pictures. Only these are asked for image
+  /// output; a text model refuses the request outright.
+  static const Set<String> _imageModels = {'gemini-3.1-flash-image'};
 
   final ScrollController _scroll = ScrollController();
 
   List<FlowMessageData> _messages = const [];
-  StreamSubscription<String>? _reply;
+  StreamSubscription<GeminiDelta>? _reply;
   int _nextId = 0;
   String _model = 'gemini-3.6-flash';
 
@@ -194,53 +203,109 @@ class _ChatScreenState extends State<ChatScreen> {
       ];
     });
 
+    final generatesImages = _imageModels.contains(_model);
     var reply = '';
-    _reply = GeminiApi(apiKey: apiKey, model: _model)
-        .streamReply(history)
-        .listen(
-          (delta) {
-            reply += delta;
-            _update(
-              id,
-              parts: [FlowTextPart(reply)],
-              status: FlowMessageStatus.streaming,
+    Uint8List? picture;
+    var aspectRatio = 1.0;
+
+    // The turn as it stands. On an image model the picture slot is there
+    // from the first delta: a null image is FlowImagePart's generating
+    // state, a shimmering block that becomes the picture when the bytes
+    // land — generation is data, so the host just re-renders with the
+    // provider set. Text first, picture under it.
+    List<FlowMessagePart> parts({required bool settled}) => [
+      if (reply.isNotEmpty) FlowTextPart(reply),
+      if (picture != null || (generatesImages && !settled))
+        FlowImagePart(
+          // The same Uint8List every rebuild, so MemoryImage stays equal
+          // and the framework never decodes it twice.
+          image: picture == null ? null : MemoryImage(picture!),
+          aspectRatio: aspectRatio,
+          semanticLabel: 'Generated image',
+        ),
+    ];
+
+    _reply =
+        GeminiApi(apiKey: apiKey, model: _model, imageOutput: generatesImages)
+            .streamReply(history)
+            .listen(
+              (delta) {
+                switch (delta) {
+                  case GeminiTextDelta(:final text):
+                    reply += text;
+                  case GeminiImageDelta(:final bytes):
+                    picture = bytes;
+                    // The block holds its shape while the picture decodes;
+                    // its real proportions come from the bytes, so measure
+                    // them and re-render once known.
+                    _measure(bytes).then((ratio) {
+                      if (ratio == null || !identical(picture, bytes)) return;
+                      aspectRatio = ratio;
+                      if (_messages.any((m) => m.id == id)) {
+                        _update(id, parts: parts(settled: _reply == null));
+                      }
+                    });
+                }
+                _update(
+                  id,
+                  parts: parts(settled: false),
+                  status: FlowMessageStatus.streaming,
+                );
+              },
+              onError: (Object error) {
+                _reply = null;
+                _update(
+                  id,
+                  status: FlowMessageStatus.error,
+                  parts: [
+                    ...parts(settled: true),
+                    FlowErrorPart(
+                      message: error is GeminiApiException
+                          ? error.message
+                          : 'Something went wrong. Check your connection and '
+                                'try again.',
+                    ),
+                  ],
+                );
+              },
+              onDone: () {
+                _reply = null;
+                // A stream can close without ever emitting anything (an
+                // empty or filtered response); completing then would leave
+                // a blank assistant row — drop the turn instead, like _stop
+                // does. Settling also drops the picture slot if the model
+                // chose to answer in words alone.
+                if (reply.isEmpty && picture == null) {
+                  if (!mounted) return;
+                  setState(() {
+                    _messages = [
+                      for (final m in _messages)
+                        if (m.id != id) m,
+                    ];
+                  });
+                } else {
+                  _update(
+                    id,
+                    parts: parts(settled: true),
+                    status: FlowMessageStatus.complete,
+                  );
+                }
+              },
+              cancelOnError: true,
             );
-          },
-          onError: (Object error) {
-            _reply = null;
-            _update(
-              id,
-              status: FlowMessageStatus.error,
-              parts: [
-                if (reply.isNotEmpty) FlowTextPart(reply),
-                FlowErrorPart(
-                  message: error is GeminiApiException
-                      ? error.message
-                      : 'Something went wrong. Check your connection and '
-                            'try again.',
-                ),
-              ],
-            );
-          },
-          onDone: () {
-            _reply = null;
-            // A stream can close without ever emitting text (an empty or
-            // filtered response); completing then would leave a blank
-            // assistant row — drop the turn instead, like _stop does.
-            if (reply.isEmpty) {
-              if (!mounted) return;
-              setState(() {
-                _messages = [
-                  for (final m in _messages)
-                    if (m.id != id) m,
-                ];
-              });
-            } else {
-              _update(id, status: FlowMessageStatus.complete);
-            }
-          },
-          cancelOnError: true,
-        );
+  }
+
+  /// A generated picture's width over its height, from its bytes. Null
+  /// when they cannot be decoded, which leaves the block square.
+  static Future<double?> _measure(Uint8List bytes) async {
+    try {
+      final image = await decodeImageFromList(bytes);
+      final ratio = image.width / image.height;
+      image.dispose();
+      return ratio;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Stop keeps whatever streamed in and closes the turn — unless nothing
@@ -250,7 +315,13 @@ class _ChatScreenState extends State<ChatScreen> {
     _reply?.cancel();
     _reply = null;
     final last = _messages.last;
-    if (last.parts.isEmpty) {
+    // A picture that never landed is not content: its generating block
+    // goes with the stop, and a turn left with nothing goes entirely.
+    final kept = [
+      for (final part in last.parts)
+        if (part is! FlowImagePart || part.image != null) part,
+    ];
+    if (kept.isEmpty) {
       setState(() {
         _messages = [
           for (final m in _messages)
@@ -258,7 +329,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ];
       });
     } else {
-      _update(last.id, status: FlowMessageStatus.complete);
+      _update(last.id, parts: kept, status: FlowMessageStatus.complete);
     }
   }
 
