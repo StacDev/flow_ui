@@ -46,9 +46,10 @@ class FlowAttachmentOptions {
   /// [FlowAttachmentRejection.unsupportedType].
   final List<FlowAttachmentTypeGroup> accept;
 
-  /// Whether the dialog lets more than one file be chosen. Drops always
-  /// carry whatever the pointer held; when this is false only the first
-  /// dropped file is taken.
+  /// Whether the dialog lets more than one file be chosen. Drops and
+  /// pastes always carry whatever the pointer or clipboard held; when
+  /// this is false the single slot goes to the first file that passes
+  /// the checks, and the refused ones ahead of it are still reported.
   final bool allowMultiple;
 
   /// The longest edge, in pixels, the full-screen preview is decoded to.

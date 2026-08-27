@@ -55,13 +55,17 @@ Future<List<FlowAttachment>> flowIntakeAttachments(
   void Function(String name, FlowAttachmentRejection reason)? onRejected,
 }) async {
   final attachments = <FlowAttachment>[];
-  // Enforced here rather than at each call site: a drop or a paste
-  // carries whatever the pointer or the clipboard held, and every path
-  // into the intake owes the same answer. The picker is the one place
-  // that can honour it earlier, by opening a single-file dialog.
-  final offered = options.allowMultiple ? candidates : candidates.take(1);
 
-  for (final candidate in offered) {
+  for (final candidate in candidates) {
+    // Enforced here rather than at each call site: a drop or a paste
+    // carries whatever the pointer or the clipboard held, and every path
+    // into the intake owes the same answer. The single slot goes to the
+    // first file that *passes* — stopping at the first file offered
+    // would let a refused one use up the slot while an acceptable one
+    // sat behind it. The picker still honours the option earlier, by
+    // opening a single-file dialog.
+    if (!options.allowMultiple && attachments.isNotEmpty) break;
+
     if (!_accepts(options.accept, candidate)) {
       onRejected?.call(candidate.name, FlowAttachmentRejection.unsupportedType);
       continue;
@@ -208,21 +212,13 @@ bool _accepts(
   final extension = _extensionOf(candidate.name);
   final mimeType = candidate.mimeType?.toLowerCase();
 
+  // The effective type: reported by the platform, or derived from the
+  // extension, so the UTI check below has something to judge against on
+  // platforms whose pickers report nothing.
+  final effectiveMime = _mimeTypeOf(candidate);
+
   for (final group in groups) {
     if (group.allowsAny) return true;
-    // A group that names only uniform type identifiers cannot be judged
-    // from a file name and a MIME type — nothing here can turn
-    // 'public.movie' into an extension — and the group's own
-    // documentation tells hosts that iOS requires that family. Refusing
-    // everything on the strength of a family we cannot read would make a
-    // correctly-written group a total block on drops and pastes, so an
-    // unreadable group defers instead of denying. The dialog still
-    // filters on it, which is what it is for.
-    if (group.extensions.isEmpty &&
-        group.mimeTypes.isEmpty &&
-        group.webWildCards.isEmpty) {
-      return true;
-    }
     if (extension != null && group.extensions.any((e) => _same(e, extension))) {
       return true;
     }
@@ -232,9 +228,63 @@ bool _accepts(
         return true;
       }
     }
+    // Uniform type identifiers — the family iOS requires — judged
+    // through the root-type table below, so 'public.image' accepts what
+    // `image/*` would. A group naming a UTI the table does not know, and
+    // nothing else this function can read, defers to acceptance rather
+    // than refusing: the group is well-formed by its own documentation,
+    // and turning it into a total block on drops and pastes would be
+    // worse than letting the odd file through. The deferral is per
+    // group and only for the unjudgeable — a checkable group elsewhere
+    // in the list neither widens nor narrows it.
+    if (group.uniformTypeIdentifiers.isNotEmpty) {
+      var sawUnknown = false;
+      for (final uti in group.uniformTypeIdentifiers) {
+        final prefix = _utiMimePrefixes[uti.toLowerCase()];
+        if (prefix == null) {
+          sawUnknown = true;
+          continue;
+        }
+        if (effectiveMime != null && effectiveMime.startsWith(prefix)) {
+          return true;
+        }
+      }
+      final judgeable =
+          !sawUnknown &&
+          effectiveMime != null &&
+          group.uniformTypeIdentifiers.isNotEmpty;
+      final hasOtherFamilies =
+          group.extensions.isNotEmpty ||
+          group.mimeTypes.isNotEmpty ||
+          group.webWildCards.isNotEmpty;
+      if (!judgeable && !hasOtherFamilies) return true;
+    }
   }
   return false;
 }
+
+/// What the common uniform type identifiers accept, as a MIME prefix —
+/// the empty prefix is the roots that accept anything. Enough to judge
+/// the groups hosts actually write; anything absent defers.
+const Map<String, String> _utiMimePrefixes = <String, String>{
+  'public.item': '',
+  'public.data': '',
+  'public.content': '',
+  'public.image': 'image/',
+  'public.movie': 'video/',
+  'public.video': 'video/',
+  'public.audiovisual-content': 'video/',
+  'public.audio': 'audio/',
+  'public.text': 'text/',
+  'public.plain-text': 'text/plain',
+  'com.adobe.pdf': 'application/pdf',
+  'public.png': 'image/png',
+  'public.jpeg': 'image/jpeg',
+  'com.compuserve.gif': 'image/gif',
+  'public.heic': 'image/heic',
+  'public.heif': 'image/heif',
+  'org.webmproject.webp': 'image/webp',
+};
 
 /// Whether the file is something Flutter's decoders can draw, which is
 /// what decides tile-with-image against tile-with-pill.
