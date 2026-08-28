@@ -67,10 +67,9 @@ class FlowErrorState extends StatelessWidget {
   /// fields; nulls fall through to the theme tokens.
   final FlowErrorStateStyle? style;
 
-  /// The card: the message bubble's 12px corner over the outlined
-  /// suggestion's 2% ink wash, edged in the error ink at 40% — a
-  /// translucent hairline composites correctly on the page and on a
-  /// raised card, like the rest of the outline ramp.
+  /// The card: the bubble's 12px corner on the resting container fill,
+  /// edged in `error` at 40% — translucent, so it composites on the page
+  /// and on a raised card alike.
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
   static const EdgeInsetsGeometry _cardPadding = EdgeInsets.fromLTRB(
     16,
@@ -78,7 +77,6 @@ class FlowErrorState extends StatelessWidget {
     16,
     14,
   );
-  static const double _groundOpacity = 0.02;
   static const double _borderOpacity = 0.4;
 
   /// The glyph, sized to the title's line so the pair reads as one row;
@@ -108,10 +106,9 @@ class FlowErrorState extends StatelessWidget {
     final effective = context.flowTheme.errorStateStyle?.merge(style) ?? style;
 
     final rowStyle = title != null
-        ? FlowTypography.recut(
-            typography.labelMedium,
-            fontWeight: FontWeight.w600,
-          ).copyWith(color: colors.onSurface).merge(effective?.titleStyle)
+        ? typography.bodyMediumEmphasised
+              .copyWith(color: colors.onSurface)
+              .merge(effective?.titleStyle)
         : typography.bodyMedium
               .copyWith(color: colors.onSurfaceVariant)
               .merge(effective?.messageStyle);
@@ -135,9 +132,7 @@ class FlowErrorState extends StatelessWidget {
     return Container(
       padding: padding ?? _cardPadding,
       decoration: BoxDecoration(
-        color:
-            effective?.backgroundColor ??
-            colors.onSurface.withValues(alpha: _groundOpacity),
+        color: effective?.backgroundColor ?? colors.surfaceContainer,
         borderRadius: borderRadius ?? _radius,
         border: Border.all(
           color:

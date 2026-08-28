@@ -40,13 +40,13 @@ class FlowMarkdownStyle {
     this.ruleColor,
   });
 
-  /// Merged over `# `'s default `titleLarge`.
+  /// Merged over `# `'s default `titleLargeEmphasised`.
   final TextStyle? h1Style;
 
-  /// Merged over `## `'s default `titleMedium`.
+  /// Merged over `## `'s default `titleMediumEmphasised`.
   final TextStyle? h2Style;
 
-  /// Merged over `### `'s default `titleSmall`.
+  /// Merged over `### `'s default `titleSmallEmphasised`.
   final TextStyle? h3Style;
 
   /// Merged over `#### `'s default `bodyLargeDark`.
@@ -65,7 +65,8 @@ class FlowMarkdownStyle {
   /// Merged over inline code's default `codeInline` face.
   final TextStyle? inlineCodeStyle;
 
-  /// The rounded chip painted under inline code. Defaults to ink at 4%.
+  /// The rounded chip painted under inline code. Defaults to
+  /// `surfaceContainer`.
   final Color? codeChipColor;
 
   /// A quote's prose ink. Defaults to `onSurfaceVariant`.

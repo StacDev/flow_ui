@@ -114,9 +114,6 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   static const EdgeInsetsGeometry _tableCellPadding =
       EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 8);
 
-  /// The inline-code wash — the code block's and user bubble's 4% ink.
-  static const double _inlineCodeWash = 0.04;
-
   String? _parsedText;
   List<FlowMarkdownBlock> _blocks = const [];
 
@@ -492,9 +489,9 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
 
       case FlowMarkdownHeading(:final level):
         final scale = switch (level) {
-          1 => typography.titleLarge,
-          2 => typography.titleMedium,
-          3 => typography.titleSmall,
+          1 => typography.titleLargeEmphasised,
+          2 => typography.titleMediumEmphasised,
+          3 => typography.titleSmallEmphasised,
           4 => typography.bodyLargeDark,
           _ => typography.bodyMediumDark,
         };
@@ -666,8 +663,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
           baseStyle: style,
           styleFor: (run) => _runStyle(context, run, style),
           chipFill:
-              _mdStyle?.codeChipColor ??
-              context.flowColors.onSurface.withValues(alpha: _inlineCodeWash),
+              _mdStyle?.codeChipColor ?? context.flowColors.surfaceContainer,
           isStreaming: isCursor,
           charactersPerSecond: widget.charactersPerSecond,
           extraBacklog: isCursor ? _pendingBeyondCursor().toDouble() : 0,
@@ -839,8 +835,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
   }) {
     final onLinkTap = widget.onLinkTap;
     final chipFill =
-        _mdStyle?.codeChipColor ??
-        context.flowColors.onSurface.withValues(alpha: _inlineCodeWash);
+        _mdStyle?.codeChipColor ?? context.flowColors.surfaceContainer;
     final spans = <InlineSpan>[];
     for (var i = 0; i < runs.length; i++) {
       final run = runs[i];

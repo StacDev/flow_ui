@@ -257,12 +257,6 @@ const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
   vertical: 1,
 );
 
-/// The tile's ground, as an alpha over the ink. Deeper behind a photo than
-/// behind a bare tile, which is what the design draws: the wash reads as the
-/// edge of the image while it decodes, and as the tile itself without one.
-const double _groundOpacity = 0.04;
-const double _imageGroundOpacity = 0.08;
-
 /// The ambient lift under a tile: wide, offsetless and barely there.
 const double _shadowOpacity = 0.02;
 const double _shadowBlur = 24;
@@ -342,13 +336,11 @@ class _AttachmentTileState extends State<_AttachmentTile> {
         .round();
 
     Widget tile = Material(
-      // A wash of ink rather than a surface token: the ink ramp is the half
-      // of the palette that carries alpha, so one value tints the page
-      // correctly in both themes, where an opaque surface would have to be
-      // picked twice.
-      color: colors.onSurface.withValues(
-        alpha: thumbnail == null ? _groundOpacity : _imageGroundOpacity,
-      ),
+      // Deeper behind a photo: the wash reads as the image's edge while
+      // it decodes, and as the tile itself without one.
+      color: thumbnail == null
+          ? colors.surfaceContainerLow
+          : colors.surfaceContainerHigh,
       shape: shape,
       clipBehavior: Clip.antiAlias,
       child: InkWell(

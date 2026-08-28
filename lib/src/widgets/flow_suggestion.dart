@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_suggestion_style.dart';
 import '../theme/flow_theme.dart';
-import '../utils/flow_state_colors.dart';
 
 /// A tappable prompt row: the host's suggested message, optionally with a
 /// leading icon. Usable on its own, or in a [FlowSuggestionGroup]:
@@ -105,7 +104,7 @@ class _FlowSuggestionState extends State<FlowSuggestion> {
         (widget.outlined ? colors.onSurface : colors.onSurfaceVariant);
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(restForeground);
+      foreground = colors.onSurfaceDisabled;
     } else if (_hovered) {
       foreground = colors.onSurface;
     } else {

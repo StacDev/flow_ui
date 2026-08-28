@@ -4,15 +4,17 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// Role names follow Material 3's [ColorScheme] (primary / secondary /
 /// tertiary / error groups, surface containers, outline, inverse), so a host
-/// can map an existing M3 scheme straight onto flow_ui. Flow adds a third
-/// ink level, [onSurfaceMuted], and [success] and [warning] groups beside
-/// [error].
+/// can map an existing M3 scheme onto flow_ui — with one inversion: here
+/// [outline] is the *faint* hairline and [outlineVariant] the *firm* one,
+/// the reverse of M3's weights. Flow adds a third ink level,
+/// [onSurfaceMuted], and [success] and [warning] groups beside [error].
 ///
 /// The presets come from the Flow UI design file. Three things about them
 /// are worth knowing before overriding one:
 ///
 /// * **The ink ramp is translucent.** [onSurfaceVariant] (75%),
-///   [onSurfaceMuted] (50%), [outline] (7%) and [outlineVariant] (12%) are
+///   [onSurfaceMuted] (50%), [outline] (7%, 8% in dark) and
+///   [outlineVariant] (12%) are
 ///   the foreground ink at an alpha, not resolved colors. The design uses the
 ///   same label and the same hairline on the page *and* on the raised card,
 ///   which only works if they composite.
@@ -133,13 +135,15 @@ class FlowColors {
   /// through the containers below.
   final Color surfaceContainerLowest;
 
-  /// Faintest fill — a suggestion row at rest.
+  /// Faintest fill — the user bubble, a bare attachment tile; a suggestion
+  /// row's hover.
   final Color surfaceContainerLow;
 
-  /// Resting fill — the user bubble, a selected row.
+  /// Resting fill — a selected row, the error card, inline code.
   final Color surfaceContainer;
 
-  /// Hover.
+  /// Deeper fill — behind a photo tile; the code block's copy affordance
+  /// on hover.
   final Color surfaceContainerHigh;
 
   /// Pressed, and the ground behind a failed attachment.
@@ -147,12 +151,12 @@ class FlowColors {
 
   // Outline — borders and separators.
 
-  /// Faint hairline — 7% ink in light, 8% in dark: separators, rules, a
-  /// pill or code block at rest.
+  /// Faint hairline — 7% ink in light, 8% in dark: rules and table
+  /// dividers, a pill or code block at rest.
   final Color outline;
 
-  /// Firm hairline — 12% ink in both themes: the edge of a tile, a retry
-  /// pill, the send disc at rest.
+  /// Firm hairline — 12% ink in both themes: the edge of a tile, a menu
+  /// rule, the sheet's edge, a retry pill, the send disc at rest.
   final Color outlineVariant;
 
   // Inverse — elements on the opposite brightness (snackbars, tooltips).

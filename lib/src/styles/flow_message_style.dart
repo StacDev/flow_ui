@@ -16,8 +16,8 @@ import 'package:material_ui/material_ui.dart';
 class FlowMessageStyle {
   const FlowMessageStyle({this.bubbleColor, this.bubbleTextColor});
 
-  /// The user bubble's fill. Defaults to ink at 4%. A failed user turn
-  /// keeps the theme's `errorContainer` regardless.
+  /// The user bubble's fill. Defaults to `surfaceContainerLow`. A failed
+  /// user turn keeps the theme's `errorContainer` regardless.
   final Color? bubbleColor;
 
   /// The user bubble's ink. Defaults to `onSurface`. A failed user turn

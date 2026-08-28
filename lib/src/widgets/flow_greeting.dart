@@ -35,12 +35,13 @@ class FlowGreeting extends StatelessWidget {
   /// accent in the glyph in both themes.
   final Color? iconColor;
 
-  /// Defaults to `headlineLarge` in the row form and `titleMedium` in the
+  /// Defaults to `headlineMedium` in the row form and `titleMedium` in the
   /// stacked form. An explicit style is used as given in both.
   final TextStyle? textStyle;
 
   /// The design's title: a 40px glyph, beside headline text on wide
-  /// screens — 16 apart, bottom-aligned — and above title text on compact
+  /// screens — 16 apart, bottom-aligned; at 32/1.2 the text line is 38.4,
+  /// so the glyph sets the row's height — and above title text on compact
   /// ones, 4 apart. Compact begins below 600, Material's compact/medium
   /// boundary.
   static const double _iconSize = 40;
@@ -58,7 +59,7 @@ class FlowGreeting extends StatelessWidget {
         final typography = context.flowTypography;
         final style =
             textStyle ??
-            (compact ? typography.titleMedium : typography.headlineLarge)
+            (compact ? typography.titleMedium : typography.headlineMedium)
                 .copyWith(color: colors.onSurface);
         final label = Text(text, style: style, textAlign: TextAlign.center);
         if (icon == null) return label;

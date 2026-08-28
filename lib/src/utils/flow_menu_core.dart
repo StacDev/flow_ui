@@ -4,7 +4,6 @@ import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import 'flow_gradient_outline.dart';
 import 'flow_menu_sheet.dart';
-import 'flow_state_colors.dart';
 
 // Internal menu infrastructure shared by the selector widgets.
 // Not exported from the package barrel.
@@ -88,8 +87,7 @@ Color flowMenuBackground(BuildContext context, FlowMenuStyle? style) =>
     style?.backgroundColor ?? context.flowColors.surfaceBright;
 
 Color flowMenuBorderColor(BuildContext context, FlowMenuStyle? style) =>
-    style?.borderColor ??
-    context.flowColors.onSurface.withValues(alpha: _borderOpacity);
+    style?.borderColor ?? context.flowColors.outlineVariant;
 
 Color flowMenuSeparatorColor(BuildContext context, FlowMenuStyle? style) =>
     style?.separatorColor ?? context.flowColors.outlineVariant;
@@ -198,7 +196,9 @@ ButtonStyle _submenuRowStyle(
   required bool open,
 }) {
   final hover = flowMenuHoverColor(context, style);
-  final foreground = context.flowColors.onSurface;
+  final colors = context.flowColors;
+  final foreground = colors.onSurface;
+  final disabled = colors.onSurfaceDisabled;
   return ButtonStyle(
     // The off state is the wash at zero alpha, not Colors.transparent —
     // Material lerps color changes, and fading toward transparent *black*
@@ -207,9 +207,7 @@ ButtonStyle _submenuRowStyle(
       open ? hover : hover.withValues(alpha: 0),
     ),
     foregroundColor: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.disabled)
-          ? flowDisabledColor(foreground)
-          : foreground,
+      (states) => states.contains(WidgetState.disabled) ? disabled : foreground,
     ),
     // The idle branch must not be Colors.transparent: menu rows create a
     // focus highlight the moment hover focuses them, and the CanvasKit
@@ -421,7 +419,7 @@ class FlowMenuRow extends StatelessWidget {
                     Icon(
                       icon,
                       size: iconSize,
-                      color: enabled ? iconColor : flowDisabledColor(iconColor),
+                      color: enabled ? iconColor : colors.onSurfaceDisabled,
                     ),
                     const SizedBox(width: flowMenuIconGap),
                   ],
@@ -435,7 +433,7 @@ class FlowMenuRow extends StatelessWidget {
                           style: labelStyle.copyWith(
                             color: enabled
                                 ? labelColor
-                                : flowDisabledColor(labelColor),
+                                : colors.onSurfaceDisabled,
                           ),
                         ),
                         if (description != null) ...[
@@ -445,10 +443,7 @@ class FlowMenuRow extends StatelessWidget {
                             style: enabled
                                 ? descriptionStyle
                                 : descriptionStyle.copyWith(
-                                    color: flowDisabledColor(
-                                      descriptionStyle.color ??
-                                          colors.onSurfaceMuted,
-                                    ),
+                                    color: colors.onSurfaceDisabled,
                                   ),
                           ),
                         ],

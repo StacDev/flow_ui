@@ -23,7 +23,7 @@ TextStyle _mono(double size, FontWeight weight, double height) =>
 
 /// Defaults for the mono roles, resolved by the [FlowTypography.code] and
 /// [FlowTypography.codeInline] getters.
-final TextStyle _standardCode = _mono(13, FontWeight.w400, 1.6);
+final TextStyle _standardCode = _mono(14, FontWeight.w400, 1.6);
 final TextStyle _standardCodeInline = _mono(14, FontWeight.w400, 1.5);
 
 /// Text style tokens for flow_ui components.
@@ -114,9 +114,9 @@ class FlowTypography {
   final TextStyle? _code;
   final TextStyle? _codeInline;
 
-  /// Code, set in Google Sans Code — the code block's body. A step under
-  /// prose (13) on a taller line (1.6), so a block reads as inset material
-  /// rather than continuing the paragraph.
+  /// The code block's body, in Google Sans Code: 14 on a taller line
+  /// (1.6), so a block reads as inset material, not a continuing
+  /// paragraph.
   TextStyle get code => _code ?? _standardCode;
 
   /// The mono face at prose size, for future inline code spans.
@@ -128,8 +128,8 @@ class FlowTypography {
     displayLarge: _sans(52, FontWeight.w400, 1.15),
     displayMedium: _sans(46, FontWeight.w400, 1.15),
     displaySmall: _sans(40, FontWeight.w400, 1.15),
-    // The greeting: 32 regular at 1.3.
     headlineLarge: _sans(36, FontWeight.w400, 1.2),
+    // The greeting: 32 regular.
     headlineMedium: _sans(32, FontWeight.w400, 1.2),
     headlineSmall: _sans(28, FontWeight.w400, 1.2),
     titleLarge: _sans(24, FontWeight.w400, 1.3),

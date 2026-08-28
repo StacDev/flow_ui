@@ -236,15 +236,15 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
         decoration: BoxDecoration(
           color: style?.backgroundColor ?? colors.surfaceContainerLowest,
           borderRadius: widget.borderRadius ?? _radius,
-          // The hover state lives on the edge, not the ground: the
-          // hairline firms from the faint rung to the ladder's deepest.
+          // Hover lives on the edge, not the ground: the hairline firms
+          // from `outline` to `outlineVariant`.
           // A style's borderColor holds through hover unless the style
           // names its own hover edge.
           border: Border.all(
             color: _hovered
                 ? (style?.hoverBorderColor ??
                       style?.borderColor ??
-                      colors.surfaceContainerHighest)
+                      colors.outlineVariant)
                 : (style?.borderColor ?? colors.outline),
           ),
         ),
@@ -265,7 +265,7 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
                               label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: typography.bodySmall
+                              style: typography.labelMedium
                                   .copyWith(color: colors.onSurfaceMuted)
                                   .merge(style?.headerStyle),
                             ),

@@ -33,14 +33,15 @@ class FlowPillStyle {
   /// The pill's hairline. Defaults to `outline`.
   final Color? borderColor;
 
-  /// The leading icon. Defaults to `onSurfaceVariant`.
+  /// The leading icon. Defaults to `onSurfaceVariant`; disabled paints
+  /// `onSurfaceDisabled` regardless.
   final Color? iconColor;
 
   /// Merged over the default `labelMediumEmphasised` + `onSurface` label.
   final TextStyle? labelStyle;
 
   /// The remove X at rest. Defaults to `onSurfaceMuted`; hover lifts it
-  /// to `onSurface` regardless.
+  /// to `onSurface`, and disabled paints `onSurfaceDisabled`, regardless.
   final Color? removeColor;
 
   /// A copy where [other]'s fields win over this style's.

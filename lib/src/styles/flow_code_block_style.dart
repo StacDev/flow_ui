@@ -36,12 +36,12 @@ class FlowCodeBlockStyle {
   /// renders the block borderless.
   final Color? borderColor;
 
-  /// The hairline while hovered. Defaults to `surfaceContainerHighest`;
+  /// The hairline while hovered. Defaults to `outlineVariant`;
   /// when only [borderColor] is set, hover keeps that color instead of
   /// firming.
   final Color? hoverBorderColor;
 
-  /// Merged over the header label's default `bodySmall` +
+  /// Merged over the header label's default `labelMedium` +
   /// `onSurfaceMuted` style.
   final TextStyle? headerStyle;
 

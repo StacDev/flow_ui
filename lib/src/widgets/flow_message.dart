@@ -146,18 +146,9 @@ class FlowMessage extends StatelessWidget {
   /// fields; nulls fall through to the theme tokens.
   final FlowMessageStyle? style;
 
-  /// The user bubble's ground, as an alpha over the ink — the same wash the
-  /// design gives every tint that sits directly on the page, so it reads
-  /// correctly in both themes.
-  static const double _bubbleOpacity = 0.04;
-
   /// The design draws the bubble at 16/10 — ten sits between the spacing
   /// steps, like the attachment pill's one-pixel inset.
   static const double _bubbleVerticalPadding = 10;
-
-  /// Bubble text sits on the tight line height; flowing assistant prose
-  /// keeps the reading one.
-  static const double _bubbleTextHeight = 1.3;
 
   /// The design's bubble: 12px corners on 16px side padding.
   static const BorderRadius _bubbleRadius = BorderRadius.all(
@@ -198,8 +189,7 @@ class FlowMessage extends StatelessWidget {
         // A failed turn keeps the error treatment regardless of style.
         color: _isError
             ? colors.errorContainer
-            : effective?.bubbleColor ??
-                  colors.onSurface.withValues(alpha: _bubbleOpacity),
+            : effective?.bubbleColor ?? colors.surfaceContainerLow,
         borderRadius: bubbleRadius ?? _bubbleRadius,
       ),
       child: _buildParts(
@@ -207,7 +197,6 @@ class FlowMessage extends StatelessWidget {
         _isError
             ? colors.onErrorContainer
             : effective?.bubbleTextColor ?? colors.onSurface,
-        height: _bubbleTextHeight,
       ),
     );
 
@@ -331,12 +320,11 @@ class FlowMessage extends StatelessWidget {
     );
   }
 
-  /// The message's parts as a column, text parts in [foreground] and, when
-  /// [height] is given, on that line height instead of the reading one.
-  Widget _buildParts(BuildContext context, Color foreground, {double? height}) {
+  /// The message's parts as a column, text parts in [foreground].
+  Widget _buildParts(BuildContext context, Color foreground) {
     final typography = context.flowTypography;
     final style = typography.bodyLarge
-        .copyWith(color: foreground, height: height)
+        .copyWith(color: foreground)
         .merge(textStyle);
     final onCodeCopy = this.onCodeCopy;
 

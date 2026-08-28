@@ -57,7 +57,7 @@ class FlowMenuStyle {
 
   /// Hairline around the card and the sheet. The card's default is a
   /// gradient from ink at 20% to ink at 12%; setting this flattens it to
-  /// one solid color. The sheet's default is ink at 20%.
+  /// one solid color. The sheet's default is `outlineVariant`.
   final Color? borderColor;
 
   /// Rule between sections. Defaults to `outlineVariant`.
@@ -67,14 +67,16 @@ class FlowMenuStyle {
   final Color? hoverColor;
 
   /// Merged over the default row label style (`labelMediumEmphasised` in
-  /// the menu, `labelLargeEmphasised` in the sheet).
+  /// the menu, `labelLargeEmphasised` in the sheet). A disabled row's label
+  /// paints `onSurfaceDisabled` regardless of a color here.
   final TextStyle? labelStyle;
 
   /// Merged over the default description style (`labelMedium` in
-  /// `onSurfaceMuted`).
+  /// `onSurfaceMuted`); disabled paints `onSurfaceDisabled` regardless.
   final TextStyle? descriptionStyle;
 
-  /// Leading row icons. Defaults to `onSurfaceVariant`.
+  /// Leading row icons. Defaults to `onSurfaceVariant`; a disabled row
+  /// paints `onSurfaceDisabled` regardless.
   final Color? iconColor;
 
   /// The selected check. Defaults to `primary`.

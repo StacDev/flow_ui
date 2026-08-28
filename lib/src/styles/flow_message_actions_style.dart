@@ -22,7 +22,8 @@ class FlowMessageActionsStyle {
     this.hoverColor,
   });
 
-  /// Action icons at rest. Defaults to `onSurfaceMuted`.
+  /// Action icons at rest. Defaults to `onSurfaceMuted`; a disabled action
+  /// paints `onSurfaceDisabled` regardless.
   final Color? iconColor;
 
   /// Action icons while hovered. Defaults to `onSurface`.
@@ -31,7 +32,7 @@ class FlowMessageActionsStyle {
   /// A selected action's icon (a chosen thumb). Defaults to `primary`.
   final Color? selectedColor;
 
-  /// The wash behind a hovered action. Defaults to `surfaceContainerHigh`.
+  /// The wash behind a hovered action. Defaults to `surfaceContainer`.
   final Color? hoverColor;
 
   /// A copy where [other]'s fields win over this style's.

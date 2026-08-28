@@ -400,6 +400,9 @@ class _FlowComposerState extends State<FlowComposer> {
                       enabled: widget.enabled,
                       minLines: 1,
                       maxLines: widget.maxLines,
+                      // The design's compressed composer: body face on
+                      // the 1.3 control line, so the empty card stands
+                      // at 116.
                       style: typography.bodyLarge
                           .copyWith(height: 1.3, color: colors.onSurface)
                           .merge(style?.textStyle),
