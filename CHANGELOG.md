@@ -57,8 +57,8 @@
   an already-bounded provider alone.
 - **Sent images** — a user turn's attachments now lift out of the bubble
   and sit above it in a row from the trailing edge: each image a 116
-  square tile, cover-cropped, under an `outlineVariant` hairline that
-  strengthens to `outline` on hover; files as tiles. A picture with no
+  square tile, cover-cropped, under an `outline` hairline that softens
+  to `outlineVariant` on hover; files as tiles. A picture with no
   caption
   draws no bubble. `FlowMessageStyle.attachmentCardBorderColor` and
   `attachmentCardHoverBorderColor` restyle the hairline's two inks, and

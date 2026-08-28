@@ -35,13 +35,12 @@ class FlowMessageStyle {
   /// transparent PNG.
   final Color? attachmentCardColor;
 
-  /// The sent image tile's hairline at rest. Defaults to
-  /// `outlineVariant`.
+  /// The sent image tile's hairline at rest. Defaults to `outline`, the
+  /// same ink the pending strip's tiles carry.
   final Color? attachmentCardBorderColor;
 
   /// The hairline while the pointer is over the tile. Defaults to
-  /// `outline`, the stronger ink — hover gains emphasis, as it does on
-  /// the composer and the suggestion rows.
+  /// `outlineVariant`.
   final Color? attachmentCardHoverBorderColor;
 
   /// A copy where [other]'s fields win over this style's.

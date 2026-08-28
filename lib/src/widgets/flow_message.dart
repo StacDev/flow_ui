@@ -178,9 +178,8 @@ class FlowMessage extends StatelessWidget {
 
   /// A sent image, lifted out of the user bubble to sit above it: a 116
   /// square tile with the picture cover-cropped inside, under the
-  /// bubble's 12px corner and an `outlineVariant` hairline that
-  /// strengthens to `outline` while the pointer is over it. Tiles run in
-  /// a row
+  /// bubble's 12px corner and an `outline` hairline that softens to
+  /// `outlineVariant` while the pointer is over it. Tiles run in a row
   /// from the trailing edge with the bubble world's 8 between them,
   /// wrapping when a turn carries more than fit, and sit 12 above the
   /// bubble.
@@ -508,10 +507,9 @@ class FlowMessage extends StatelessWidget {
       image: attachment.thumbnail ?? attachment.preview!,
       label: attachment.tooltip ?? attachment.label,
       groundColor: effective?.attachmentCardColor,
-      borderColor:
-          effective?.attachmentCardBorderColor ?? colors.outlineVariant,
+      borderColor: effective?.attachmentCardBorderColor ?? colors.outline,
       hoverBorderColor:
-          effective?.attachmentCardHoverBorderColor ?? colors.outline,
+          effective?.attachmentCardHoverBorderColor ?? colors.outlineVariant,
       // The host's handler replaces the preview, as it does on the
       // tiles; otherwise the built-in viewer opens on this picture with
       // the turn's others a page away.
