@@ -102,12 +102,6 @@
   reason: a generated picture is half rendered if the conversation cannot
   go on about it. The example sends them back with the history, so a
   follow-up can be about the picture the model drew.
-- **Fix** — the light preset's `onErrorContainer` is `#B54141`, a
-  darker cut of the error accent, where it was the accent itself.
-  `#C14A4A` on its own 6% wash over `surface` came to 4.2:1, under
-  WCAG AA at label sizes, so the composer's error banner and a failed
-  user bubble were hard to read; the new ink clears 4.8:1 and still
-  reads as the same red. The dark preset was already clear.
 - **Behaviour change** — a pending attachment now arms the send button on
   its own, and `FlowComposer.onSend` can fire with empty text. A picture
   with no caption is a message; before this, it could not be sent.

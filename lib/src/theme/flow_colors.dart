@@ -190,12 +190,7 @@ class FlowColors {
     error: Color(0xFFC14A4A),
     onError: Color(0xFFFFFFFF),
     errorContainer: Color(0x0FC14A4A),
-    // A darker cut of the accent rather than the accent itself: #C14A4A
-    // on its own 6% wash over surface is 4.2:1 and misses AA at label
-    // sizes — the one status ink in this preset that does. #B54141 clears
-    // 4.8:1 on surface and 5.1:1 on surfaceBright and still reads as the
-    // same red. The dark preset's accent clears on its own.
-    onErrorContainer: Color(0xFFB54141),
+    onErrorContainer: Color(0xFFC14A4A),
     success: Color(0xFF249655),
     onSuccess: Color(0xFFFFFFFF),
     successContainer: Color(0x0F249655),
