@@ -187,6 +187,10 @@
   with the page and the error hairline carries the state. The composer's
   error tab tightens its inner padding to 16 leading and 8 trailing.
 
+- **Typography** — the `code` and `codeInline` roles, the code block's
+  body and the inline span, drop from 14 to 13 on their 1.6 and 1.5
+  lines.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut
