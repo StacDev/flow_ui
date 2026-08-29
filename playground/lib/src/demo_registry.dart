@@ -18,6 +18,7 @@ import 'demos/streaming_text_demo.dart';
 import 'demos/suggestions_demo.dart';
 import 'demos/thinking_indicator_demo.dart';
 import 'demos/thread_demo.dart';
+import 'demos/thread_list_demo.dart';
 import 'playground_item.dart';
 
 /// The stage's demo for [item]. Keyed on the variant so switching pills
@@ -41,6 +42,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.pill => PillDemo(key: key, variant: variant),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
     PlaygroundItem.thread => ThreadDemo(key: key, variant: variant),
+    PlaygroundItem.threadList => ThreadListDemo(key: key, variant: variant),
     PlaygroundItem.messageActions => MessageActionsDemo(key: key),
     PlaygroundItem.streamingText => StreamingTextDemo(
       key: key,
@@ -109,6 +111,11 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('streaming', 'Streaming'),
       ('short', 'Short'),
     ],
+    PlaygroundItem.threadList => const [
+      ('sections', 'Sections'),
+      ('flat', 'Flat'),
+      ('icons', 'With icons'),
+    ],
     PlaygroundItem.streamingText => const [
       ('animated', 'Animated'),
       ('instant', 'Instant'),
@@ -155,6 +162,7 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.pill => pillSnippet(variant),
     PlaygroundItem.attachments => attachmentsSnippet(variant),
     PlaygroundItem.thread => threadSnippet(variant),
+    PlaygroundItem.threadList => threadListSnippet(variant),
     PlaygroundItem.messageActions => messageActionsSnippet,
     PlaygroundItem.streamingText => streamingTextSnippet(variant),
     PlaygroundItem.shimmerText => shimmerTextSnippet(variant),

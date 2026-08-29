@@ -35,6 +35,7 @@
 |---|---|
 | [`FlowChatView`](https://flowui.stac.dev/components/chat-view) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
 | [`FlowThread`](https://flowui.stac.dev/components/message-thread) | Scrollable conversation — reads from the top, anchoring to the newest message once it outgrows the viewport |
+| [`FlowThreadList`](https://flowui.stac.dev/components/thread-list) | Conversation history for a side panel — host-labeled sections, single selection by id, unread and pinned marks |
 | [`FlowMessage`](https://flowui.stac.dev/components/message-thread) | One turn — ink-wash user bubble, plain assistant, error bubble, typed content parts |
 | [`FlowStreamingText`](https://flowui.stac.dev/components/streaming-text) | Animated text reveal while a reply arrives |
 | [`FlowThinkingIndicator`](https://flowui.stac.dev/components/thinking-indicator) | Turning, breathing asterisk with a shimmering label |

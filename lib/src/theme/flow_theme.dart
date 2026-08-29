@@ -9,6 +9,7 @@ import '../styles/flow_message_actions_style.dart';
 import '../styles/flow_message_style.dart';
 import '../styles/flow_pill_style.dart';
 import '../styles/flow_suggestion_style.dart';
+import '../styles/flow_thread_list_style.dart';
 import 'flow_colors.dart';
 import 'flow_syntax_colors.dart';
 import 'flow_typography.dart';
@@ -53,6 +54,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     this.messageActionsStyle,
     this.pillStyle,
     this.suggestionStyle,
+    this.threadListStyle,
   });
 
   /// Light preset.
@@ -104,6 +106,9 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   /// App-wide default for every `FlowSuggestion`.
   final FlowSuggestionStyle? suggestionStyle;
 
+  /// App-wide default for every `FlowThreadList`.
+  final FlowThreadListStyle? threadListStyle;
+
   @override
   FlowTheme copyWith({
     FlowColors? colors,
@@ -118,6 +123,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     FlowMessageActionsStyle? messageActionsStyle,
     FlowPillStyle? pillStyle,
     FlowSuggestionStyle? suggestionStyle,
+    FlowThreadListStyle? threadListStyle,
   }) {
     return FlowTheme(
       colors: colors ?? this.colors,
@@ -132,6 +138,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       messageActionsStyle: messageActionsStyle ?? this.messageActionsStyle,
       pillStyle: pillStyle ?? this.pillStyle,
       suggestionStyle: suggestionStyle ?? this.suggestionStyle,
+      threadListStyle: threadListStyle ?? this.threadListStyle,
     );
   }
 
@@ -169,6 +176,9 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       suggestionStyle: suggestionStyle == null
           ? other.suggestionStyle
           : suggestionStyle!.lerp(other.suggestionStyle, t),
+      threadListStyle: threadListStyle == null
+          ? other.threadListStyle
+          : threadListStyle!.lerp(other.threadListStyle, t),
     );
   }
 }

@@ -2,6 +2,11 @@
 
 ## 0.3.0 (unreleased)
 
+- **Thread list** — `FlowThreadList`, the side panel's conversation
+  history: host-labeled sections of title-only rows, single selection by
+  id, an unread dot and pinned glyph, and a leading icon slot. Metrics
+  are provisional pending a design frame; `FlowThreadListStyle` joins the
+  component styles with a `FlowTheme.threadListStyle` default.
 - **Component inks and type roles** — a pass over every component against
   the palette and scale. Grounds that were hand-rolled ink alphas now take
   container tokens: attachment tiles (`surfaceContainerLow`, `High` behind
