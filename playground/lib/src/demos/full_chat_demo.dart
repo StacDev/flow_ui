@@ -5,6 +5,8 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
+import 'rejection_notice.dart';
+
 /// The canned reply, per the design prototype.
 const String _reply =
     'I can assist you with most tasks across this app — changing your name, '
@@ -28,11 +30,7 @@ const List<(IconData, String)> _starters = [
 /// live — starts in the zero state, sends for real, streams a canned reply
 /// behind the thinking indicator, and carries the add and model menus.
 class FullChatDemo extends StatefulWidget {
-  const FullChatDemo({super.key, this.variant});
-
-  /// `drop` pins the drag-and-drop treatment on, so the overlay is
-  /// visible on stage and in docs embeds without a real drag.
-  final String? variant;
+  const FullChatDemo({super.key});
 
   @override
   State<FullChatDemo> createState() => _FullChatDemoState();
@@ -56,6 +54,12 @@ class _FullChatDemoState extends State<FullChatDemo> {
   final List<FlowAttachment> _pending = [];
   String? _rejection;
 
+  /// One cap for every way in — the menu's dialog, a drop, a paste — so
+  /// a file gets the same answer whichever it takes.
+  static const FlowAttachmentOptions _attachmentOptions = FlowAttachmentOptions(
+    maxFileSize: 10 * 1024 * 1024,
+  );
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -71,11 +75,23 @@ class _FullChatDemoState extends State<FullChatDemo> {
     });
   }
 
+  /// 'Add Files or Photos' in the "+" menu: the package's own dialog,
+  /// opened from the host's control. Called synchronously from the
+  /// menu's onSelected so the web keeps the tap's user activation.
+  Future<void> _pickFiles() async {
+    final picked = await showFlowAttachmentPicker(
+      options: _attachmentOptions,
+      onRejected: _reject,
+    );
+    if (!mounted || picked.isEmpty) return;
+    _addAttachments(picked);
+  }
+
   /// The package has no copy for a refusal, by design — this is the
-  /// host's wording, shown under the composer for a beat.
+  /// host's wording, on a line above the composer that fades on its own.
   void _reject(String name, FlowAttachmentRejection reason) {
     final why = switch (reason) {
-      FlowAttachmentRejection.tooLarge => 'is too large',
+      FlowAttachmentRejection.tooLarge => 'is larger than 10 MB',
       FlowAttachmentRejection.unsupportedType => 'is not an image',
       FlowAttachmentRejection.unreadable => 'could not be read',
     };
@@ -157,24 +173,17 @@ class _FullChatDemoState extends State<FullChatDemo> {
     final rejection = _rejection;
     return FlowChatView(
       // Real drag-and-drop — the playground runs on the web, the one
-      // platform the SDK gives file drop. The `drop` variant pins the
-      // treatment up so the stage and the docs embed can show it without
-      // anyone holding a file over the page.
+      // platform the SDK gives file drop. The pinned treatment lives on
+      // the Attachments stage.
       onAttachmentsDropped: _addAttachments,
       onAttachmentRejected: _reject,
-      dropActive: widget.variant == 'drop',
+      attachmentOptions: _attachmentOptions,
       dropLabel: 'Drop files to add to chat',
       aboveComposer: rejection == null
           ? null
-          : Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                rejection,
-                textAlign: TextAlign.center,
-                style: context.flowTypography.bodySmall.copyWith(
-                  color: context.flowColors.error,
-                ),
-              ),
+          : RejectionNotice(
+              message: rejection,
+              onDismissed: () => setState(() => _rejection = null),
             ),
       empty: _messages.isEmpty,
       greeting: const FlowGreeting(
@@ -205,11 +214,10 @@ class _FullChatDemoState extends State<FullChatDemo> {
         isStreaming: _generating,
         onSend: _send,
         onStop: _stop,
-        // The package opens the dialog and decodes what comes back.
-        onAttachmentsPicked: _addAttachments,
+        // Picking goes through the "+" menu below; paste lands here.
         onAttachmentsPasted: _addAttachments,
         onAttachmentRejected: _reject,
-        attachTooltip: 'Attach images',
+        attachmentOptions: _attachmentOptions,
         attachments: List.of(_pending),
         removeAttachmentTooltip: 'Remove',
         previewCloseTooltip: 'Close',
@@ -252,10 +260,13 @@ class _FullChatDemoState extends State<FullChatDemo> {
               ),
             ],
             onSelected: (id) {
-              if (id == 'research') {
-                setState(() => _researchOn = !_researchOn);
-              } else if (id == 'web-search') {
-                setState(() => _webSearchOn = !_webSearchOn);
+              switch (id) {
+                case 'files':
+                  unawaited(_pickFiles());
+                case 'research':
+                  setState(() => _researchOn = !_researchOn);
+                case 'web-search':
+                  setState(() => _webSearchOn = !_webSearchOn);
               }
             },
           ),

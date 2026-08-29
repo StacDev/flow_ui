@@ -46,9 +46,9 @@ class FlowFileCandidate {
 /// Images become tiles — [FlowAttachment.thumbnail] and
 /// [FlowAttachment.preview] share one set of bytes, so the tile costs a
 /// tile and the full-screen preview is only decoded if it is opened.
-/// Everything else becomes a
-/// thumbnail-less attachment carrying its extension as
-/// [FlowAttachment.kind], which is what the tile draws in its pill.
+/// Everything else becomes a thumbnail-less attachment. Both carry their
+/// extension as [FlowAttachment.kind], which is what the tile draws in
+/// its pill.
 Future<List<FlowAttachment>> flowIntakeAttachments(
   Iterable<FlowFileCandidate> candidates, {
   FlowAttachmentOptions options = const FlowAttachmentOptions(),
@@ -156,6 +156,9 @@ FlowAttachment _attachmentFor(
     id: _nextId(),
     thumbnail: source,
     preview: _bounded(source, options.previewMaxDimension),
+    // The pill on a picture too — 'JPG' over the corner, as the design
+    // draws it — not only on the files that have nothing else to show.
+    kind: _kindOf(candidate.name),
     label: candidate.name,
     bytes: bytes,
     mimeType: mimeType,

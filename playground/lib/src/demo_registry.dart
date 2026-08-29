@@ -26,7 +26,7 @@ import 'playground_item.dart';
 Widget demoFor(PlaygroundItem item, {String? variant}) {
   final key = ValueKey('${item.name}-$variant');
   return switch (item) {
-    PlaygroundItem.fullChat => FullChatDemo(key: key, variant: variant),
+    PlaygroundItem.fullChat => FullChatDemo(key: key),
     PlaygroundItem.composer => ComposerDemo(key: key, variant: variant),
     PlaygroundItem.modalSelector => ModelSelectorDemo(key: key),
     PlaygroundItem.message => MessageDemo(key: key, variant: variant),
@@ -60,10 +60,6 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
 /// has a single form. The first entry is the default.
 List<(String, String)> variantsFor(PlaygroundItem item) {
   return switch (item) {
-    PlaygroundItem.fullChat => const [
-      ('default', 'Default'),
-      ('drop', 'Drop files'),
-    ],
     PlaygroundItem.composer => const [
       ('default', 'Default'),
       ('streaming', 'Streaming'),
@@ -109,6 +105,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.attachments => const [
       ('composer', 'In composer'),
       ('tiles', 'Tiles only'),
+      ('drop', 'Drop files'),
     ],
     PlaygroundItem.thread => const [
       ('default', 'Default'),
@@ -141,15 +138,19 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
 }
 
 /// Whether the demo takes the whole stage pane (a full surface) rather
-/// than sitting as an object on the canvas.
-bool demoFillsStage(PlaygroundItem item) => item == PlaygroundItem.fullChat;
+/// than sitting as an object on the canvas. The chat always does; the
+/// attachments stage does for its drop variant, which is a chat surface
+/// with the treatment pinned up.
+bool demoFillsStage(PlaygroundItem item, {String? variant}) =>
+    item == PlaygroundItem.fullChat ||
+    (item == PlaygroundItem.attachments && variant == 'drop');
 
 /// The code panel's snippet for [item] — the real flow_ui usage, not the
 /// demo's plumbing. [variant] is the stage's active pill, so the code
 /// follows what the demo is showing.
 String snippetFor(PlaygroundItem item, {String? variant}) {
   return switch (item) {
-    PlaygroundItem.fullChat => _fullChatSnippet(variant),
+    PlaygroundItem.fullChat => _fullChatSnippet,
     PlaygroundItem.composer => composerSnippet(variant),
     PlaygroundItem.modalSelector => modelSelectorSnippet,
     PlaygroundItem.message => messageSnippet(variant),
@@ -170,37 +171,7 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
   };
 }
 
-String _fullChatSnippet(String? variant) => switch (variant) {
-  'drop' => _fullChatDropSnippet,
-  _ => _fullChatDefaultSnippet,
-};
-
-const String _fullChatDropSnippet = '''
-// onAttachmentsDropped turns on the surface's own drag-and-drop: it
-// raises the treatment while a file is over the page and comes back
-// with what landed, read and decoded. Web only — the SDK implements OS
-// file drop nowhere else — so desktop hosts bring their own detection
-// and flip dropActive, which stays writable for exactly that.
-FlowChatView(
-  onAttachmentsDropped: (dropped) =>
-      setState(() => pending.addAll(dropped)),
-  onAttachmentRejected: showRejection,
-  attachmentOptions: const FlowAttachmentOptions(
-    maxFileSize: 10 * 1024 * 1024,
-  ),
-  dropLabel: 'Drop images to attach',
-  // An override, not a switch: the treatment is up while this is true
-  // or a real drag is over the surface.
-  dropActive: dragHovering,
-  thread: FlowThread(messages: messages),
-  composer: FlowComposer(
-    onSend: send,
-    attachments: pending,
-    onRemoveAttachment: removePending,
-  ),
-)''';
-
-const String _fullChatDefaultSnippet = '''
+const String _fullChatSnippet = '''
 FlowChatView(
   empty: messages.isEmpty,
   greeting: const FlowGreeting(
@@ -231,19 +202,22 @@ FlowChatView(
     isStreaming: generating,
     onSend: send,
     onStop: stop,
-    // The attach button opens the platform's dialog and hands back
-    // decoded attachments; the host holds them.
-    onAttachmentsPicked: (picked) =>
-        setState(() => pending.addAll(picked)),
-    attachTooltip: 'Attach images',
     attachments: pending,
     onRemoveAttachment: removePending,
+    attachmentOptions: attachmentOptions,
+    onAttachmentRejected: showRejection,
     leadingActions: [
       FlowMenu(
         icon: PhosphorIconsRegular.plus,
         sheetTitle: 'Add to Chat',
-        entries: [...],
-        onSelected: toggleTool,
+        entries: [
+          FlowMenuOption(id: 'files', label: 'Add Files or Photos'),
+          ...,
+        ],
+        // 'Add Files or Photos' opens the package's own dialog:
+        // showFlowAttachmentPicker(options: ..., onRejected: ...)
+        // hands back decoded attachments to add to `pending`.
+        onSelected: (id) => id == 'files' ? pickFiles() : toggleTool(id),
       ),
       if (researchOn)
         FlowPill(

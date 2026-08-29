@@ -81,16 +81,43 @@ still a message.
 
 ## Attach
 
-The attach button appears — first in the action row, the design's
-position — as soon as the composer is told who picks. Which callback you
-pass decides that:
+Three ways to open the platform's file dialog, and they differ only in
+who owns the control. All three hand you decoded `FlowAttachment`s;
+holding them is still yours — add them to state and pass them back
+through `attachments`.
 
-`onAttachmentsPicked` means **the package picks**. Tapping opens the
-platform's own file dialog, and the callback fires with the chosen files
-already read and decoded into `FlowAttachment`s. Holding them is still
-yours: add them to state and pass them back through `attachments`.
+**From your own control** — the design's "+" menu — call
+`showFlowAttachmentPicker`. It resolves empty when the dialog is
+dismissed or everything was refused, and it never throws: a dialog that
+cannot open comes back through `onRejected` under an empty name. Call it
+synchronously from the tap — inside `onSelected`, not a post-frame
+callback — because on the web the dialog needs the gesture's user
+activation.
 
-```dart title="The package opens the dialog"
+```dart title="The design's route: 'Add Files or Photos' in the + menu"
+FlowComposer(
+  onSend: send,
+  attachments: pending,
+  onRemoveAttachment: removePending,
+  leadingActions: [
+    FlowMenu(
+      icon: Icons.add,
+      entries: const [FlowMenuOption(id: 'files', label: 'Add Files or Photos')],
+      onSelected: (id) {
+        if (id == 'files') {
+          showFlowAttachmentPicker(options: options, onRejected: reject)
+              .then((picked) => setState(() => pending.addAll(picked)));
+        }
+      },
+    ),
+  ],
+)
+```
+
+**From a built-in button** — `onAttachmentsPicked` renders an attach
+button first in the action row and opens the same dialog from it:
+
+```dart title="The package renders the button and opens the dialog"
 FlowComposer(
   onSend: send,
   onAttachmentsPicked: (picked) => setState(() => pending.addAll(picked)),
@@ -100,12 +127,12 @@ FlowComposer(
 )
 ```
 
-`onAttach` means **the host picks**. The button becomes a plain intent —
-open a photo sheet, a camera, a menu of sources, anything the package has
-no business knowing about — and whatever you gather goes back through
-`attachments` the same way.
+**Picking yourself** — `onAttach` renders that same button as a plain
+intent, for a photo sheet, a camera, a menu of sources, anything the
+package has no business knowing about; whatever you gather goes back
+through `attachments` the same way.
 
-```dart title="Or own the picking yourself"
+```dart title="Or own the picking"
 FlowComposer(
   onSend: send,
   onAttach: () async {
@@ -118,8 +145,8 @@ FlowComposer(
 )
 ```
 
-Passing neither leaves the button off. Passing both asserts — one button
-cannot have two owners.
+Passing neither of the last two leaves the button off. Passing both
+asserts — one button cannot have two owners.
 
 ### What is accepted
 
@@ -273,10 +300,12 @@ wins field by field.
 - `attachments`, `onRemoveAttachment`, `removeAttachmentTooltip` — the
   pending row. `onAttachmentTap` *replaces* the built-in full-screen
   preview; `previewCloseTooltip` labels the preview's close button.
-- `onAttachmentsPicked` — renders the attach button and opens the
-  platform's dialog, handing back decoded attachments. `onAttach` —
-  renders the same button and leaves the picking to you; the two are
-  mutually exclusive, and neither one leaves the button off.
+- `showFlowAttachmentPicker` — opens the platform's dialog from your own
+  control and hands back decoded attachments; never throws.
+  `onAttachmentsPicked` — renders a built-in attach button that opens the
+  same dialog. `onAttach` — renders that button and leaves the picking to
+  you; the two are mutually exclusive, and neither one leaves the button
+  off.
   `attachmentOptions` + `onAttachmentRejected` — what is accepted, and
   what wasn't. `attachTooltip` names the button.
   `onAttachmentsDropped` — drag-and-drop scoped to the card (web only);

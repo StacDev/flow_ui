@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
     // device setting.
     return MaterialApp(
       title: 'Flow UI Example',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(extensions: [FlowTheme.light()]),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -150,6 +149,19 @@ class _ChatScreenState extends State<ChatScreen> {
       _rejection = null;
       _pending.addAll(attachments);
     });
+  }
+
+  /// 'Add Files or Photos': the package's dialog, opened from this
+  /// screen's menu. Called synchronously from the tap so the web keeps
+  /// the gesture's user activation; the result is held here like any
+  /// other attachment.
+  Future<void> _pickFiles() async {
+    final picked = await showFlowAttachmentPicker(
+      options: _attachmentOptions,
+      onRejected: _rejectAttachment,
+    );
+    if (!mounted || picked.isEmpty) return;
+    _addAttachments(picked);
   }
 
   /// A file the options refused. flow_ui says which and why and stops
@@ -447,15 +459,9 @@ class _ChatScreenState extends State<ChatScreen> {
         dropLabel: 'Drop files to add to chat',
         aboveComposer: _rejection == null
             ? null
-            : Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  _rejection!,
-                  textAlign: TextAlign.center,
-                  style: context.flowTypography.bodySmall.copyWith(
-                    color: context.flowColors.error,
-                  ),
-                ),
+            : _RejectionNotice(
+                message: _rejection!,
+                onDismissed: () => setState(() => _rejection = null),
               ),
         empty: _messages.isEmpty,
         greeting: const FlowGreeting(
@@ -487,20 +493,34 @@ class _ChatScreenState extends State<ChatScreen> {
           isStreaming: _generating,
           onSend: _send,
           onStop: _stop,
-          // The package picks: the attach button opens the platform's
-          // dialog and these come back read and decoded. Pass onAttach
-          // instead to open a gallery sheet or a camera yourself.
-          onAttachmentsPicked: _addAttachments,
-          // Paste and drop land in the same place as a pick — three ways
-          // in, one handler, which is the usual shape.
+          // Picking goes through the "+" menu below; paste and drop land
+          // in the same place — three ways in, one handler.
           onAttachmentsPasted: _addAttachments,
           onAttachmentRejected: _rejectAttachment,
           attachmentOptions: _attachmentOptions,
-          attachTooltip: 'Attach images',
           onContentInserted: _insertContent,
           attachments: List.of(_pending),
           onRemoveAttachment: (id) =>
               setState(() => _pending.removeWhere((a) => a.id == id)),
+          leadingActions: [
+            // The design's way in: 'Add Files or Photos' opens the
+            // package's own dialog, from the host's menu.
+            FlowMenu(
+              icon: Icons.add,
+              tooltip: 'Add to chat',
+              sheetTitle: 'Add to chat',
+              entries: const [
+                FlowMenuOption(
+                  id: 'files',
+                  icon: Icons.upload_file_outlined,
+                  label: 'Add Files or Photos',
+                ),
+              ],
+              onSelected: (id) {
+                if (id == 'files') unawaited(_pickFiles());
+              },
+            ),
+          ],
           trailingActions: [
             FlowModelSelector(
               models: _models,
@@ -508,6 +528,93 @@ class _ChatScreenState extends State<ChatScreen> {
               onSelected: (id) => setState(() => _model = id),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A refused file, in this app's words: a glyph and a line on the
+/// composer's rail that fades on its own after a beat. flow_ui reports
+/// the name and the reason and ships no copy, so the notice is the
+/// host's — this is the shape of one.
+class _RejectionNotice extends StatefulWidget {
+  const _RejectionNotice({required this.message, required this.onDismissed});
+
+  final String message;
+  final VoidCallback onDismissed;
+
+  @override
+  State<_RejectionNotice> createState() => _RejectionNoticeState();
+}
+
+class _RejectionNoticeState extends State<_RejectionNotice> {
+  static const Duration _hold = Duration(seconds: 4);
+  static const Duration _fade = Duration(milliseconds: 300);
+
+  Timer? _timer;
+  bool _visible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _arm();
+  }
+
+  @override
+  void didUpdateWidget(_RejectionNotice oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message != widget.message) {
+      setState(() => _visible = true);
+      _arm();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _arm() {
+    _timer?.cancel();
+    _timer = Timer(_hold, () {
+      if (mounted) setState(() => _visible = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.flowColors;
+    return AnimatedOpacity(
+      opacity: _visible ? 1 : 0,
+      duration: _fade,
+      // onEnd also fires after a re-show; only the fade-out dismisses.
+      onEnd: () {
+        if (!_visible) widget.onDismissed();
+      },
+      child: Semantics(
+        liveRegion: true,
+        child: Padding(
+          // The composer card's content inset, so the glyph lines up with
+          // the field's text.
+          padding: const EdgeInsetsDirectional.only(start: 18),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline, size: 16, color: colors.error),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.message,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.flowTypography.bodySmall.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

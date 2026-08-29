@@ -53,10 +53,12 @@ import 'flow_pill.dart';
 ///   package has no business knowing about.
 ///
 /// Passing neither leaves the button off, which is the opt-out; passing
-/// both asserts, since one button cannot have two owners. Either way the
-/// pending strip is still the host's state, fed back through
-/// [attachments] and pruned through [onRemoveAttachment] — the composer
-/// holds nothing.
+/// both asserts, since one button cannot have two owners. To open the
+/// same dialog from somewhere other than the built-in button — the
+/// design's "+" menu, say — call [showFlowAttachmentPicker] and pass the
+/// result back through [attachments]. Either way the pending strip is
+/// still the host's state, fed back through [attachments] and pruned
+/// through [onRemoveAttachment] — the composer holds nothing.
 ///
 /// The button's own icon color is [FlowComposerStyle.attachIconColor].
 ///
@@ -486,24 +488,14 @@ class _FlowComposerState extends State<FlowComposer> {
     if (_picking) return;
     setState(() => _picking = true);
     try {
-      final picked = await flowPickAttachments(
+      // Never throws: a dialog that fails to open comes back as a
+      // rejection under an empty name.
+      final picked = await showFlowAttachmentPicker(
         options: widget.attachmentOptions,
         onRejected: widget.onAttachmentRejected,
       );
       if (!mounted || picked.isEmpty) return;
       widget.onAttachmentsPicked?.call(picked);
-    } catch (_) {
-      // A dialog that fails to open is not a crash and must not become an
-      // unhandled async error — the tap would look like it did nothing.
-      // The web reports an input error this way, and so does macOS
-      // without the file-read entitlement, which is the failure hosts hit
-      // most. There is no file to name, so the reason carries it.
-      if (mounted) {
-        widget.onAttachmentRejected?.call(
-          '',
-          FlowAttachmentRejection.unreadable,
-        );
-      }
     } finally {
       if (mounted) setState(() => _picking = false);
     }
@@ -728,22 +720,23 @@ class _FlowComposerState extends State<FlowComposer> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (widget.attachments.isNotEmpty) ...[
-                  Padding(
+                  // The inset rides inside the strip's scroll view rather
+                  // than around it: at rest nothing moves, but once the
+                  // strip overflows the tiles scroll under the gutter and
+                  // the last one is cut at the card's edge — the cue that
+                  // there is more, with no counter to draw.
+                  FlowAttachmentGroup(
+                    attachments: widget.attachments,
                     padding: const EdgeInsets.symmetric(
                       horizontal: _contentInset,
                     ),
-                    child: FlowAttachmentGroup(
-                      attachments: widget.attachments,
-                      onTap: widget.onAttachmentTap,
-                      // Editing is what `enabled` gates; viewing an attachment
-                      // that is already pending stays available, as does the send
-                      // button while streaming.
-                      onRemove: widget.enabled
-                          ? widget.onRemoveAttachment
-                          : null,
-                      removeTooltip: widget.removeAttachmentTooltip,
-                      previewCloseTooltip: widget.previewCloseTooltip,
-                    ),
+                    onTap: widget.onAttachmentTap,
+                    // Editing is what `enabled` gates; viewing an attachment
+                    // that is already pending stays available, as does the
+                    // send button while streaming.
+                    onRemove: widget.enabled ? widget.onRemoveAttachment : null,
+                    removeTooltip: widget.removeAttachmentTooltip,
+                    previewCloseTooltip: widget.previewCloseTooltip,
                   ),
                   const SizedBox(height: _attachmentGap),
                 ],

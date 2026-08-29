@@ -10,6 +10,12 @@
   the platforms disagree over, and `onAttachmentRejected` reports every
   refusal with its reason. Holding the attachments is still the host's:
   they come back through `attachments` as before.
+- **Picker, callable** — `showFlowAttachmentPicker` opens the platform's
+  dialog from anywhere — the design's "+" menu, a host's own button — and
+  hands back decoded `FlowAttachment`s. It never throws: a dialog that
+  cannot open is reported through `onRejected` as `unreadable` under an
+  empty name. The playground and the example route it through 'Add
+  Files or Photos'.
 - **Drag and drop**, in either of two scopes.
   `FlowChatView.onAttachmentsDropped` takes the whole surface, raising
   the full-bleed treatment (`dropLabel`) while a file is over it;
@@ -65,7 +71,15 @@
   Assistant turns keep the inline tiles.
 - **Preview** — tapping the frosted space around the picture now closes
   the full-screen viewer, alongside the close button and Escape. A tap on
-  the picture itself still does nothing.
+  the picture itself still does nothing. The close button sits on an
+  opaque `surfaceBright` disc with a hairline and the theme's shadow, so
+  it reads over any picture in either theme — the translucent wash it
+  had vanished over a dark photo — and grows to 44 on touch platforms.
+- **Fix** — a picked, dropped or pasted image now carries its type as
+  `kind`, so its tile draws the 'JPG' pill the design shows; before,
+  only files without a picture got one. The composer's pending strip
+  also scrolls its tiles under the card's inset, so an overflowing strip
+  cuts the last tile at the edge — the cue that there is more.
 - **Image parts carry their file** — `FlowImagePart.bytes` and
   `mimeType`, the pair `FlowAttachment` already had and for the same
   reason: a generated picture is half rendered if the conversation cannot

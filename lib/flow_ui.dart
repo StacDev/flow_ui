@@ -5,15 +5,17 @@
 /// nothing model-facing and builds only on Flutter's own first-party
 /// packages.
 ///
-/// The one thing it does reach out for is a file: the composer's attach
-/// button opens the platform's own dialog, and on the web the chat
-/// surface accepts drops. Both are opt-in, both hand back
-/// `FlowAttachment`s for the host to hold, and neither sends anything
+/// The one thing it does reach out for is a file: `showFlowAttachmentPicker`
+/// opens the platform's own dialog — from the composer's attach button or
+/// a host's own "+" menu — and on the web the chat surface accepts drops
+/// and the field takes pasted images. All are opt-in, all hand back
+/// `FlowAttachment`s for the host to hold, and none sends anything
 /// anywhere.
 library;
 
 export 'src/models/flow_attachment.dart';
 export 'src/models/flow_attachment_options.dart';
+export 'src/utils/flow_file_picker.dart' show showFlowAttachmentPicker;
 export 'src/models/flow_message_data.dart';
 export 'src/models/flow_message_part.dart';
 export 'src/theme/flow_colors.dart';

@@ -21,6 +21,17 @@ const EdgeInsets _pagePadding = EdgeInsets.all(24);
 const double _barInset = 12;
 const double _barGap = 12;
 
+/// The close disc, on the jump button's idiom: an opaque ground, a firm
+/// hairline and the theme's shadow, so it reads over any picture — a
+/// translucent wash vanished over a dark photo in the light theme and a
+/// light one in the dark. 34 on pointer platforms (18 glyph + 8), 44 on
+/// touch (20 + 12), the platform taken from the theme like the composer's.
+const double _closeIconSize = 18;
+const double _closePadding = 8;
+const double _closeTouchIconSize = 20;
+const double _closeTouchPadding = 12;
+const double _closeShadowBlur = 12;
+
 /// One filter for the whole animation: a [BackdropFilter] repaints the entire
 /// viewport whenever its filter changes, so the fade animates the tint only.
 final ImageFilter _blurFilter = ImageFilter.blur(
@@ -410,6 +421,9 @@ class _TopBar extends StatelessWidget {
     final typography = context.flowTypography;
     final label = caption;
     final count = counter;
+    final platform = Theme.of(context).platform;
+    final touch =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.android;
 
     return Row(
       children: [
@@ -443,12 +457,32 @@ class _TopBar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: _barGap),
-        FlowCircleButton(
-          icon: Icons.close,
-          background: colors.surfaceContainerHigh,
-          foreground: colors.onSurface,
-          tooltip: closeTooltip,
-          onTap: onClose,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: colors.shadow, blurRadius: _closeShadowBlur),
+            ],
+          ),
+          // The hairline rides in front of the disc — behind it, the
+          // opaque circle would paint over the stroke. outlineVariant, the
+          // firm one, because the disc sits over host pixels.
+          foregroundDecoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.outlineVariant),
+          ),
+          child: FlowCircleButton(
+            icon: Icons.close,
+            // surfaceBright rather than the jump button's surface: the
+            // backdrop here is surface at 72%, and a surface disc would
+            // sink into it.
+            background: colors.surfaceBright,
+            foreground: colors.onSurface,
+            iconSize: touch ? _closeTouchIconSize : _closeIconSize,
+            padding: touch ? _closeTouchPadding : _closePadding,
+            tooltip: closeTooltip,
+            onTap: onClose,
+          ),
         ),
       ],
     );

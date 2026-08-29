@@ -34,7 +34,8 @@ The fetched typefaces need network access on every app:
 `com.apple.security.network.client` entitlement in a sandboxed macOS
 build. Without them the text falls back to the platform face.
 
-Apps that additionally wire up `FlowComposer.onAttachmentsPicked` need
+Apps that additionally call `showFlowAttachmentPicker` (or wire up
+`FlowComposer.onAttachmentsPicked`) need
 `com.apple.security.files.user-selected.read-only` in **both**
 `macos/Runner/DebugProfile.entitlements` and
 `macos/Runner/Release.entitlements`, or the file dialog opens onto

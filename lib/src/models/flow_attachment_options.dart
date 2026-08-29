@@ -2,8 +2,9 @@ import 'package:flutter/foundation.dart';
 
 /// What the built-in picker offers and how what comes back is decoded.
 ///
-/// Passed to `FlowComposer.attachmentOptions` and
-/// `FlowChatView.attachmentOptions`; the defaults accept images only, on
+/// Passed to `FlowComposer.attachmentOptions`,
+/// `FlowChatView.attachmentOptions` and `showFlowAttachmentPicker`; the
+/// defaults accept images only, on
 /// every platform, and cap the full-screen decode well inside a
 /// rasteriser's budget.
 ///

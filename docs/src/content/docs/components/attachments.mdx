@@ -131,12 +131,14 @@ FlowComposer(
 
 ## Getting them
 
-Everything above renders attachments you already hold. Two things in the
-package produce them:
+Everything above renders attachments you already hold. The package
+produces them too:
 
+- [`showFlowAttachmentPicker`](/components/composer/#attach) — the
+  platform's file dialog from anywhere: the design's "+" menu, your own
+  button. Hands back decoded `FlowAttachment`s and never throws.
 - [`FlowComposer.onAttachmentsPicked`](/components/composer/#attach) —
-  the attach button opens the platform's file dialog and hands back
-  decoded `FlowAttachment`s.
+  a built-in attach button that opens the same dialog.
 - [`FlowChatView.onAttachmentsDropped`](/components/chat-view/#drag-and-drop)
   — the surface accepts drops (web only) and hands back the same.
 - [`FlowComposer.onAttachmentsDropped`](/components/composer/#drop-on-the-card)
@@ -144,10 +146,10 @@ package produce them:
 - [`FlowComposer.onAttachmentsPasted`](/components/composer/#paste) — an
   image pasted into the field (web only).
 
-Both take a `FlowAttachmentOptions` saying what is accepted and how it is
-decoded, and report what they refused through `onAttachmentRejected`.
-Neither holds anything: the attachments come back to you, and you pass
-them to `FlowComposer.attachments`.
+All of them take a `FlowAttachmentOptions` saying what is accepted and
+how it is decoded, and report what they refused through
+`onAttachmentRejected`. None holds anything: the attachments come back to
+you, and you pass them to `FlowComposer.attachments`.
 
 ### Sending them
 
@@ -195,6 +197,8 @@ does exactly this against Gemini.
   on phones), `tileRadius` (16; 12), `spacing` (8), `padding`. Callbacks
   report ids, never indexes, so ids must be unique within the group —
   asserted in debug.
+- `showFlowAttachmentPicker` — the platform's file dialog, callable from
+  any control; takes `FlowAttachmentOptions` and an `onRejected`.
 - `showFlowAttachmentPreview` — the full-screen viewer, callable directly
   when you override `onTap` or `onAttachmentTap`. A tap on the frosted
   space around the picture closes it, as do the close button and Escape;
