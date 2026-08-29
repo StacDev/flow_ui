@@ -53,10 +53,12 @@ class FlowDropTarget extends StatefulWidget {
   /// Whether drops are taken right now. [onDropped] says the target is
   /// wired; this says it is on.
   ///
-  /// False keeps the target *registered* — the browser is still told the
-  /// rectangle is a drop zone, and shows its refusing cursor over it —
-  /// and swallows what lands: no treatment is raised and nothing is
-  /// delivered. Unregistering instead would hand
+  /// False keeps the target *registered* and yields to any enabled target
+  /// around it — a composer switched off inside a chat view that still
+  /// takes drops hands them up to the view. Where nothing enabled
+  /// contains the point, the browser is still told the rectangle is a
+  /// drop zone, shows its refusing cursor, and what lands is swallowed:
+  /// no treatment, nothing delivered. Unregistering instead would hand
   /// the drop back to the browser, whose default for a file is to
   /// navigate the tab to it, which is not what "off" means to someone
   /// who has just dropped a photo on a chat.

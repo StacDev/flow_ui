@@ -170,31 +170,43 @@ class _ViewDropListener {
     if (files.isNotEmpty) target.onDrop(files);
   }
 
-  /// The innermost registered rectangle under the pointer, taken as the
-  /// smallest one containing it.
+  /// The innermost registered rectangle under the pointer that will take
+  /// the drop, taken as the smallest enabled one containing it.
   ///
   /// Targets nest — a composer's own drop area sits inside the chat
   /// surface's — and the inner one has to win, the way hit testing
   /// works. Area decides rather than registration order, which would be
   /// the same thing only until a target re-registers and moves to the
   /// back of the list. Ties go to the later registration.
+  ///
+  /// A target that is off yields to an enabled one around it, so a card
+  /// switched off does not shadow a surface that still takes drops. It
+  /// is only the answer when nothing enabled contains the point — where
+  /// claiming the drop, to be swallowed, still beats handing it to the
+  /// browser.
   _DropTarget? _targetAt(dom.DragEvent event) {
     if (_targets.isEmpty) return null;
     final rect = host.getBoundingClientRect();
     final point = Offset(event.clientX - rect.left, event.clientY - rect.top);
 
-    _DropTarget? best;
-    var bestArea = double.infinity;
+    _DropTarget? bestEnabled;
+    _DropTarget? bestAny;
+    var enabledArea = double.infinity;
+    var anyArea = double.infinity;
     for (final target in _targets) {
       final bounds = target.bounds();
       if (bounds == null || !bounds.contains(point)) continue;
       final area = bounds.width * bounds.height;
-      if (area <= bestArea) {
-        best = target;
-        bestArea = area;
+      if (area <= anyArea) {
+        bestAny = target;
+        anyArea = area;
+      }
+      if (target.isEnabled() && area <= enabledArea) {
+        bestEnabled = target;
+        enabledArea = area;
       }
     }
-    return best;
+    return bestEnabled ?? bestAny;
   }
 
   void _setHovered(_DropTarget? target) {
