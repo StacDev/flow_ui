@@ -177,6 +177,33 @@ the file's name and a `FlowAttachmentRejection` — `tooLarge`,
 `unsupportedType`, `unreadable`. flow_ui ships no copy for these, so
 saying so is yours, and so is the wording.
 
+### Saying so
+
+Whatever the refusal — or any other error the composer should own up to
+— `errorMessage` raises the design's banner: a tab in the error wash
+tucked behind the card, with a warning glyph and your line beside it,
+wrapping from the glyph when long. The words are yours, and so is
+clearing it: it stays until the cross at its trailing edge fires
+`onErrorDismiss` and you set it back to null — or until you clear it on
+your own terms, in which case leave `onErrorDismiss` null and no cross
+is drawn.
+
+```dart title="The error banner"
+FlowComposer(
+  onSend: send,
+  onAttachmentRejected: (name, reason) => setState(() {
+    rejection = '$name is not an image';
+  }),
+  errorMessage: rejection,
+  onErrorDismiss: () => setState(() => rejection = null),
+  errorDismissTooltip: 'Dismiss',
+)
+```
+
+`errorIcon` swaps the drawn diamond for an icon of your own set;
+`FlowComposerStyle.errorBackgroundColor` and `errorForegroundColor`
+recolour the tab.
+
 <Aside type="caution" title="macOS needs an entitlement">
 The built-in picker uses `file_selector`, which on macOS needs
 `com.apple.security.files.user-selected.read-only` in **both**
@@ -284,8 +311,10 @@ global tokens: `backgroundColor` (the raised card's fill), `outlineColor`
 (flattens the gradient hairline to one solid color in every state),
 `sendBackgroundColor` and `sendForegroundColor` (the send/stop disc),
 `textStyle` (merged over the field's default), `hintColor`,
-`attachIconColor` (the attach button's resting glyph), and
-`dropHighlightColor` (what the card lights up in under a drag). Install
+`attachIconColor` (the attach button's resting glyph),
+`dropHighlightColor` (what the card lights up in under a drag), and
+`errorBackgroundColor` / `errorForegroundColor` (the error banner's wash
+and ink). Install
 one on `FlowTheme.composerStyle` for every composer; the widget's `style`
 wins field by field.
 
@@ -311,6 +340,8 @@ wins field by field.
   `onAttachmentsDropped` — drag-and-drop scoped to the card (web only);
   `FlowChatView` has the whole-surface version.
   `onAttachmentsPasted` — images pasted into the field (web only).
+  `errorMessage` + `errorIcon` — the error banner above the card;
+  `onErrorDismiss` + `errorDismissTooltip` draw its cross.
   `onContentInserted` — Android keyboard media insertion.
 - `controller`, `focusNode`, `placeholder` — the field itself; pass your
   own `TextEditingController` to prefill or clear the draft.

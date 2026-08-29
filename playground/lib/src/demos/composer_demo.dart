@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_content.dart';
-import 'rejection_notice.dart';
 
 String composerSnippet([String? variant]) => switch (variant) {
   'streaming' => _streaming,
@@ -40,6 +39,11 @@ FlowComposer(
     maxFileSize: 10 * 1024 * 1024,
   ),
   onAttachmentRejected: (name, reason) => showRejection(name, reason),
+  // The design's error banner above the card — the words are yours;
+  // its cross reports the dismissal and you clear the message.
+  errorMessage: rejection,
+  onErrorDismiss: () => setState(() => rejection = null),
+  errorDismissTooltip: 'Dismiss',
   attachments: pending,
   onRemoveAttachment: removePending,
   leadingActions: [
@@ -135,78 +139,67 @@ class _ComposerDemoState extends State<ComposerDemo> {
 
   @override
   Widget build(BuildContext context) {
-    final rejection = _rejection;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (rejection != null) ...[
-              RejectionNotice(
-                message: rejection,
-                onDismissed: () => setState(() => _rejection = null),
-              ),
-              const SizedBox(height: 8),
-            ],
-            FlowComposer(
-              controller: _input,
-              placeholder: 'How can I help you today?',
-              isStreaming: widget.variant == 'streaming',
-              onSend: (_) {},
-              onStop: () {},
-              // Drop scoped to the card: drag an image anywhere else on the
-              // stage and nothing happens — over the composer it lights up.
-              onAttachmentsDropped: _add,
-              // Focus the field and paste a screenshot.
-              onAttachmentsPasted: _add,
-              attachmentOptions: _attachmentOptions,
-              onAttachmentRejected: _reject,
-              attachments: List.of(_attachments),
-              onRemoveAttachment: (id) =>
-                  setState(() => _attachments.removeWhere((a) => a.id == id)),
-              leadingActions: [
-                FlowMenu(
-                  icon: PhosphorIconsRegular.plus,
-                  tooltip: 'Add to chat',
-                  sheetTitle: 'Add to Chat',
-                  entries: const [
-                    FlowMenuOption(
-                      id: 'files',
-                      icon: PhosphorIconsRegular.file,
-                      label: 'Add Files or Photos',
-                    ),
-                    FlowMenuDivider(),
-                    FlowMenuOption(
-                      id: 'research',
-                      icon: PhosphorIconsRegular.graduationCap,
-                      label: 'Research',
-                    ),
-                    FlowMenuOption(
-                      id: 'web-search',
-                      icon: PhosphorIconsRegular.globe,
-                      label: 'Web Search',
-                    ),
-                  ],
-                  // 'Add Files or Photos' opens the real dialog.
-                  onSelected: (id) {
-                    if (id == 'files') unawaited(_pickFiles());
-                  },
+        child: FlowComposer(
+          controller: _input,
+          placeholder: 'How can I help you today?',
+          isStreaming: widget.variant == 'streaming',
+          onSend: (_) {},
+          onStop: () {},
+          // Drop scoped to the card: drag an image anywhere else on the
+          // stage and nothing happens — over the composer it lights up.
+          onAttachmentsDropped: _add,
+          // Focus the field and paste a screenshot.
+          onAttachmentsPasted: _add,
+          attachmentOptions: _attachmentOptions,
+          onAttachmentRejected: _reject,
+          errorMessage: _rejection,
+          onErrorDismiss: () => setState(() => _rejection = null),
+          errorDismissTooltip: 'Dismiss',
+          attachments: List.of(_attachments),
+          onRemoveAttachment: (id) =>
+              setState(() => _attachments.removeWhere((a) => a.id == id)),
+          leadingActions: [
+            FlowMenu(
+              icon: PhosphorIconsRegular.plus,
+              tooltip: 'Add to chat',
+              sheetTitle: 'Add to Chat',
+              entries: const [
+                FlowMenuOption(
+                  id: 'files',
+                  icon: PhosphorIconsRegular.file,
+                  label: 'Add Files or Photos',
+                ),
+                FlowMenuDivider(),
+                FlowMenuOption(
+                  id: 'research',
+                  icon: PhosphorIconsRegular.graduationCap,
+                  label: 'Research',
+                ),
+                FlowMenuOption(
+                  id: 'web-search',
+                  icon: PhosphorIconsRegular.globe,
+                  label: 'Web Search',
                 ),
               ],
-              trailingActions: [
-                FlowModelSelector(
-                  tooltip: 'Choose model',
-                  sheetTitle: 'Select model',
-                  models: demoModels,
-                  selectedId: _modelId,
-                  onSelected: (id) => setState(() => _modelId = id),
-                  efforts: demoEfforts,
-                  selectedEffortId: _effortId,
-                  onEffortSelected: (id) => setState(() => _effortId = id),
-                ),
-              ],
+              // 'Add Files or Photos' opens the real dialog.
+              onSelected: (id) {
+                if (id == 'files') unawaited(_pickFiles());
+              },
+            ),
+          ],
+          trailingActions: [
+            FlowModelSelector(
+              tooltip: 'Choose model',
+              sheetTitle: 'Select model',
+              models: demoModels,
+              selectedId: _modelId,
+              onSelected: (id) => setState(() => _modelId = id),
+              efforts: demoEfforts,
+              selectedEffortId: _effortId,
+              onEffortSelected: (id) => setState(() => _effortId = id),
             ),
           ],
         ),

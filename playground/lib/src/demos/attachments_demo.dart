@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'demo_content.dart';
-import 'rejection_notice.dart';
 
 String attachmentsSnippet([String? variant]) => switch (variant) {
   'tiles' => _tilesSnip,
@@ -17,8 +16,8 @@ const String _composerSnip = '''
 FlowComposer(
   controller: input,
   attachments: [
-    // No thumbnail: the tile draws the wash with the kind pill. Picked
-    // images carry theirs too — 'JPG' over the corner of the picture.
+    // No thumbnail: the tile draws the wash with the kind pill. A picked
+    // image shows itself instead and carries no pill.
     FlowAttachment(id: 'spec', kind: 'PDF', label: 'sensor-spec.pdf'),
     FlowAttachment(id: 'photo', kind: 'JPG', label: 'prototype.jpg'),
   ],
@@ -153,60 +152,49 @@ class _AttachmentsDemoState extends State<AttachmentsDemo> {
       );
     }
 
-    final rejection = _rejection;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (rejection != null) ...[
-              RejectionNotice(
-                message: rejection,
-                onDismissed: () => setState(() => _rejection = null),
-              ),
-              const SizedBox(height: 8),
-            ],
-            FlowComposer(
-              controller: _input,
-              placeholder: 'How can I help you today?',
-              attachments: _attachments,
-              onRemoveAttachment: _remove,
-              removeAttachmentTooltip: 'Remove',
-              onAttachmentRejected: _reject,
-              attachmentOptions: _attachmentOptions,
-              onSend: (_) {},
-              leadingActions: [
-                FlowMenu(
-                  icon: PhosphorIconsRegular.plus,
-                  tooltip: 'Add to chat',
-                  sheetTitle: 'Add to Chat',
-                  entries: const [
-                    FlowMenuOption(
-                      id: 'files',
-                      icon: PhosphorIconsRegular.file,
-                      label: 'Add Files or Photos',
-                    ),
-                  ],
-                  // The real dialog, from the menu.
-                  onSelected: (id) {
-                    if (id == 'files') unawaited(_pickFiles());
-                  },
+        child: FlowComposer(
+          controller: _input,
+          placeholder: 'How can I help you today?',
+          attachments: _attachments,
+          onRemoveAttachment: _remove,
+          removeAttachmentTooltip: 'Remove',
+          onAttachmentRejected: _reject,
+          attachmentOptions: _attachmentOptions,
+          errorMessage: _rejection,
+          onErrorDismiss: () => setState(() => _rejection = null),
+          errorDismissTooltip: 'Dismiss',
+          onSend: (_) {},
+          leadingActions: [
+            FlowMenu(
+              icon: PhosphorIconsRegular.plus,
+              tooltip: 'Add to chat',
+              sheetTitle: 'Add to Chat',
+              entries: const [
+                FlowMenuOption(
+                  id: 'files',
+                  icon: PhosphorIconsRegular.file,
+                  label: 'Add Files or Photos',
                 ),
               ],
-              trailingActions: [
-                FlowModelSelector(
-                  tooltip: 'Choose model',
-                  sheetTitle: 'Select model',
-                  models: demoModels,
-                  selectedId: 'opus-5-1',
-                  onSelected: (_) {},
-                  efforts: demoEfforts,
-                  selectedEffortId: 'extra',
-                  onEffortSelected: (_) {},
-                ),
-              ],
+              // The real dialog, from the menu.
+              onSelected: (id) {
+                if (id == 'files') unawaited(_pickFiles());
+              },
+            ),
+          ],
+          trailingActions: [
+            FlowModelSelector(
+              tooltip: 'Choose model',
+              sheetTitle: 'Select model',
+              models: demoModels,
+              selectedId: 'opus-5-1',
+              onSelected: (_) {},
+              efforts: demoEfforts,
+              selectedEffortId: 'extra',
+              onEffortSelected: (_) {},
             ),
           ],
         ),
@@ -269,19 +257,12 @@ class _DropDemoState extends State<_DropDemo> {
 
   @override
   Widget build(BuildContext context) {
-    final rejection = _rejection;
     return FlowChatView(
       onAttachmentsDropped: _add,
       onAttachmentRejected: _reject,
       attachmentOptions: _attachmentOptions,
       dropActive: true,
       dropLabel: 'Drop files to add to chat',
-      aboveComposer: rejection == null
-          ? null
-          : RejectionNotice(
-              message: rejection,
-              onDismissed: () => setState(() => _rejection = null),
-            ),
       thread: const FlowThread(messages: []),
       composer: FlowComposer(
         controller: _input,
@@ -294,6 +275,9 @@ class _DropDemoState extends State<_DropDemo> {
         onAttachmentsPasted: _add,
         onAttachmentRejected: _reject,
         attachmentOptions: _attachmentOptions,
+        errorMessage: _rejection,
+        onErrorDismiss: () => setState(() => _rejection = null),
+        errorDismissTooltip: 'Dismiss',
         onSend: (_) {},
         leadingActions: [
           FlowMenu(

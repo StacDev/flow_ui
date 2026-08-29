@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -105,6 +106,10 @@ class FlowComposer extends StatefulWidget {
     this.onAttachmentRejected,
     this.attachTooltip,
     this.onContentInserted,
+    this.errorMessage,
+    this.errorIcon,
+    this.onErrorDismiss,
+    this.errorDismissTooltip,
     this.leadingActions = const [],
     this.trailingActions = const [],
     this.padding,
@@ -252,6 +257,32 @@ class FlowComposer extends StatefulWidget {
   /// name.
   final String? attachTooltip;
 
+  /// Raises the error banner: the design's tab above the card, in the
+  /// error wash with a warning glyph and this line. Null draws nothing.
+  ///
+  /// The words are the host's — a refused attachment
+  /// ([onAttachmentRejected] says which and why), a failed send, anything
+  /// the composer should own up to — and so is when it clears: the banner
+  /// stays until [onErrorDismiss] fires from its cross or the host sets
+  /// this back to null. The line sits left of the tab beside the glyph
+  /// and wraps from it when long. The banner's inks are
+  /// [FlowComposerStyle.errorBackgroundColor] and
+  /// [FlowComposerStyle.errorForegroundColor].
+  final String? errorMessage;
+
+  /// The banner's glyph. Defaults to the design's warning diamond, drawn
+  /// by the package; pass an icon to use your own set's.
+  final IconData? errorIcon;
+
+  /// Draws a cross at the banner's trailing edge and reports its tap —
+  /// the host clears [errorMessage] in response. Null draws no cross,
+  /// for a banner the host clears on its own terms.
+  final VoidCallback? onErrorDismiss;
+
+  /// Host-localized label for the banner's cross; also its accessible
+  /// name.
+  final String? errorDismissTooltip;
+
   /// Called when the software keyboard inserts media — Android's IME
   /// rich-content path, e.g. an image picked inside Gboard. Null leaves
   /// keyboard insertion off. The host converts the content's bytes into
@@ -340,6 +371,26 @@ class _FlowComposerState extends State<FlowComposer> {
   /// text keeps its contrast, heavy enough to read as a state change
   /// alongside the solid hairline.
   static const double _dropWashAlpha = 0.06;
+
+  /// The error banner, the design's tab tucked behind the card: inset 20
+  /// from the card's edges under 20px top corners, padded 20/6, an 18px
+  /// glyph 8 from 14px medium text, lifted on the tiles' 24px shadow.
+  /// It grows in over the jump button's 150ms.
+  ///
+  /// The cross is a 16px glyph on a 24px disc; the tab's vertical padding
+  /// gives up the difference so the banner keeps its 30px height with or
+  /// without it.
+  static const double _errorInset = 20;
+  static const double _errorHorizontalPadding = 20;
+  static const double _errorVerticalPadding = 6;
+  static const double _errorGap = 8;
+  static const double _errorDismissIconSize = 16;
+  static const double _errorDismissPadding = 4;
+  static const Radius _errorRadius = Radius.circular(20);
+  static const double _errorIconSize = 18;
+  static const double _errorShadowBlur = 24;
+  static const double _errorTextHeight = 1.3;
+  static const Duration _errorReveal = Duration(milliseconds: 150);
 
   TextEditingController? _internalController;
   FocusNode? _internalFocusNode;
@@ -642,8 +693,120 @@ class _FlowComposerState extends State<FlowComposer> {
     );
   }
 
+  /// The error banner: a tab in the error wash with matching hairline,
+  /// open at the bottom where it meets the card. The line starts beside
+  /// the glyph and wraps from it when long.
+  Widget _buildErrorBanner(BuildContext context, String message) {
+    final colors = context.flowColors;
+    final style = _styleOf(context);
+    final background = style?.errorBackgroundColor ?? colors.errorContainer;
+    final foreground = style?.errorForegroundColor ?? colors.onErrorContainer;
+    final icon = widget.errorIcon;
+    final onDismiss = widget.onErrorDismiss;
+    const dismissDisc = _errorDismissIconSize + _errorDismissPadding * 2;
+    final verticalPadding = onDismiss == null
+        ? _errorVerticalPadding
+        : _errorVerticalPadding - (dismissDisc - _errorIconSize) / 2;
+
+    final content = Row(
+      children: [
+        if (icon != null)
+          Icon(icon, size: _errorIconSize, color: foreground)
+        else
+          CustomPaint(
+            size: const Size.square(_errorIconSize),
+            painter: _WarningDiamondPainter(color: foreground),
+          ),
+        const SizedBox(width: _errorGap),
+        Flexible(
+          child: Text(
+            message,
+            // The emphasised cut: the design sets the line in the medium
+            // weight, which on this ramp is the label's emphasised form.
+            style: context.flowTypography.labelMediumEmphasised.copyWith(
+              color: foreground,
+              height: _errorTextHeight,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _errorInset),
+      child: Semantics(
+        liveRegion: true,
+        container: true,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: _errorHorizontalPadding,
+            vertical: verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            color: background,
+            // The design's hairline is the wash itself, one pixel wider;
+            // uniform so it can carry the radius, its bottom run hidden
+            // under the card's own outline.
+            border: Border.all(color: background),
+            borderRadius: const BorderRadius.vertical(top: _errorRadius),
+            boxShadow: [
+              BoxShadow(color: colors.shadow, blurRadius: _errorShadowBlur),
+            ],
+          ),
+          // The cross pins to the trailing edge; the glyph and line take
+          // what is left, from the leading edge.
+          child: onDismiss == null
+              ? content
+              : Row(
+                  children: [
+                    Expanded(child: content),
+                    const SizedBox(width: _errorGap),
+                    FlowCircleButton(
+                      icon: Icons.close,
+                      background: const Color(0x00000000),
+                      foreground: foreground,
+                      hoverColor: background,
+                      iconSize: _errorDismissIconSize,
+                      padding: _errorDismissPadding,
+                      tooltip: widget.errorDismissTooltip,
+                      onTap: onDismiss,
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final errorMessage = widget.errorMessage;
+
+    // The banner sits above the card and outside the drop target: it is
+    // not somewhere to drop a file. AnimatedSize grows it in from the
+    // card's top edge, so the thread above eases up rather than jumping.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AnimatedSize(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : _errorReveal,
+          curve: Curves.easeOut,
+          alignment: Alignment.bottomCenter,
+          child: errorMessage == null
+              ? const SizedBox.shrink()
+              : _buildErrorBanner(context, errorMessage),
+        ),
+        _buildCard(context),
+      ],
+    );
+  }
+
+  /// The card: outline, ground, strip, field and action row, wrapped as
+  /// the composer's drop target.
+  Widget _buildCard(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
 
@@ -866,4 +1029,56 @@ class _ArrowUpPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ArrowUpPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// The design's warning diamond, drawn to scale: a rounded square on its
+/// corner with an exclamation inside, stroked at the send arrow's weight.
+/// Painted rather than fetched so the package ships no icon font.
+class _WarningDiamondPainter extends CustomPainter {
+  const _WarningDiamondPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = size.shortestSide / 12;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final center = size.center(Offset.zero);
+    // The diamond's half-diagonal, inset for the stroke; its side follows.
+    final half = size.shortestSide / 2 - stroke;
+    final side = half * math.sqrt2;
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(math.pi / 4);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset.zero, width: side, height: side),
+        Radius.circular(size.shortestSide / 9),
+      ),
+      paint,
+    );
+    canvas.restore();
+
+    // The exclamation: a stem above centre and a dot below it.
+    final stem = size.shortestSide * (4.5 / 18);
+    canvas.drawLine(
+      Offset(center.dx, center.dy - stem),
+      Offset(center.dx, center.dy + stem * 0.15),
+      paint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx, center.dy + size.shortestSide * (3.5 / 18)),
+      stroke * 0.7,
+      paint..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_WarningDiamondPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

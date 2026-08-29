@@ -68,7 +68,6 @@ class FlowChatView extends StatefulWidget {
     this.dropLabel,
     this.dropIcon,
     this.dropIconSize,
-    this.dropBlurSigma,
     this.style,
   }) : assert(
          thread != null ||
@@ -224,11 +223,6 @@ class FlowChatView extends StatefulWidget {
   /// The drop glyph's size. Defaults to the design's 48.
   final double? dropIconSize;
 
-  /// How hard the page behind the drop treatment is frosted. Defaults to
-  /// the attachment preview's 16. Zero leaves the page sharp under the
-  /// wash, which is the cheaper treatment on a low-end device.
-  final double? dropBlurSigma;
-
   /// Per-instance restyling of the drop treatment, merged over
   /// [FlowTheme.chatViewStyle]'s fields; nulls fall through to the theme
   /// tokens.
@@ -250,17 +244,18 @@ class _FlowChatViewState extends State<FlowChatView> {
   static const double _bottomInsetCompact = 24;
   static const double _jumpInset = 12;
 
-  /// The drop treatment: the page frosted behind a vertical wash, with
-  /// the glyph and the invitation sitting straight on it — no card, so
-  /// the whole surface reads as the target rather than a panel within
-  /// it. The blur matches the attachment preview's frost; the wash runs
-  /// lighter at the top than the bottom so the conversation stays
-  /// legible through it without competing with the label — which sits on
-  /// `titleSmallEmphasised`, a quiet one step above body. Revealed on
-  /// the jump button's 150ms.
-  static const double _dropBlurSigma = 16;
-  static const double _dropWashTopOpacity = 0.72;
-  static const double _dropWashBottomOpacity = 0.94;
+  /// The drop treatment: a vertical wash over the page, with the glyph
+  /// and the invitation sitting straight on it — no card, so the whole
+  /// surface reads as the target rather than a panel within it. The
+  /// design's gradient runs from `surfaceBright` at 40% to `surface` at
+  /// 80%, top to bottom, so the conversation stays legible through it
+  /// without competing with the label — which sits on
+  /// `titleSmallEmphasised`, a quiet one step above body — over the
+  /// design's 12 blur of the page beneath. Revealed on the jump button's
+  /// 150ms.
+  static const double _dropWashTopOpacity = 0.40;
+  static const double _dropWashBottomOpacity = 0.80;
+  static const double _dropBlurSigma = 12;
   static const double _dropGlyphSize = 48;
   static const double _dropGlyphGap = 16;
   static const IconData _dropIcon = Icons.file_upload_outlined;
@@ -475,7 +470,7 @@ class _FlowChatViewState extends State<FlowChatView> {
     );
   }
 
-  /// The frost, the wash, and the invitation on top of both.
+  /// The blur, the wash over it, and the invitation on top of both.
   Widget _dropTreatment(BuildContext context) {
     final colors = context.flowColors;
     final style = _styleOf(context);
@@ -487,43 +482,46 @@ class _FlowChatViewState extends State<FlowChatView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            colors.surface.withValues(alpha: _dropWashTopOpacity),
+            colors.surfaceBright.withValues(alpha: _dropWashTopOpacity),
             colors.surface.withValues(alpha: _dropWashBottomOpacity),
           ],
         );
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(
-        sigmaX: widget.dropBlurSigma ?? _dropBlurSigma,
-        sigmaY: widget.dropBlurSigma ?? _dropBlurSigma,
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(gradient: gradient),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _sideInset),
-            child: Semantics(
-              liveRegion: true,
-              container: true,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    widget.dropIcon ?? _dropIcon,
-                    size: widget.dropIconSize ?? _dropGlyphSize,
-                    color: style?.dropIconColor ?? colors.onSurface,
-                  ),
-                  if (label != null) ...[
-                    const SizedBox(height: _dropGlyphGap),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: context.flowTypography.titleSmallEmphasised
-                          .copyWith(color: colors.onSurface)
-                          .merge(style?.dropLabelStyle),
+    // ClipRect bounds the filter to the overlay, as the preview's does.
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: _dropBlurSigma,
+          sigmaY: _dropBlurSigma,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(gradient: gradient),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _sideInset),
+              child: Semantics(
+                liveRegion: true,
+                container: true,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.dropIcon ?? _dropIcon,
+                      size: widget.dropIconSize ?? _dropGlyphSize,
+                      color: style?.dropIconColor ?? colors.onSurface,
                     ),
+                    if (label != null) ...[
+                      const SizedBox(height: _dropGlyphGap),
+                      Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: context.flowTypography.titleSmallEmphasised
+                            .copyWith(color: colors.onSurface)
+                            .merge(style?.dropLabelStyle),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

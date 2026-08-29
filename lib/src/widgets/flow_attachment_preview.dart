@@ -10,10 +10,13 @@ import '../utils/flow_circle_button.dart';
 
 const Duration _transition = Duration(milliseconds: 180);
 
-/// Frosted glass over the page: enough tint to carry the chrome, enough
-/// blur to push what shows through into the background without erasing it.
-const double _backdropBlur = 16;
-const double _backdropOpacity = 0.72;
+/// Frosted glass over the page — the chat view's drop treatment, so the
+/// two frosts read as one: a 12 blur under a vertical wash from
+/// `surfaceBright` at 40% to `surface` at 80%, enough tint to carry the
+/// chrome without erasing what shows through.
+const double _backdropBlur = 12;
+const double _backdropTopOpacity = 0.40;
+const double _backdropBottomOpacity = 0.80;
 
 /// The design's viewer metrics: the image inset from the screen edge, and
 /// the top bar's inset and internal gap.
@@ -226,8 +229,21 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
                     opacity: routeAnimation.drive(
                       CurveTween(curve: Curves.easeOut),
                     ),
-                    child: ColoredBox(
-                      color: colors.surface.withValues(alpha: _backdropOpacity),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            colors.surfaceBright.withValues(
+                              alpha: _backdropTopOpacity,
+                            ),
+                            colors.surface.withValues(
+                              alpha: _backdropBottomOpacity,
+                            ),
+                          ],
+                        ),
+                      ),
                       child: const SizedBox.expand(),
                     ),
                   ),

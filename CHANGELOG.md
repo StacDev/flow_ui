@@ -16,6 +16,13 @@
   cannot open is reported through `onRejected` as `unreadable` under an
   empty name. The playground and the example route it through 'Add
   Files or Photos'.
+- **Error banner** — `FlowComposer.errorMessage` raises the design's
+  tab above the card: the error wash with a warning glyph and the host's
+  line beside it, wrapping when long, growing in from the
+  card's edge, and staying until its cross (`onErrorDismiss`) or the
+  host clears it. `errorIcon` swaps the drawn glyph;
+  `FlowComposerStyle.errorBackgroundColor` and `errorForegroundColor`
+  recolour it. The playground and the example use it for refused files.
 - **Drag and drop**, in either of two scopes.
   `FlowChatView.onAttachmentsDropped` takes the whole surface, raising
   the full-bleed treatment (`dropLabel`) while a file is over it;
@@ -30,14 +37,14 @@
   carrying both a file and its name attaches the file and keeps the name
   out of the draft. Web-only, like drop — Flutter's `Clipboard` reads
   plain text and nothing else on every platform.
-- **Drop treatment, redrawn** — the page now frosts behind a vertical
-  wash with the glyph and the invitation straight on it, replacing the
-  flat tint and the centred card. `FlowChatViewStyle` (new, and on
-  `FlowTheme.chatViewStyle`) carries `dropGradient`, `dropIconColor` and
-  `dropLabelStyle`; `dropIcon` and `dropBlurSigma` join `dropLabel` as
-  widget parameters. The treatment also leaves the widget tree while
-  idle, so a surface nobody is dragging over no longer carries a live
-  `BackdropFilter`.
+- **Drop treatment, redrawn** — the design's vertical wash over a 12px
+  blur of the page, `surfaceBright` at 40% down to `surface` at 80%, with
+  the glyph and the
+  invitation straight on it, replacing the flat tint and the centred
+  card. `FlowChatViewStyle` (new, and on `FlowTheme.chatViewStyle`)
+  carries `dropGradient`, `dropIconColor` and `dropLabelStyle`;
+  `dropIcon` and `dropIconSize` join `dropLabel` as widget parameters.
+  The treatment leaves the widget tree while idle.
 - **Escape hatches** — `onAttach` renders the same attach button and
   leaves the picking to the host, for a gallery sheet or a camera.
   `dropActive` stays writable as an override, since drop detection is
@@ -75,11 +82,11 @@
   opaque `surfaceBright` disc with a hairline and the theme's shadow, so
   it reads over any picture in either theme — the translucent wash it
   had vanished over a dark photo — and grows to 44 on touch platforms.
-- **Fix** — a picked, dropped or pasted image now carries its type as
-  `kind`, so its tile draws the 'JPG' pill the design shows; before,
-  only files without a picture got one. The composer's pending strip
-  also scrolls its tiles under the card's inset, so an overflowing strip
-  cuts the last tile at the edge — the cue that there is more.
+  The backdrop is now the chat view's drop frost, a 12 blur under the
+  `surfaceBright` 40% → `surface` 80% wash, so the two read as one.
+- **Fix** — the composer's pending strip scrolls its tiles under the
+  card's inset, so an overflowing strip cuts the last tile at the edge —
+  the cue that there is more.
 - **Image parts carry their file** — `FlowImagePart.bytes` and
   `mimeType`, the pair `FlowAttachment` already had and for the same
   reason: a generated picture is half rendered if the conversation cannot

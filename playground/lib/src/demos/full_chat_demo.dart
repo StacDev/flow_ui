@@ -5,8 +5,6 @@ import 'package:flow_ui/flow_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
-import 'rejection_notice.dart';
-
 /// The canned reply, per the design prototype.
 const String _reply =
     'I can assist you with most tasks across this app — changing your name, '
@@ -88,7 +86,7 @@ class _FullChatDemoState extends State<FullChatDemo> {
   }
 
   /// The package has no copy for a refusal, by design — this is the
-  /// host's wording, on a line above the composer that fades on its own.
+  /// host's wording, on the composer's error banner until its cross clears it.
   void _reject(String name, FlowAttachmentRejection reason) {
     final why = switch (reason) {
       FlowAttachmentRejection.tooLarge => 'is larger than 10 MB',
@@ -170,7 +168,6 @@ class _FullChatDemoState extends State<FullChatDemo> {
 
   @override
   Widget build(BuildContext context) {
-    final rejection = _rejection;
     return FlowChatView(
       // Real drag-and-drop — the playground runs on the web, the one
       // platform the SDK gives file drop. The pinned treatment lives on
@@ -179,12 +176,6 @@ class _FullChatDemoState extends State<FullChatDemo> {
       onAttachmentRejected: _reject,
       attachmentOptions: _attachmentOptions,
       dropLabel: 'Drop files to add to chat',
-      aboveComposer: rejection == null
-          ? null
-          : RejectionNotice(
-              message: rejection,
-              onDismissed: () => setState(() => _rejection = null),
-            ),
       empty: _messages.isEmpty,
       greeting: const FlowGreeting(
         icon: PhosphorIconsRegular.sunHorizon,
@@ -218,6 +209,9 @@ class _FullChatDemoState extends State<FullChatDemo> {
         onAttachmentsPasted: _addAttachments,
         onAttachmentRejected: _reject,
         attachmentOptions: _attachmentOptions,
+        errorMessage: _rejection,
+        onErrorDismiss: () => setState(() => _rejection = null),
+        errorDismissTooltip: 'Dismiss',
         attachments: List.of(_pending),
         removeAttachmentTooltip: 'Remove',
         previewCloseTooltip: 'Close',

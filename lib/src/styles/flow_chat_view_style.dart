@@ -31,10 +31,11 @@ class FlowChatViewStyle {
     this.dropLabelStyle,
   });
 
-  /// The wash behind the drop treatment, painted over the blurred
-  /// surface. Defaults to a vertical `surface` gradient, lighter at the
-  /// top than the bottom, so the page reads through the frost without
-  /// competing with the label.
+  /// The wash the drop treatment paints over the blurred surface.
+  /// Defaults to
+  /// the design's vertical gradient — `surfaceBright` at 40% down to
+  /// `surface` at 80% — so the page reads through it without competing
+  /// with the label.
   ///
   /// Any [Gradient] works — swap in a radial or change the stops to match
   /// a design file. For a flat tint, use a [LinearGradient] with the same

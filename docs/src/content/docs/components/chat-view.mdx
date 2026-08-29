@@ -116,17 +116,18 @@ hosts that were driving the flag before keep working untouched.
 
 <FlowDemo demo="attachments" variant="drop" height={480} title="The drop treatment" />
 
-The treatment frosts the page behind a vertical wash and puts the glyph
-and the invitation straight on it — no card, so the whole surface reads
-as the target. It is pure feedback: it never intercepts a pointer, it
-announces `dropLabel` to assistive tech when it appears, and it leaves
-the widget tree entirely while idle, so a conversation nobody is dragging
-over pays nothing for the blur.
+The treatment is a vertical wash over a 12px blur of the page —
+`surfaceBright` at 40% down to `surface` at 80% — with the glyph and the
+invitation straight on it: no card, so the whole surface reads as the
+target. It is pure
+feedback: it never intercepts a pointer, it announces `dropLabel` to
+assistive tech when it appears, and it leaves the widget tree entirely
+while idle, so a conversation nobody is dragging over pays nothing for
+it.
 
 All of it is yours to change. `dropIcon`, `dropIconSize` and `dropLabel`
-are widget parameters, `dropBlurSigma` sets how hard the page frosts (0
-leaves it sharp), and `FlowChatViewStyle` carries the colours and the
-label's text style:
+are widget parameters, and `FlowChatViewStyle` carries the wash, the
+glyph's colour and the label's text style:
 
 ```dart title="Retheming the drop treatment"
 FlowChatView(

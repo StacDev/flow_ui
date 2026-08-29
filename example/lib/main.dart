@@ -202,20 +202,29 @@ class _ChatScreenState extends State<ChatScreen> {
   void _generate() {
     final id = 'a${_nextId++}';
     final history = List.of(_messages);
+    final generatesImages = _imageModels.contains(_model);
     setState(() {
       _messages = [
         ..._messages,
-        // Pending renders the thinking indicator; the first delta flips
-        // the turn to streaming and the text reveal takes over.
+        // A text model's turn starts pending, which renders the thinking
+        // indicator until the first delta flips it to streaming. An image
+        // model's turn starts streaming with the picture slot already in
+        // it: the image models send nothing before the picture, so a
+        // pending turn would show 'thinking' right up to the moment the
+        // bytes land, and the generating block would never be seen.
         FlowMessageData(
           id: id,
           role: FlowMessageRole.assistant,
-          status: FlowMessageStatus.pending,
+          status: generatesImages
+              ? FlowMessageStatus.streaming
+              : FlowMessageStatus.pending,
+          parts: generatesImages
+              ? const [FlowImagePart(semanticLabel: 'Generated image')]
+              : const [],
         ),
       ];
     });
 
-    final generatesImages = _imageModels.contains(_model);
     var reply = '';
     Uint8List? picture;
     String? pictureType;
@@ -457,12 +466,6 @@ class _ChatScreenState extends State<ChatScreen> {
         onAttachmentRejected: _rejectAttachment,
         attachmentOptions: _attachmentOptions,
         dropLabel: 'Drop files to add to chat',
-        aboveComposer: _rejection == null
-            ? null
-            : _RejectionNotice(
-                message: _rejection!,
-                onDismissed: () => setState(() => _rejection = null),
-              ),
         empty: _messages.isEmpty,
         greeting: const FlowGreeting(
           icon: Icons.wb_twilight,
@@ -498,6 +501,11 @@ class _ChatScreenState extends State<ChatScreen> {
           onAttachmentsPasted: _addAttachments,
           onAttachmentRejected: _rejectAttachment,
           attachmentOptions: _attachmentOptions,
+          // The design's error banner above the card; the words are this
+          // screen's, and its cross hands the dismissal back here.
+          errorMessage: _rejection,
+          onErrorDismiss: () => setState(() => _rejection = null),
+          errorDismissTooltip: 'Dismiss',
           onContentInserted: _insertContent,
           attachments: List.of(_pending),
           onRemoveAttachment: (id) =>
@@ -528,93 +536,6 @@ class _ChatScreenState extends State<ChatScreen> {
               onSelected: (id) => setState(() => _model = id),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A refused file, in this app's words: a glyph and a line on the
-/// composer's rail that fades on its own after a beat. flow_ui reports
-/// the name and the reason and ships no copy, so the notice is the
-/// host's — this is the shape of one.
-class _RejectionNotice extends StatefulWidget {
-  const _RejectionNotice({required this.message, required this.onDismissed});
-
-  final String message;
-  final VoidCallback onDismissed;
-
-  @override
-  State<_RejectionNotice> createState() => _RejectionNoticeState();
-}
-
-class _RejectionNoticeState extends State<_RejectionNotice> {
-  static const Duration _hold = Duration(seconds: 4);
-  static const Duration _fade = Duration(milliseconds: 300);
-
-  Timer? _timer;
-  bool _visible = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _arm();
-  }
-
-  @override
-  void didUpdateWidget(_RejectionNotice oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.message != widget.message) {
-      setState(() => _visible = true);
-      _arm();
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _arm() {
-    _timer?.cancel();
-    _timer = Timer(_hold, () {
-      if (mounted) setState(() => _visible = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.flowColors;
-    return AnimatedOpacity(
-      opacity: _visible ? 1 : 0,
-      duration: _fade,
-      // onEnd also fires after a re-show; only the fade-out dismisses.
-      onEnd: () {
-        if (!_visible) widget.onDismissed();
-      },
-      child: Semantics(
-        liveRegion: true,
-        child: Padding(
-          // The composer card's content inset, so the glyph lines up with
-          // the field's text.
-          padding: const EdgeInsetsDirectional.only(start: 18),
-          child: Row(
-            children: [
-              Icon(Icons.error_outline, size: 16, color: colors.error),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.message,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.flowTypography.bodySmall.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
