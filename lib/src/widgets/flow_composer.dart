@@ -416,13 +416,6 @@ class _FlowComposerState extends State<FlowComposer> {
   TextEditingController? _internalController;
   FocusNode? _internalFocusNode;
   late FocusNode _attachedFocusNode;
-
-  /// The field's tap-region group, widened to the whole card. The field
-  /// drops focus on a pointer *down* outside its region (desktop, web,
-  /// and any mouse press), so without this a click on the card's padding
-  /// would blur on the down and refocus on the up — cancelling IME
-  /// composition and firing the host's focus listeners twice on the way.
-  final Object _tapGroup = Object();
   bool _focused = false;
   bool _hovered = false;
   bool _attachHovered = false;
@@ -886,8 +879,15 @@ class _FlowComposerState extends State<FlowComposer> {
         cursor: widget.enabled
             ? SystemMouseCursors.text
             : SystemMouseCursors.basic,
-        child: TapRegion(
-          groupId: _tapGroup,
+        // The card joins the field's tap region. The field drops focus on a
+        // pointer *down* outside its region (desktop, web, and any mouse
+        // press), so without this a click on the padding would blur on the
+        // down and refocus on the up — cancelling IME composition and firing
+        // the host's focus listeners twice. It has to be the field's *default*
+        // group, not a private one: the selection handles and the Copy/Paste
+        // toolbar live in that default group, and a field moved out of it
+        // would blur on a press on its own toolbar.
+        child: TextFieldTapRegion(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.enabled ? _focusNode.requestFocus : null,
@@ -974,7 +974,6 @@ class _FlowComposerState extends State<FlowComposer> {
                           child: TextField(
                             controller: _controller,
                             focusNode: _focusNode,
-                            groupId: _tapGroup,
                             enabled: widget.enabled,
                             minLines: 1,
                             maxLines: widget.maxLines,
