@@ -182,6 +182,11 @@
   inline-code chip, quote, table and rule inks. All additive — nothing
   breaks.
 
+- **Error state** — the card's fill drops two rungs, from
+  `surfaceContainer` to `surfaceContainerLowest`, so it sits nearly flush
+  with the page and the error hairline carries the state. The composer's
+  error tab tightens its inner padding to 16 leading and 8 trailing.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut

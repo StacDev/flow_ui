@@ -392,15 +392,17 @@ class _FlowComposerState extends State<FlowComposer> {
   static const double _dropWashAlpha = 0.06;
 
   /// The error banner, the design's tab tucked behind the card: inset 20
-  /// from the card's edges under 20px top corners, padded 20/6, an 18px
-  /// glyph 8 from 14px medium text, lifted on the tiles' 24px shadow.
+  /// from the card's edges under 20px top corners, padded 16 leading, 8
+  /// trailing and 6 vertical, an 18px glyph 8 from 14px medium text,
+  /// lifted on the tiles' 24px shadow.
   /// It grows in over the jump button's 150ms.
   ///
   /// The cross is a 16px glyph on a 24px disc; the tab's vertical padding
   /// gives up the difference so the banner keeps its 30px height with or
   /// without it.
   static const double _errorInset = 20;
-  static const double _errorHorizontalPadding = 20;
+  static const double _errorLeadingPadding = 16;
+  static const double _errorTrailingPadding = 8;
   static const double _errorVerticalPadding = 6;
   static const double _errorGap = 8;
   static const double _errorDismissIconSize = 16;
@@ -762,9 +764,11 @@ class _FlowComposerState extends State<FlowComposer> {
         liveRegion: true,
         container: true,
         child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: _errorHorizontalPadding,
-            vertical: verticalPadding,
+          padding: EdgeInsetsDirectional.only(
+            start: _errorLeadingPadding,
+            end: _errorTrailingPadding,
+            top: verticalPadding,
+            bottom: verticalPadding,
           ),
           decoration: BoxDecoration(
             color: background,
