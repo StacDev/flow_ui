@@ -132,7 +132,7 @@ class FlowErrorState extends StatelessWidget {
     return Container(
       padding: padding ?? _cardPadding,
       decoration: BoxDecoration(
-        color: effective?.backgroundColor ?? colors.surfaceContainer,
+        color: effective?.backgroundColor ?? colors.surfaceContainerLowest,
         borderRadius: borderRadius ?? _radius,
         border: Border.all(
           color:

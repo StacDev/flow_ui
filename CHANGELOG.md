@@ -188,6 +188,13 @@
   it. Before, only the field's own text run took the click, so a card
   with a short draft was mostly dead space. The buttons, the tiles and
   the host's actions keep their own taps and cursors.
+- **Error state** — the card's fill drops two rungs, from
+  `surfaceContainer` to `surfaceContainerLowest`, so it sits nearly flush
+  with the page and the error hairline carries the state. The composer's
+  error tab tightens its inner padding to 16 leading and 8 trailing.
+- **Typography** — the `code` and `codeInline` roles, the code block's
+  body and the inline span, drop from 14 to 13 on their 1.6 and 1.5
+  lines.
 
 ## 0.2.0
 
