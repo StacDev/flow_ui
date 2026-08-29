@@ -17,16 +17,18 @@
   washing with `surfaceContainer` on hover; the jump-to-latest shadow
   matches the cards' 2%. Defaults only — no signatures change.
 
-- **Colors** — presets retuned to the design file: ink `#111110`, an indigo
-  `secondary`, a hot-pink `tertiary` (markdown links follow), a softer
-  `error`, and new `success` and `warning` groups. Accent containers are
-  now washes of their accent (8% accents, 6% statuses) with the accent as
-  the `on` colour. **Breaking:** `outline` and `outlineVariant` swap
-  meaning — `outline` is the faint hairline (7%), `outlineVariant` the firm
-  one (12%) — and the eight new roles are required constructor parameters
-  (`copyWith` on a preset is unaffected). The dark preset follows: lifted
-  accents that carry `#1E1E1E` as their `on` ink, and hairlines brought
-  down to 8% and 12%.
+- **Colors** — presets retuned to the design file: ink `#111110`, a hot-pink
+  `secondary` (markdown links follow), an indigo `tertiary`, a softer
+  `error`, new `success` and `warning` groups, and a `shadow` role — the ink
+  at 2%, alpha included — that every raised element's shadow now reads.
+  Accent containers are now washes of their accent (8% accents, 6%
+  statuses) with the accent as the `on` colour. **Breaking:** `outline`
+  and `outlineVariant` swap meaning — `outline` is the faint hairline
+  (7%), `outlineVariant` the firm one (12%) — the nine new roles are
+  required constructor parameters (`copyWith` on a preset is unaffected),
+  and markdown links default to `secondary` rather than `tertiary`. The
+  dark preset follows: lifted accents that carry `#1E1E1E` as their `on`
+  ink, and hairlines brought down to 8% and 12%.
 
 - **Typefaces** — Google Sans replaces Figtree and Google Sans Code replaces
   Geist Mono. Neither is bundled: the package depends on `google_fonts`,

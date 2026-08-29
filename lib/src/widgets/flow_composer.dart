@@ -164,9 +164,7 @@ class _FlowComposerState extends State<FlowComposer> {
   /// Centers the stop glyph on the disc (26 = 18 + 2 × 4).
   static const double _stopPadding = 4;
 
-  /// The card's lift, as an alpha over the ink — the attachment tiles'
-  /// idiom at the composer's tighter blur.
-  static const double _shadowOpacity = 0.02;
+  /// The card's lift: the theme's shadow ink at the composer's tighter blur.
   static const double _shadowBlur = 12;
 
   TextEditingController? _internalController;
@@ -358,10 +356,7 @@ class _FlowComposerState extends State<FlowComposer> {
             color: style?.backgroundColor ?? colors.surfaceBright,
             borderRadius: radius,
             boxShadow: [
-              BoxShadow(
-                color: colors.onSurface.withValues(alpha: _shadowOpacity),
-                blurRadius: _shadowBlur,
-              ),
+              BoxShadow(color: colors.shadow, blurRadius: _shadowBlur),
             ],
           ),
           padding: widget.padding ?? _cardPadding,

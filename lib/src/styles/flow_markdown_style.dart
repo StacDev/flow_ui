@@ -59,7 +59,7 @@ class FlowMarkdownStyle {
   /// `onSurfaceVariant`.
   final TextStyle? h6Style;
 
-  /// Link labels and their underline. Defaults to `tertiary`.
+  /// Link labels and their underline. Defaults to `secondary`.
   final Color? linkColor;
 
   /// Merged over inline code's default `codeInline` face.

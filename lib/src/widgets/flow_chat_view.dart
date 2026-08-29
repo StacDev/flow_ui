@@ -168,7 +168,6 @@ class _FlowChatViewState extends State<FlowChatView> {
 
   /// The jump button's lift: the composer's shadow, so the disc and the
   /// card it floats above share one.
-  static const double _jumpShadowOpacity = 0.02;
   static const double _jumpShadowBlur = 12;
 
   /// The zero state's rhythm: greeting 32 above the composer; suggestions
@@ -359,9 +358,7 @@ class _FlowChatViewState extends State<FlowChatView> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: colors.onSurface.withValues(
-                          alpha: _jumpShadowOpacity,
-                        ),
+                        color: colors.shadow,
                         blurRadius: _jumpShadowBlur,
                       ),
                     ],

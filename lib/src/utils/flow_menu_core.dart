@@ -17,9 +17,7 @@ import 'flow_menu_sheet.dart';
 const double _borderOpacity = 0.2;
 const double _borderFadeOpacity = 0.12;
 
-/// The card's lift: the raised cards' soft ambient shadow, an alpha over
-/// the ink at the composer's blur.
-const double _shadowOpacity = 0.02;
+/// The card's lift: the theme's shadow ink at the composer's blur.
 const double _shadowBlur = 12;
 
 /// The design's menu metrics: a 12px card standing 14 above and 16 below
@@ -147,12 +145,7 @@ class FlowMenuCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: flowMenuBackground(context, style),
           borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: colors.onSurface.withValues(alpha: _shadowOpacity),
-              blurRadius: _shadowBlur,
-            ),
-          ],
+          boxShadow: [BoxShadow(color: colors.shadow, blurRadius: _shadowBlur)],
         ),
         padding: _cardPadding,
         child: Column(

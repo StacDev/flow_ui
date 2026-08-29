@@ -24,7 +24,7 @@ library is a matter of overriding tokens.
 ## Three levels of ink
 
 Color role names follow Material 3's `ColorScheme`, so an existing M3 scheme
-maps straight across — with two additions. The Flow design draws content at
+maps straight across — with three additions. The Flow design draws content at
 three strengths, and M3 only names two:
 
 | Token | Strength | Used for |
@@ -39,14 +39,19 @@ but the drained state: the send disc with nothing to send.
 The other addition is a pair of status groups beside `error`: `success` and
 `warning`, each with its `on`, `Container` and `onContainer` roles.
 
+The third is `shadow` — the ink at 2% with the alpha baked in. Every raised
+element — the composer, the menu card, attachment tiles, the jump-to-latest
+disc — draws its shadow in this one color with its own blur and no offset,
+so retheming it lifts or kills the library's shadows at once.
+
 ## Three rules hold the palette together
 
 **The ink, the outlines, and the container ladder are translucent.**
 `onSurfaceVariant`, `onSurfaceMuted`, `outline` (the faint hairline — 7%
-ink in light, 8% in dark) and `outlineVariant` (the firm one — 12% in
-both) are the foreground ink at an alpha, not resolved colors — the same
-label and the same hairline read correctly on the page *and* on a raised
-card, because they composite. The `surfaceContainerLowest → Highest`
+ink in light, 8% in dark), `outlineVariant` (the firm one — 12% in both)
+and `shadow` (2%) are the foreground ink at an alpha, not resolved colors —
+the same label and the same hairline read correctly on the page *and* on a
+raised card, because they composite. The `surfaceContainerLowest → Highest`
 ladder is cut from the same ink in even steps — 2, 4, 6, 8, 10% — so a
 fill picked for the page holds up anywhere.
 

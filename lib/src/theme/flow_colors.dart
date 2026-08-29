@@ -7,14 +7,15 @@ import 'package:material_ui/material_ui.dart';
 /// can map an existing M3 scheme onto flow_ui — with one inversion: here
 /// [outline] is the *faint* hairline and [outlineVariant] the *firm* one,
 /// the reverse of M3's weights. Flow adds a third ink level,
-/// [onSurfaceMuted], and [success] and [warning] groups beside [error].
+/// [onSurfaceMuted], [success] and [warning] groups beside [error], and
+/// a [shadow] role — the ink at 2%, alpha included.
 ///
 /// The presets come from the Flow UI design file. Three things about them
 /// are worth knowing before overriding one:
 ///
 /// * **The ink ramp is translucent.** [onSurfaceVariant] (75%),
-///   [onSurfaceMuted] (50%), [outline] (7%, 8% in dark) and
-///   [outlineVariant] (12%) are
+///   [onSurfaceMuted] (50%), [outline] (7%, 8% in dark),
+///   [outlineVariant] (12%) and [shadow] (2%) are
 ///   the foreground ink at an alpha, not resolved colors. The design uses the
 ///   same label and the same hairline on the page *and* on the raised card,
 ///   which only works if they composite.
@@ -67,6 +68,7 @@ class FlowColors {
     required this.surfaceContainerHighest,
     required this.outline,
     required this.outlineVariant,
+    required this.shadow,
     required this.inverseSurface,
     required this.onInverseSurface,
     required this.inversePrimary,
@@ -79,13 +81,14 @@ class FlowColors {
   final Color primaryContainer;
   final Color onPrimaryContainer;
 
-  // Secondary — supporting accent: indigo.
+  // Secondary — supporting accent: the hotter pink beside the rose;
+  // markdown links.
   final Color secondary;
   final Color onSecondary;
   final Color secondaryContainer;
   final Color onSecondaryContainer;
 
-  // Tertiary — the hotter pink beside the rose; markdown links.
+  // Tertiary — indigo, lifted to a blue in dark.
   final Color tertiary;
   final Color onTertiary;
   final Color tertiaryContainer;
@@ -159,6 +162,12 @@ class FlowColors {
   /// rule, the sheet's edge, a retry pill, the send disc at rest.
   final Color outlineVariant;
 
+  // Shadow — the ambient lift under a raised card, tile or disc.
+
+  /// The ink at 2%, alpha included: a component pairs it with its own blur
+  /// and no offset, so one value lifts or kills every shadow in the library.
+  final Color shadow;
+
   // Inverse — elements on the opposite brightness (snackbars, tooltips).
   final Color inverseSurface;
   final Color onInverseSurface;
@@ -170,14 +179,14 @@ class FlowColors {
     onPrimary: Color(0xFFFFFFFF),
     primaryContainer: Color(0x14E071A7),
     onPrimaryContainer: Color(0xFFE071A7),
-    secondary: Color(0xFF3730A3),
+    secondary: Color(0xFFFF67B0),
     onSecondary: Color(0xFFFFFFFF),
-    secondaryContainer: Color(0x143730A3),
-    onSecondaryContainer: Color(0xFF3730A3),
-    tertiary: Color(0xFFFF67B0),
+    secondaryContainer: Color(0x14FF67B0),
+    onSecondaryContainer: Color(0xFFFF67B0),
+    tertiary: Color(0xFF3730A3),
     onTertiary: Color(0xFFFFFFFF),
-    tertiaryContainer: Color(0x14FF67B0),
-    onTertiaryContainer: Color(0xFFFF67B0),
+    tertiaryContainer: Color(0x143730A3),
+    onTertiaryContainer: Color(0xFF3730A3),
     error: Color(0xFFC14A4A),
     onError: Color(0xFFFFFFFF),
     errorContainer: Color(0x0FC14A4A),
@@ -203,6 +212,7 @@ class FlowColors {
     surfaceContainerHighest: Color(0x1A111110),
     outline: Color(0x12111110),
     outlineVariant: Color(0x1F111110),
+    shadow: Color(0x05111110),
     inverseSurface: Color(0xFF111110),
     onInverseSurface: Color(0xFFFFFFFF),
     inversePrimary: Color(0xFFF5E9EE),
@@ -215,14 +225,14 @@ class FlowColors {
     onPrimary: Color(0xFF1E1E1E),
     primaryContainer: Color(0x14E071A7),
     onPrimaryContainer: Color(0xFFE071A7),
-    secondary: Color(0xFF77A8FD),
+    secondary: Color(0xFFFF67B0),
     onSecondary: Color(0xFF1E1E1E),
-    secondaryContainer: Color(0x1477A8FD),
-    onSecondaryContainer: Color(0xFF77A8FD),
-    tertiary: Color(0xFFFF67B0),
+    secondaryContainer: Color(0x14FF67B0),
+    onSecondaryContainer: Color(0xFFFF67B0),
+    tertiary: Color(0xFF77A8FD),
     onTertiary: Color(0xFF1E1E1E),
-    tertiaryContainer: Color(0x14FF67B0),
-    onTertiaryContainer: Color(0xFFFF67B0),
+    tertiaryContainer: Color(0x1477A8FD),
+    onTertiaryContainer: Color(0xFF77A8FD),
     error: Color(0xFFFF6565),
     onError: Color(0xFF1E1E1E),
     errorContainer: Color(0x0FFF6565),
@@ -248,6 +258,7 @@ class FlowColors {
     surfaceContainerHighest: Color(0x1AFFFFFF),
     outline: Color(0x14FFFFFF),
     outlineVariant: Color(0x1FFFFFFF),
+    shadow: Color(0x05FFFFFF),
     inverseSurface: Color(0xFFFFFFFF),
     onInverseSurface: Color(0xFF1E1E1E),
     inversePrimary: Color(0xFF2B2025),
@@ -291,6 +302,7 @@ class FlowColors {
     Color? surfaceContainerHighest,
     Color? outline,
     Color? outlineVariant,
+    Color? shadow,
     Color? inverseSurface,
     Color? onInverseSurface,
     Color? inversePrimary,
@@ -335,6 +347,7 @@ class FlowColors {
           surfaceContainerHighest ?? this.surfaceContainerHighest,
       outline: outline ?? this.outline,
       outlineVariant: outlineVariant ?? this.outlineVariant,
+      shadow: shadow ?? this.shadow,
       inverseSurface: inverseSurface ?? this.inverseSurface,
       onInverseSurface: onInverseSurface ?? this.onInverseSurface,
       inversePrimary: inversePrimary ?? this.inversePrimary,
@@ -453,6 +466,7 @@ class FlowColors {
       )!,
       outline: Color.lerp(outline, other.outline, t)!,
       outlineVariant: Color.lerp(outlineVariant, other.outlineVariant, t)!,
+      shadow: Color.lerp(shadow, other.shadow, t)!,
       inverseSurface: Color.lerp(inverseSurface, other.inverseSurface, t)!,
       onInverseSurface: Color.lerp(
         onInverseSurface,

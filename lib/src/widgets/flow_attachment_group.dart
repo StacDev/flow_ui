@@ -257,8 +257,7 @@ const EdgeInsetsGeometry _pillPadding = EdgeInsets.symmetric(
   vertical: 1,
 );
 
-/// The ambient lift under a tile: wide, offsetless and barely there.
-const double _shadowOpacity = 0.02;
+/// The ambient lift under a tile: the theme's shadow ink, wide and offsetless.
 const double _shadowBlur = 24;
 
 /// The type pill's frosting, over whatever the thumbnail puts behind it.
@@ -379,12 +378,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
       // Outside the Material, which clips its own contents away.
       decoration: BoxDecoration(
         borderRadius: widget.radius,
-        boxShadow: [
-          BoxShadow(
-            color: colors.onSurface.withValues(alpha: _shadowOpacity),
-            blurRadius: _shadowBlur,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: colors.shadow, blurRadius: _shadowBlur)],
       ),
       child: SizedBox.square(
         dimension: widget.size,

@@ -818,7 +818,7 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
       if (linked) TextDecoration.underline,
     ];
     if (linked) {
-      final linkColor = _mdStyle?.linkColor ?? colors.tertiary;
+      final linkColor = _mdStyle?.linkColor ?? colors.secondary;
       style = style.copyWith(color: linkColor, decorationColor: linkColor);
     }
     if (decorations.isNotEmpty) {
