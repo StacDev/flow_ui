@@ -72,7 +72,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final ScrollController _scroll = ScrollController();
 
-  List<FlowMessageData> _messages = const [];
+  /// Every conversation this screen has held, newest first, and the one
+  /// on screen. The thread list in the drawer reads these; the chat view
+  /// only ever sees the active one.
+  final Map<String, List<FlowMessageData>> _threads = {'t0': const []};
+  final List<String> _threadOrder = ['t0'];
+  String _activeThread = 't0';
+  int _nextThread = 1;
+
+  List<FlowMessageData> get _messages => _threads[_activeThread] ?? const [];
+  set _messages(List<FlowMessageData> value) => _threads[_activeThread] = value;
+
+  /// A thread is named by its opening question.
+  String _titleOf(String id) {
+    for (final message in _threads[id] ?? const <FlowMessageData>[]) {
+      if (message.role != FlowMessageRole.user) continue;
+      final text = message.plainText.trim();
+      if (text.isEmpty) continue;
+      return text.length > 40 ? '${text.substring(0, 40)}…' : text;
+    }
+    return 'New chat';
+  }
+
+  void _openThread(String id) {
+    if (id == _activeThread) return;
+    _stop();
+    setState(() {
+      _activeThread = id;
+      _pending.clear();
+      _rejection = null;
+    });
+  }
+
+  void _newThread() {
+    // An untouched thread is already the new chat.
+    if (_messages.isEmpty) return;
+    _stop();
+    setState(() {
+      _activeThread = 't${_nextThread++}';
+      _threads[_activeThread] = const [];
+      _threadOrder.insert(0, _activeThread);
+      _pending.clear();
+      _rejection = null;
+    });
+  }
+
   StreamSubscription<GeminiDelta>? _reply;
   int _nextId = 0;
   String _model = 'gemini-3.6-flash';
@@ -541,12 +585,101 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.flowColors;
+    final typography = context.flowTypography;
     return Scaffold(
-      backgroundColor: context.flowColors.surface,
+      backgroundColor: colors.surface,
+      // The app's own chrome, in the Flow tokens: a flat bar on the page
+      // ground, the thread's title, the drawer and a new chat.
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        title: Text(
+          _titleOf(_activeThread),
+          style: typography.labelLargeEmphasised.copyWith(
+            color: colors.onSurface,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            tooltip: 'Chats',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_square),
+            tooltip: 'New chat',
+            onPressed: _newThread,
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        backgroundColor: colors.surfaceBright,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Text(
+                      'Chats',
+                      style: typography.titleSmallEmphasised.copyWith(
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    const Spacer(),
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: const Icon(Icons.edit_square),
+                        tooltip: 'New chat',
+                        color: colors.onSurfaceVariant,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _newThread();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Builder(
+                  builder: (context) => FlowThreadList(
+                    sections: [
+                      FlowThreadListSection(
+                        label: 'Today',
+                        items: [
+                          for (final id in _threadOrder)
+                            FlowThreadListItem(
+                              id: id,
+                              title: _titleOf(id),
+                              tooltip: _titleOf(id),
+                            ),
+                        ],
+                      ),
+                    ],
+                    selectedId: _activeThread,
+                    onThreadSelected: (id) {
+                      Navigator.of(context).pop();
+                      _openThread(id);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: FlowChatView(
-        // Drag-and-drop, handled by the package. Web only — the SDK
-        // implements OS file drop nowhere else — and a no-op elsewhere,
-        // which is why the attach button carries the same job.
         // Web only: the SDK implements OS file drop nowhere else, and the
         // package says so at runtime when handed the callback elsewhere.
         onAttachmentsDropped: kIsWeb ? _addAttachments : null,
