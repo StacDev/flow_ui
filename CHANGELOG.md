@@ -181,7 +181,6 @@
   markdown surface per element: heading cuts, the link color, the
   inline-code chip, quote, table and rule inks. All additive — nothing
   breaks.
-
 - **Fix** — the composer's card is now the field's hit target: a click on
   its padding, the gap under the field or the empty stretch of the action
   row focuses the field, and the pointer shows the text cursor over all of
