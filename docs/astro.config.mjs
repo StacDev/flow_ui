@@ -77,6 +77,8 @@ export default defineConfig({
 				},
 			],
 			components: {
+				// Mirrors each page's og:title/description into the twitter: pair.
+				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
 				SiteTitle: './src/components/SiteTitle.astro',

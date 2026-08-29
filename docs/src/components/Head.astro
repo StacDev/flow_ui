@@ -1,0 +1,20 @@
+---
+/**
+ * Overrides Starlight's Head: emits every tag Starlight computed for the
+ * page, then mirrors its `og:title` and `og:description` into the
+ * `twitter:` pair. X reads the `og:` tags when these are absent, so the
+ * card renders the same either way; this only keeps card validators
+ * quiet. Done here rather than in astro.config's `head` because that is
+ * one static tag for every page, and X prefers `twitter:title` over
+ * `og:title` — a static one would give every subpage the home title.
+ */
+const { head } = Astro.locals.starlightRoute;
+const meta = (property: string) =>
+	head.find((tag) => tag.tag === 'meta' && tag.attrs?.property === property)?.attrs?.content;
+const title = meta('og:title');
+const description = meta('og:description');
+---
+
+{head.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
+{title && <meta name="twitter:title" content={title} />}
+{description && <meta name="twitter:description" content={description} />}
