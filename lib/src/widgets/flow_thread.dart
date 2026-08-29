@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import 'flow_menu.dart' show FlowMenuEntry;
 import 'flow_message.dart';
 
 /// The scrollable conversation, a list of [FlowMessageData]s.
@@ -37,6 +38,9 @@ class FlowThread extends StatefulWidget {
     this.itemSpacing,
     this.messageBuilder,
     this.messageFooter,
+    this.messageMenu,
+    this.onMessageMenuSelected,
+    this.selectable = true,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
   });
@@ -116,6 +120,24 @@ class FlowThread extends StatefulWidget {
   /// for no footer on that turn. Ignored when [messageBuilder] is set:
   /// the builder owns the whole message.
   final Widget? Function(FlowMessageData message)? messageFooter;
+
+  /// Each message's context menu, the AI apps' long-press: the entries
+  /// for [message], or empty for none — a streaming turn, say. Labels are
+  /// the host's; see [FlowMessage.menuEntries] for how it opens.
+  final List<FlowMenuEntry> Function(FlowMessageData message)? messageMenu;
+
+  /// The chosen option for the message it was opened on.
+  final void Function(FlowMessageData message, String id)?
+  onMessageMenuSelected;
+
+  /// Whether prose can be drag-selected across the conversation on
+  /// pointer platforms — the web's reading convention, copied with the
+  /// platform shortcut. The messages' own gestures sit below the
+  /// selection and keep winning: a right-click still opens
+  /// [messageMenu]. Touch platforms select through the menu instead,
+  /// via `showFlowTextSelection`, since there the long-press *is* the
+  /// menu.
+  final bool selectable;
 
   /// Forwarded to [FlowMessage] for streaming text parts.
   final double charactersPerSecond;
@@ -310,10 +332,15 @@ class _FlowThreadState extends State<FlowThread> {
     final onAttachmentTap = widget.onAttachmentTap;
     final onRetry = widget.onRetry;
     final onLinkTap = widget.onLinkTap;
+    final onMenuSelected = widget.onMessageMenuSelected;
     final messages = widget.messages;
     _syncStreaming(messages);
 
-    return NotificationListener<ScrollEndNotification>(
+    final platform = Theme.of(context).platform;
+    final pointer =
+        platform != TargetPlatform.iOS && platform != TargetPlatform.android;
+
+    Widget list = NotificationListener<ScrollEndNotification>(
       onNotification: (notification) {
         if (notification.depth == 0) {
           _settleIfOff(notification.metrics, notification.context);
@@ -370,6 +397,10 @@ class _FlowThreadState extends State<FlowThread> {
                       charactersPerSecond: widget.charactersPerSecond,
                       thinkingLabel: widget.thinkingLabel,
                       footer: widget.messageFooter?.call(message),
+                      menuEntries: widget.messageMenu?.call(message),
+                      onMenuSelected: onMenuSelected == null
+                          ? null
+                          : (id) => onMenuSelected(message, id),
                     ),
               );
             },
@@ -377,5 +408,7 @@ class _FlowThreadState extends State<FlowThread> {
         ),
       ),
     );
+    if (!widget.selectable || !pointer) return list;
+    return SelectionArea(child: list);
   }
 }

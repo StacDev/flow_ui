@@ -74,7 +74,7 @@ Values come from the Flow UI Figma file. Role names follow Material 3's `ColorSc
 
 | # | Component | Variants / notes | Status |
 |---|-----------|------------------|--------|
-| 8 | Message & Thread | ink-wash user bubble; plain assistant | ✅ |
+| 8 | Message & Thread | ink-wash user bubble; plain assistant; long-press menu; selectable prose | ✅ |
 | 9 | Thread List | host-labeled sections; unread dot, pinned glyph, leading icon slot; single selection by id | ✅ |
 | 10 | Message actions | | ✅ |
 | 11 | Streaming text | | ✅ |

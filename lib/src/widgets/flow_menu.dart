@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
-import '../utils/flow_menu_sheet.dart';
+import '../utils/flow_menu_entries.dart';
 import '../utils/flow_touch_target.dart';
 
 /// One entry in a [FlowMenu]: an option or a divider.
@@ -137,101 +137,21 @@ class _FlowMenuState extends State<FlowMenu> {
 
   bool get _hasOptions => widget.entries.whereType<FlowMenuOption>().isNotEmpty;
 
-  FlowMenuRow _optionRow(FlowMenuOption option, {required bool large}) {
-    return FlowMenuRow(
-      label: option.label,
-      icon: option.icon,
-      selected: option.selected,
-      enabled: option.enabled,
-      large: large,
-      style: _style,
-      onTap: () => widget.onSelected?.call(option.id),
-    );
-  }
-
   /// The anchored menu's children.
-  List<Widget> _menuChildren(BuildContext context) {
-    final style = _style;
-    return [
-      for (final entry in widget.entries)
-        switch (entry) {
-          FlowMenuDivider() => FlowMenuRule(style: style),
-          FlowMenuOption(children: []) => _optionRow(entry, large: false),
-          FlowMenuOption() => FlowSubmenuRow(
-            style: style,
-            menuChildren: [
-              FlowMenuCard(
-                style: style,
-                children: [
-                  for (final child in entry.children)
-                    _optionRow(child, large: false),
-                ],
-              ),
-            ],
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (entry.icon != null) ...[
-                  Icon(
-                    entry.icon,
-                    size: 18,
-                    color: entry.enabled
-                        ? (style?.iconColor ??
-                              context.flowColors.onSurfaceVariant)
-                        : context.flowColors.onSurfaceDisabled,
-                  ),
-                  const SizedBox(width: flowMenuIconGap),
-                ],
-                Text(
-                  entry.label,
-                  style: flowMenuLabelStyle(
-                    context,
-                    large: false,
-                    style: style,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        },
-    ];
-  }
+  List<Widget> _menuChildren(BuildContext context) => flowMenuEntryRows(
+    context,
+    widget.entries,
+    style: _style,
+    onSelected: (id) => widget.onSelected?.call(id),
+  );
 
-  void _openSheet() {
-    final style = _style;
-    showFlowMenuSheet(
-      context: context,
-      style: style,
-      root: FlowMenuSheetPage(
-        title: widget.sheetTitle,
-        children: (context) => [
-          for (final entry in widget.entries)
-            switch (entry) {
-              FlowMenuDivider() => FlowMenuRule(style: style, large: true),
-              FlowMenuOption(children: []) => _optionRow(entry, large: true),
-              FlowMenuOption() => FlowMenuRow(
-                label: entry.label,
-                icon: entry.icon,
-                enabled: entry.enabled,
-                showChevron: true,
-                large: true,
-                style: style,
-                closeOnTap: false,
-                onTap: () => FlowMenuSheetScope.maybeOf(context)?.push(
-                  FlowMenuSheetPage(
-                    title: entry.label,
-                    children: (context) => [
-                      for (final child in entry.children)
-                        _optionRow(child, large: true),
-                    ],
-                  ),
-                ),
-              ),
-            },
-        ],
-      ),
-    );
-  }
+  void _openSheet() => showFlowMenuEntriesSheet(
+    context: context,
+    entries: widget.entries,
+    style: _style,
+    title: widget.sheetTitle,
+    onSelected: (id) => widget.onSelected?.call(id),
+  );
 
   @override
   Widget build(BuildContext context) {

@@ -219,6 +219,22 @@
   and the composer take the Flow primary rather than the host
   `ColorScheme`'s, which on a stock `ThemeData` was Material's purple.
 
+- **Message menu** — the AI apps' long-press. `FlowThread.messageMenu`
+  hands back a message's entries (`FlowMenuOption`s and dividers, labels
+  the host's) and `onMessageMenuSelected` reports the pick with its
+  message; `FlowMessage` takes the pair as `menuEntries` and
+  `onMenuSelected`. A long-press with a haptic on touch, a right-click on
+  pointer platforms; the phone sheet or a popover at the pointer, by the
+  theme's platform like the other menus. The example offers copy,
+  feedback, regenerate and delete; the playground's thread stage gains a
+  Long-press menu variant.
+
+- **Selecting text** — `FlowThread.selectable` (on by default) makes the
+  conversation a `SelectionArea` on pointer platforms: drag across turns,
+  copy with the shortcut, the message menu still on right-click. Phones
+  select from the menu: `showFlowTextSelection` pushes a full-screen page
+  of a message's text for the platform's handles, and
+  `FlowMessageData.plainText` is the text to hand it.
 
 ## 0.2.0
 

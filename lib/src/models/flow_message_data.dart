@@ -79,4 +79,16 @@ class FlowMessageData {
       timestamp: timestamp ?? this.timestamp,
     );
   }
+
+  /// The message as text: text parts and code in order, a blank line
+  /// between them, attachments and images left out — what a copy or a
+  /// select-text page carries.
+  String get plainText => [
+    for (final part in parts)
+      switch (part) {
+        FlowTextPart() => part.text,
+        FlowCodePart() => part.code,
+        _ => null,
+      },
+  ].nonNulls.join('\n\n');
 }

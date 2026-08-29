@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 String threadSnippet([String? variant]) => switch (variant) {
   'streaming' => _streaming,
   'short' => _short,
+  'menu' => _menu,
   _ => _default,
 };
 
@@ -33,6 +34,33 @@ const String _short = '''
 SizedBox(
   height: 480,
   child: FlowThread(messages: fewMessages),
+)''';
+
+const String _menu = '''
+// The context menu: long-press with a haptic on touch, right-click on
+// pointer platforms — a sheet on phones, a popover at the pointer
+// elsewhere. Entries and labels are the host's; the id comes back with
+// the message it was opened on.
+FlowThread(
+  messages: messages,
+  messageMenu: (message) => [
+    FlowMenuOption(id: 'copy', icon: Icons.copy_outlined, label: 'Copy'),
+    FlowMenuOption(id: 'select', icon: Icons.text_fields, label: 'Select text'),
+    if (message.role == FlowMessageRole.assistant)
+      FlowMenuOption(id: 'again', icon: Icons.refresh, label: 'Regenerate'),
+    FlowMenuDivider(),
+    FlowMenuOption(id: 'delete', icon: Icons.delete_outline, label: 'Delete'),
+  ],
+  onMessageMenuSelected: (message, id) => switch (id) {
+    // Phones select prose from the menu: a full-screen page of the
+    // message's plain text. Pointer platforms drag-select in place.
+    'select' => showFlowTextSelection(
+      context: context,
+      text: message.plainText,
+      closeTooltip: 'Close',
+    ),
+    _ => handle(message, id),
+  },
 )''';
 
 const String _default = '''
@@ -151,9 +179,46 @@ class _ThreadDemoState extends State<ThreadDemo> {
             codeCopyTooltip: 'Copy code',
             copiedCodePart: _copiedPart,
             onCodeCopy: _copy,
+            messageMenu: widget.variant == 'menu' ? _menuFor : null,
+            onMessageMenuSelected: widget.variant == 'menu' ? _onMenu : null,
           ),
         ),
       ),
     );
+  }
+
+  List<FlowMenuEntry> _menuFor(FlowMessageData message) => [
+    const FlowMenuOption(id: 'copy', icon: Icons.copy_outlined, label: 'Copy'),
+    const FlowMenuOption(
+      id: 'select',
+      icon: Icons.text_fields,
+      label: 'Select text',
+    ),
+    if (message.role == FlowMessageRole.assistant)
+      const FlowMenuOption(
+        id: 'again',
+        icon: Icons.refresh,
+        label: 'Regenerate',
+      ),
+    const FlowMenuDivider(),
+    const FlowMenuOption(
+      id: 'delete',
+      icon: Icons.delete_outline,
+      label: 'Delete',
+    ),
+  ];
+
+  void _onMenu(FlowMessageData message, String id) {
+    if (id == 'select') {
+      showFlowTextSelection(
+        context: context,
+        text: message.plainText,
+        closeTooltip: 'Close',
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('$id · ${message.id}')));
   }
 }

@@ -429,6 +429,90 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  /// The context menu's entries: nothing while a turn is still coming
+  /// in, copy and delete for the user's own, the actions row's set for a
+  /// settled reply.
+  List<FlowMenuEntry> _menuFor(FlowMessageData message) {
+    if (message.status == FlowMessageStatus.pending ||
+        message.status == FlowMessageStatus.streaming) {
+      return const [];
+    }
+    final feedback = _feedback[message.id];
+    return [
+      const FlowMenuOption(
+        id: 'copy',
+        icon: Icons.copy_outlined,
+        label: 'Copy',
+      ),
+      const FlowMenuOption(
+        id: 'select',
+        icon: Icons.text_fields,
+        label: 'Select text',
+      ),
+      if (message.role == FlowMessageRole.assistant) ...[
+        FlowMenuOption(
+          id: 'up',
+          icon: Icons.thumb_up_outlined,
+          label: 'Good response',
+          selected: feedback == true,
+        ),
+        FlowMenuOption(
+          id: 'down',
+          icon: Icons.thumb_down_outlined,
+          label: 'Bad response',
+          selected: feedback == false,
+        ),
+        FlowMenuOption(
+          id: 'regenerate',
+          icon: Icons.refresh,
+          label: 'Regenerate',
+          enabled: !_generating && message.id == _messages.last.id,
+        ),
+      ],
+      const FlowMenuDivider(),
+      const FlowMenuOption(
+        id: 'delete',
+        icon: Icons.delete_outline,
+        label: 'Delete',
+      ),
+    ];
+  }
+
+  void _onMenu(FlowMessageData message, String id) {
+    switch (id) {
+      case 'copy':
+        _copy(message);
+      case 'select':
+        showFlowTextSelection(
+          context: context,
+          text: message.plainText,
+          closeTooltip: 'Close',
+        );
+      case 'up':
+        setState(() {
+          _feedback[message.id] == true
+              ? _feedback.remove(message.id)
+              : _feedback[message.id] = true;
+        });
+      case 'down':
+        setState(() {
+          _feedback[message.id] == false
+              ? _feedback.remove(message.id)
+              : _feedback[message.id] = false;
+        });
+      case 'regenerate':
+        _retry(message);
+      case 'delete':
+        setState(() {
+          _feedback.remove(message.id);
+          _messages = [
+            for (final m in _messages)
+              if (m.id != message.id) m,
+          ];
+        });
+    }
+  }
+
   /// Retry from the thread's error card: drop the failed reply, re-run.
   void _retry(FlowMessageData message) {
     if (_generating) return;
@@ -492,6 +576,10 @@ class _ChatScreenState extends State<ChatScreen> {
           // The footer slot keeps the default message and its wiring;
           // only the actions row is the host's.
           messageFooter: _actionsFor,
+          // The long-press menu: the same intents as the actions row,
+          // reachable from anywhere on the message, plus delete.
+          messageMenu: _menuFor,
+          onMessageMenuSelected: _onMenu,
         ),
         threadController: _scroll,
         jumpToLatestTooltip: 'Jump to latest',

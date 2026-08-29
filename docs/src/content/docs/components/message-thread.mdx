@@ -93,6 +93,55 @@ FlowMessage(
 )
 ```
 
+## Message menu
+
+The AI apps' long-press. `messageMenu` hands back the entries for a
+message — options and dividers like `FlowMenu.entries`, labels yours —
+and `onMessageMenuSelected` reports the chosen id with the message it was
+opened on. A long-press opens it with a haptic on touch and a right-click
+on pointer platforms: a sheet on phones, a popover at the pointer
+elsewhere, resolved by the theme's platform like the other menus. Return
+an empty list for a message that should have none, a turn still
+streaming, say. Long-presses inside a code block keep selecting text.
+
+```dart title="Copy, regenerate, delete"
+FlowThread(
+  messages: messages,
+  messageMenu: (message) => [
+    FlowMenuOption(id: 'copy', icon: Icons.copy_outlined, label: 'Copy'),
+    if (message.role == FlowMessageRole.assistant)
+      FlowMenuOption(id: 'again', icon: Icons.refresh, label: 'Regenerate'),
+    FlowMenuDivider(),
+    FlowMenuOption(id: 'delete', icon: Icons.delete_outline, label: 'Delete'),
+  ],
+  onMessageMenuSelected: (message, id) => handle(message, id),
+)
+```
+
+`FlowMessage` takes the same pair as `menuEntries` and `onMenuSelected`
+when used on its own.
+
+## Selecting text
+
+On pointer platforms the thread is a `SelectionArea` by default
+(`selectable`): drag across turns, copy with the platform shortcut. The
+messages' own gestures sit below it, so a right-click still opens the
+message menu. Phones can't have both, since there the long-press *is*
+the menu, so they select from it: `showFlowTextSelection` pushes a
+full-screen page of the message's `plainText` where a long-press selects
+a word and the platform's handles take over.
+
+```dart title="Select text from the menu"
+onMessageMenuSelected: (message, id) => switch (id) {
+  'select' => showFlowTextSelection(
+    context: context,
+    text: message.plainText,
+    closeTooltip: 'Close',
+  ),
+  _ => handle(message, id),
+},
+```
+
 ## Message parts
 
 Message content is typed parts, not strings: a sealed `FlowMessagePart`
