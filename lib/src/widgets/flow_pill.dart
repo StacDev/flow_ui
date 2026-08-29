@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_pill_style.dart';
 import '../theme/flow_theme.dart';
-import '../utils/flow_state_colors.dart';
 
 /// A removable pill showing an enabled tool or mode — "Research", "Web
 /// Search" — in the composer's action row, typically appended to
@@ -133,22 +132,22 @@ class _FlowPillState extends State<FlowPill> {
 
     // The glyph rests a step down in the secondary ink, the label in full
     // ink, and the X at the muted chrome level — lifting to full ink as
-    // the pill is hovered. Disabling fades each from its own rest.
+    // the pill is hovered. Disabled, all three take the disabled ink.
     final iconRest = style?.iconColor ?? colors.onSurfaceVariant;
-    final iconForeground = enabled ? iconRest : flowDisabledColor(iconRest);
+    final iconForeground = enabled ? iconRest : colors.onSurfaceDisabled;
     final labelForeground = enabled
         ? colors.onSurface
-        : flowDisabledColor(colors.onSurface);
+        : colors.onSurfaceDisabled;
     final removeRest = enabled
         ? (style?.removeColor ?? colors.onSurfaceMuted)
-        : flowDisabledColor(style?.removeColor ?? colors.onSurfaceMuted);
+        : colors.onSurfaceDisabled;
     final removeForeground = _hovered && enabled
         ? colors.onSurface
         : removeRest;
 
     final shape = RoundedRectangleBorder(
       borderRadius: widget.borderRadius ?? _radius,
-      side: BorderSide(color: style?.borderColor ?? colors.outlineVariant),
+      side: BorderSide(color: style?.borderColor ?? colors.outline),
     );
 
     // The X absorbs the end inset so the affordance reaches the pill's

@@ -4,7 +4,6 @@ import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
 import '../utils/flow_menu_sheet.dart';
-import '../utils/flow_state_colors.dart';
 
 /// One entry in a [FlowMenu]: an option or a divider.
 @immutable
@@ -174,10 +173,7 @@ class _FlowMenuState extends State<FlowMenu> {
                     color: entry.enabled
                         ? (style?.iconColor ??
                               context.flowColors.onSurfaceVariant)
-                        : flowDisabledColor(
-                            style?.iconColor ??
-                                context.flowColors.onSurfaceVariant,
-                          ),
+                        : context.flowColors.onSurfaceDisabled,
                   ),
                   const SizedBox(width: flowMenuIconGap),
                 ],
@@ -240,7 +236,7 @@ class _FlowMenuState extends State<FlowMenu> {
 
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(colors.onSurfaceVariant);
+      foreground = colors.onSurfaceDisabled;
     } else if (_hovered) {
       foreground = colors.onSurface;
     } else {

@@ -22,8 +22,8 @@ class FlowMessageStyle {
     this.attachmentCardHoverBorderColor,
   });
 
-  /// The user bubble's fill. Defaults to ink at 4%. A failed user turn
-  /// keeps the theme's `errorContainer` regardless.
+  /// The user bubble's fill. Defaults to `surfaceContainerLow`. A failed
+  /// user turn keeps the theme's `errorContainer` regardless.
   final Color? bubbleColor;
 
   /// The user bubble's ink. Defaults to `onSurface`. A failed user turn
@@ -36,11 +36,12 @@ class FlowMessageStyle {
   final Color? attachmentCardColor;
 
   /// The sent image tile's hairline at rest. Defaults to `outline`, the
-  /// same ink the pending strip's tiles carry.
+  /// faint hairline.
   final Color? attachmentCardBorderColor;
 
   /// The hairline while the pointer is over the tile. Defaults to
-  /// `outlineVariant`.
+  /// `outlineVariant`, the firm one — hover gains emphasis, as it does on
+  /// the composer and the suggestion rows.
   final Color? attachmentCardHoverBorderColor;
 
   /// A copy where [other]'s fields win over this style's.

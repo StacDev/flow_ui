@@ -4,7 +4,6 @@ import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
 import '../utils/flow_menu_sheet.dart';
-import '../utils/flow_state_colors.dart';
 
 /// One model choice in a [FlowModelSelector].
 @immutable
@@ -342,12 +341,10 @@ class _FlowModelSelectorState extends State<FlowModelSelector> {
 
     // The design's trigger inks: the model name at full strength, the
     // effort a step below it, and the caret at the effort's level.
-    final labelColor = enabled
-        ? colors.onSurface
-        : flowDisabledColor(colors.onSurface);
+    final labelColor = enabled ? colors.onSurface : colors.onSurfaceDisabled;
     final effortForeground = enabled
         ? colors.onSurfaceMuted
-        : flowDisabledColor(colors.onSurfaceMuted);
+        : colors.onSurfaceDisabled;
     final effort = _selectedEffort;
 
     return MenuAnchor(

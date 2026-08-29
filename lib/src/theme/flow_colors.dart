@@ -4,15 +4,18 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// Role names follow Material 3's [ColorScheme] (primary / secondary /
 /// tertiary / error groups, surface containers, outline, inverse), so a host
-/// can map an existing M3 scheme straight onto flow_ui. [onSurfaceMuted] is
-/// the one addition: the Flow design system draws content at three ink
-/// levels, and M3 only names two.
+/// can map an existing M3 scheme onto flow_ui — with one inversion: here
+/// [outline] is the *faint* hairline and [outlineVariant] the *firm* one,
+/// the reverse of M3's weights. Flow adds a third ink level,
+/// [onSurfaceMuted], [success] and [warning] groups beside [error], and
+/// a [shadow] role — the ink at 2%, alpha included.
 ///
-/// The presets come from the Flow UI design file. Two things about them are
-/// worth knowing before overriding one:
+/// The presets come from the Flow UI design file. Three things about them
+/// are worth knowing before overriding one:
 ///
 /// * **The ink ramp is translucent.** [onSurfaceVariant] (75%),
-///   [onSurfaceMuted] (50%), [outline] (14%) and [outlineVariant] (6%) are
+///   [onSurfaceMuted] (50%), [outline] (7%, 8% in dark),
+///   [outlineVariant] (12%) and [shadow] (2%) are
 ///   the foreground ink at an alpha, not resolved colors. The design uses the
 ///   same label and the same hairline on the page *and* on the raised card,
 ///   which only works if they composite.
@@ -21,6 +24,10 @@ import 'package:material_ui/material_ui.dart';
 ///   reads correctly on the page and on the raised card. Only [surface]
 ///   and [surfaceBright] — the grounds everything else sits on — are
 ///   opaque.
+/// * **Accent containers are washes of their accent.** Each `Container` is
+///   its accent at an alpha — 8% for primary, secondary and tertiary, 6%
+///   for error, success and warning — and each `onContainer` is the accent
+///   itself.
 @immutable
 class FlowColors {
   const FlowColors({
@@ -40,6 +47,14 @@ class FlowColors {
     required this.onError,
     required this.errorContainer,
     required this.onErrorContainer,
+    required this.success,
+    required this.onSuccess,
+    required this.successContainer,
+    required this.onSuccessContainer,
+    required this.warning,
+    required this.onWarning,
+    required this.warningContainer,
+    required this.onWarningContainer,
     required this.surface,
     required this.surfaceBright,
     required this.onSurface,
@@ -53,27 +68,27 @@ class FlowColors {
     required this.surfaceContainerHighest,
     required this.outline,
     required this.outlineVariant,
+    required this.shadow,
     required this.inverseSurface,
     required this.onInverseSurface,
     required this.inversePrimary,
   });
 
-  // Primary — brand / interactive accent. The design carries a single accent
-  // and uses it at the same value in both themes.
+  // Primary — brand / interactive accent: the rose, at the same value in
+  // both themes.
   final Color primary;
   final Color onPrimary;
   final Color primaryContainer;
   final Color onPrimaryContainer;
 
-  // Secondary — muted, supporting accent. Neutral here: the design's user
-  // bubble and its label are the ink family, not a second hue.
+  // Secondary — supporting accent: the hotter pink beside the rose;
+  // markdown links.
   final Color secondary;
   final Color onSecondary;
   final Color secondaryContainer;
   final Color onSecondaryContainer;
 
-  // Tertiary — contrasting complementary accent. Derived: the design names
-  // no third accent, so this is the deep end of the primary's hue.
+  // Tertiary — indigo, lifted to a blue in dark.
   final Color tertiary;
   final Color onTertiary;
   final Color tertiaryContainer;
@@ -84,6 +99,18 @@ class FlowColors {
   final Color onError;
   final Color errorContainer;
   final Color onErrorContainer;
+
+  // Success — completed, approved, confirmed.
+  final Color success;
+  final Color onSuccess;
+  final Color successContainer;
+  final Color onSuccessContainer;
+
+  // Warning — caution and pending attention.
+  final Color warning;
+  final Color onWarning;
+  final Color warningContainer;
+  final Color onWarningContainer;
 
   // Surface — backgrounds and the content on them.
 
@@ -111,13 +138,15 @@ class FlowColors {
   /// through the containers below.
   final Color surfaceContainerLowest;
 
-  /// Faintest fill — a suggestion row at rest.
+  /// Faintest fill — the user bubble, a bare attachment tile; a suggestion
+  /// row's hover.
   final Color surfaceContainerLow;
 
-  /// Resting fill — the user bubble, a selected row.
+  /// Resting fill — a selected row, the error card, inline code.
   final Color surfaceContainer;
 
-  /// Hover.
+  /// Deeper fill — behind a photo tile; the code block's copy affordance
+  /// on hover.
   final Color surfaceContainerHigh;
 
   /// Pressed, and the ground behind a failed attachment.
@@ -125,12 +154,19 @@ class FlowColors {
 
   // Outline — borders and separators.
 
-  /// Hairline around a raised card — 14% ink in light, 20% in dark; dark
-  /// hairlines need the extra step to hold the edge.
+  /// Faint hairline — 7% ink in light, 8% in dark: rules and table
+  /// dividers, a pill or code block at rest.
   final Color outline;
 
-  /// Fainter hairline: separators, a chip at rest.
+  /// Firm hairline — 12% ink in both themes: the edge of a tile, a menu
+  /// rule, the sheet's edge, a retry pill, the send disc at rest.
   final Color outlineVariant;
+
+  // Shadow — the ambient lift under a raised card, tile or disc.
+
+  /// The ink at 2%, alpha included: a component pairs it with its own blur
+  /// and no offset, so one value lifts or kills every shadow in the library.
+  final Color shadow;
 
   // Inverse — elements on the opposite brightness (snackbars, tooltips).
   final Color inverseSurface;
@@ -141,56 +177,74 @@ class FlowColors {
   static const FlowColors light = FlowColors(
     primary: Color(0xFFE071A7),
     onPrimary: Color(0xFFFFFFFF),
-    primaryContainer: Color(0xFFF6E9ED),
-    onPrimaryContainer: Color(0xFF8C3A67),
-    secondary: Color(0xFF525251),
+    primaryContainer: Color(0x14E071A7),
+    onPrimaryContainer: Color(0xFFE071A7),
+    secondary: Color(0xFFFF67B0),
     onSecondary: Color(0xFFFFFFFF),
-    secondaryContainer: Color(0xFFF0F0EE),
-    onSecondaryContainer: Color(0xFF1A1A19),
-    tertiary: Color(0xFFA8497B),
+    secondaryContainer: Color(0x14FF67B0),
+    onSecondaryContainer: Color(0xFFFF67B0),
+    tertiary: Color(0xFF3730A3),
     onTertiary: Color(0xFFFFFFFF),
-    tertiaryContainer: Color(0xFFF3E4EC),
-    onTertiaryContainer: Color(0xFF5C2743),
-    error: Color(0xFFDC2626),
+    tertiaryContainer: Color(0x143730A3),
+    onTertiaryContainer: Color(0xFF3730A3),
+    error: Color(0xFFC14A4A),
     onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFFFEE2E2),
-    onErrorContainer: Color(0xFF7F1D1D),
+    errorContainer: Color(0x0FC14A4A),
+    onErrorContainer: Color(0xFFC14A4A),
+    success: Color(0xFF249655),
+    onSuccess: Color(0xFFFFFFFF),
+    successContainer: Color(0x0F249655),
+    onSuccessContainer: Color(0xFF249655),
+    warning: Color(0xFFEE8D34),
+    onWarning: Color(0xFFFFFFFF),
+    warningContainer: Color(0x0FEE8D34),
+    onWarningContainer: Color(0xFFEE8D34),
     surface: Color(0xFFF9F9F7),
     surfaceBright: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF1A1A19),
-    onSurfaceVariant: Color(0xBF1A1A19),
-    onSurfaceMuted: Color(0x801A1A19),
-    onSurfaceDisabled: Color(0x4D1A1A19),
-    surfaceContainerLowest: Color(0x051A1A19),
-    surfaceContainerLow: Color(0x0A1A1A19),
-    surfaceContainer: Color(0x0F1A1A19),
-    surfaceContainerHigh: Color(0x141A1A19),
-    surfaceContainerHighest: Color(0x1A1A1A19),
-    outline: Color(0x241A1A19),
-    outlineVariant: Color(0x0F1A1A19),
-    inverseSurface: Color(0xFF1E1E1E),
-    onInverseSurface: Color(0xFFF9F9F7),
-    inversePrimary: Color(0xFFE071A7),
+    onSurface: Color(0xFF111110),
+    onSurfaceVariant: Color(0xBF111110),
+    onSurfaceMuted: Color(0x80111110),
+    onSurfaceDisabled: Color(0x4D111110),
+    surfaceContainerLowest: Color(0x05111110),
+    surfaceContainerLow: Color(0x0A111110),
+    surfaceContainer: Color(0x0F111110),
+    surfaceContainerHigh: Color(0x14111110),
+    surfaceContainerHighest: Color(0x1A111110),
+    outline: Color(0x12111110),
+    outlineVariant: Color(0x1F111110),
+    shadow: Color(0x05111110),
+    inverseSurface: Color(0xFF111110),
+    onInverseSurface: Color(0xFFFFFFFF),
+    inversePrimary: Color(0xFFF5E9EE),
   );
 
-  /// Dark preset: the same palette with the ink inverted to white.
+  /// Dark preset: white ink on `#171717`, the accents lifted to hold on it
+  /// and carrying the raised card's `#1E1E1E` as their `on` ink.
   static const FlowColors dark = FlowColors(
     primary: Color(0xFFE071A7),
     onPrimary: Color(0xFF1E1E1E),
-    primaryContainer: Color(0xFF432B37),
-    onPrimaryContainer: Color(0xFFF5CFE1),
-    secondary: Color(0xFFC5C5C5),
+    primaryContainer: Color(0x14E071A7),
+    onPrimaryContainer: Color(0xFFE071A7),
+    secondary: Color(0xFFFF67B0),
     onSecondary: Color(0xFF1E1E1E),
-    secondaryContainer: Color(0xFF202020),
-    onSecondaryContainer: Color(0xFFFFFFFF),
-    tertiary: Color(0xFFDE9CC0),
-    onTertiary: Color(0xFF3D1F2E),
-    tertiaryContainer: Color(0xFF4E3040),
-    onTertiaryContainer: Color(0xFFF6DCE9),
-    error: Color(0xFFEF4444),
-    onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFF7F1D1D),
-    onErrorContainer: Color(0xFFFECACA),
+    secondaryContainer: Color(0x14FF67B0),
+    onSecondaryContainer: Color(0xFFFF67B0),
+    tertiary: Color(0xFF77A8FD),
+    onTertiary: Color(0xFF1E1E1E),
+    tertiaryContainer: Color(0x1477A8FD),
+    onTertiaryContainer: Color(0xFF77A8FD),
+    error: Color(0xFFFF6565),
+    onError: Color(0xFF1E1E1E),
+    errorContainer: Color(0x0FFF6565),
+    onErrorContainer: Color(0xFFFF6565),
+    success: Color(0xFF50D59D),
+    onSuccess: Color(0xFF1E1E1E),
+    successContainer: Color(0x0F50D59D),
+    onSuccessContainer: Color(0xFF50D59D),
+    warning: Color(0xFFFF9A3E),
+    onWarning: Color(0xFF1E1E1E),
+    warningContainer: Color(0x0FFF9A3E),
+    onWarningContainer: Color(0xFFFF9A3E),
     surface: Color(0xFF171717),
     surfaceBright: Color(0xFF1E1E1E),
     onSurface: Color(0xFFFFFFFF),
@@ -202,11 +256,12 @@ class FlowColors {
     surfaceContainer: Color(0x0FFFFFFF),
     surfaceContainerHigh: Color(0x14FFFFFF),
     surfaceContainerHighest: Color(0x1AFFFFFF),
-    outline: Color(0x33FFFFFF),
-    outlineVariant: Color(0x0FFFFFFF),
-    inverseSurface: Color(0xFFF9F9F7),
-    onInverseSurface: Color(0xFF1A1A19),
-    inversePrimary: Color(0xFF8C3A67),
+    outline: Color(0x14FFFFFF),
+    outlineVariant: Color(0x1FFFFFFF),
+    shadow: Color(0x05FFFFFF),
+    inverseSurface: Color(0xFFFFFFFF),
+    onInverseSurface: Color(0xFF1E1E1E),
+    inversePrimary: Color(0xFF2B2025),
   );
 
   FlowColors copyWith({
@@ -226,6 +281,14 @@ class FlowColors {
     Color? onError,
     Color? errorContainer,
     Color? onErrorContainer,
+    Color? success,
+    Color? onSuccess,
+    Color? successContainer,
+    Color? onSuccessContainer,
+    Color? warning,
+    Color? onWarning,
+    Color? warningContainer,
+    Color? onWarningContainer,
     Color? surface,
     Color? surfaceBright,
     Color? onSurface,
@@ -239,6 +302,7 @@ class FlowColors {
     Color? surfaceContainerHighest,
     Color? outline,
     Color? outlineVariant,
+    Color? shadow,
     Color? inverseSurface,
     Color? onInverseSurface,
     Color? inversePrimary,
@@ -260,6 +324,14 @@ class FlowColors {
       onError: onError ?? this.onError,
       errorContainer: errorContainer ?? this.errorContainer,
       onErrorContainer: onErrorContainer ?? this.onErrorContainer,
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      successContainer: successContainer ?? this.successContainer,
+      onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
+      warning: warning ?? this.warning,
+      onWarning: onWarning ?? this.onWarning,
+      warningContainer: warningContainer ?? this.warningContainer,
+      onWarningContainer: onWarningContainer ?? this.onWarningContainer,
       surface: surface ?? this.surface,
       surfaceBright: surfaceBright ?? this.surfaceBright,
       onSurface: onSurface ?? this.onSurface,
@@ -275,6 +347,7 @@ class FlowColors {
           surfaceContainerHighest ?? this.surfaceContainerHighest,
       outline: outline ?? this.outline,
       outlineVariant: outlineVariant ?? this.outlineVariant,
+      shadow: shadow ?? this.shadow,
       inverseSurface: inverseSurface ?? this.inverseSurface,
       onInverseSurface: onInverseSurface ?? this.onInverseSurface,
       inversePrimary: inversePrimary ?? this.inversePrimary,
@@ -328,6 +401,30 @@ class FlowColors {
         other.onErrorContainer,
         t,
       )!,
+      success: Color.lerp(success, other.success, t)!,
+      onSuccess: Color.lerp(onSuccess, other.onSuccess, t)!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
+      onSuccessContainer: Color.lerp(
+        onSuccessContainer,
+        other.onSuccessContainer,
+        t,
+      )!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      onWarning: Color.lerp(onWarning, other.onWarning, t)!,
+      warningContainer: Color.lerp(
+        warningContainer,
+        other.warningContainer,
+        t,
+      )!,
+      onWarningContainer: Color.lerp(
+        onWarningContainer,
+        other.onWarningContainer,
+        t,
+      )!,
       surface: Color.lerp(surface, other.surface, t)!,
       surfaceBright: Color.lerp(surfaceBright, other.surfaceBright, t)!,
       onSurface: Color.lerp(onSurface, other.onSurface, t)!,
@@ -369,6 +466,7 @@ class FlowColors {
       )!,
       outline: Color.lerp(outline, other.outline, t)!,
       outlineVariant: Color.lerp(outlineVariant, other.outlineVariant, t)!,
+      shadow: Color.lerp(shadow, other.shadow, t)!,
       inverseSurface: Color.lerp(inverseSurface, other.inverseSurface, t)!,
       onInverseSurface: Color.lerp(
         onInverseSurface,

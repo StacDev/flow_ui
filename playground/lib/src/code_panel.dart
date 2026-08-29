@@ -98,7 +98,7 @@ class _CodePanelState extends State<CodePanel> {
       decoration: BoxDecoration(
         color: colors.surfaceBright,
         border: widget.open
-            ? Border(left: BorderSide(color: colors.outlineVariant))
+            ? Border(left: BorderSide(color: colors.outline))
             : const Border(),
       ),
       // Fixed-width inner pane so the content doesn't reflow while the

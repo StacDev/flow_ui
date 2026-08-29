@@ -26,7 +26,7 @@ class Sidebar extends StatelessWidget {
       width: 214,
       decoration: BoxDecoration(
         color: colors.surfaceBright,
-        border: Border(right: BorderSide(color: colors.outlineVariant)),
+        border: Border(right: BorderSide(color: colors.outline)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,7 +57,7 @@ class Sidebar extends StatelessWidget {
           if (kIsWeb)
             Container(
               decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: colors.outlineVariant)),
+                border: Border(top: BorderSide(color: colors.outline)),
               ),
               padding: const EdgeInsets.fromLTRB(10, 9, 10, 13),
               child: Column(

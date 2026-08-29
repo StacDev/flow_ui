@@ -23,7 +23,7 @@ class FlowErrorStateStyle {
     this.messageStyle,
   });
 
-  /// The card's fill. Defaults to ink at 2%.
+  /// The card's fill. Defaults to `surfaceContainer`.
   final Color? backgroundColor;
 
   /// The card's hairline. Defaults to `error` at 40%.
@@ -32,7 +32,8 @@ class FlowErrorStateStyle {
   /// The error glyph. Defaults to `error`.
   final Color? glyphColor;
 
-  /// Merged over the title's default style.
+  /// Merged over the title's default `bodyMediumEmphasised` +
+  /// `onSurface` style.
   final TextStyle? titleStyle;
 
   /// Merged over the message's default `bodyMedium` + `onSurfaceVariant`

@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_message_actions_style.dart';
 import '../theme/flow_theme.dart';
-import '../utils/flow_state_colors.dart';
 
 /// One action in a [FlowMessageActions] row.
 ///
@@ -84,14 +83,14 @@ class FlowMessageActions extends StatelessWidget {
   const FlowMessageActions({
     super.key,
     required this.actions,
-    this.iconSize = 16,
+    this.iconSize = 15,
     this.padding,
     this.style,
   });
 
-  /// The design's strip packs the frames a hairline apart — a component
-  /// spec value, not a scale step.
-  static const double _gap = 2;
+  /// The design's strip sets the frames 4 apart — a component spec
+  /// value, not a scale step.
+  static const double _gap = 4;
 
   /// Rendered in order.
   final List<FlowMessageAction> actions;
@@ -110,8 +109,7 @@ class FlowMessageActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final effective =
         context.flowTheme.messageActionsStyle?.merge(style) ?? style;
-    // The design's action strip: glyphs on 20px frames, packed a hairline
-    // step apart.
+    // The design's action strip: 15px glyphs on 20px frames, 4 apart.
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -146,8 +144,9 @@ class _ActionButton extends StatefulWidget {
 }
 
 class _ActionButtonState extends State<_ActionButton> {
-  /// Breathing room around the glyph inside its 20px frame.
-  static const double _framePadding = 2;
+  /// The spec frame: a host's `iconSize` resizes the glyph inside it,
+  /// never the strip — an oversize glyph overflows.
+  static const double _frameSize = 20;
 
   /// The frame's corner, tighter than any shared step reads at this size.
   static const BorderRadius _frameRadius = BorderRadius.all(Radius.circular(2));
@@ -166,7 +165,7 @@ class _ActionButtonState extends State<_ActionButton> {
     final rest = style?.iconColor ?? colors.onSurfaceMuted;
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(rest);
+      foreground = colors.onSurfaceDisabled;
     } else if (action.selected) {
       foreground = style?.selectedColor ?? colors.primary;
     } else if (_hovered) {
@@ -183,15 +182,17 @@ class _ActionButtonState extends State<_ActionButton> {
         onTap: action.onPressed,
         onHover: enabled ? (value) => setState(() => _hovered = value) : null,
         borderRadius: _frameRadius,
-        hoverColor: style?.hoverColor ?? colors.surfaceContainerHigh,
-        child: Padding(
-          padding: const EdgeInsets.all(_framePadding),
-          child: Icon(
-            action.selected
-                ? (action.selectedIcon ?? action.icon)
-                : action.icon,
-            size: widget.iconSize,
-            color: foreground,
+        hoverColor: style?.hoverColor ?? colors.surfaceContainer,
+        child: SizedBox.square(
+          dimension: _frameSize,
+          child: Center(
+            child: Icon(
+              action.selected
+                  ? (action.selectedIcon ?? action.icon)
+                  : action.icon,
+              size: widget.iconSize,
+              color: foreground,
+            ),
           ),
         ),
       ),

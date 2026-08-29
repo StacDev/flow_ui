@@ -59,7 +59,7 @@ Future<void> showFlowMenuSheet({
     backgroundColor: flowMenuBackground(context, style),
     barrierColor: style?.barrierColor,
     // The sheet is the raised card again: top corners at the card radius,
-    // the same firm hairline the anchored menu carries.
+    // edged in the palette's firm hairline.
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: style?.sheetRadius ?? _sheetCornerRadius,

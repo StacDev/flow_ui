@@ -65,7 +65,7 @@ FlowPill(
 A pill without `onRemove` is a static status token in full ink — not a
 disabled control, which is a deliberate difference from the suggestion
 row, where a null tap reads disabled. Disabling here is explicit:
-`enabled: false` fades the ink and inerts the targets, keeping the fill
+`enabled: false` sets the ink to `onSurfaceDisabled` and inerts the targets, keeping the fill
 and hairline in place:
 
 <FlowDemo demo="pill" variant="static" height={180} title="Static, and disabled" />

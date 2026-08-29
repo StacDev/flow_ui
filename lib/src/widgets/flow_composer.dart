@@ -12,7 +12,6 @@ import '../utils/flow_circle_button.dart';
 import '../utils/flow_clipboard_paste.dart';
 import '../utils/flow_file_picker.dart';
 import '../utils/flow_gradient_outline.dart';
-import '../utils/flow_state_colors.dart';
 import 'flow_attachment_group.dart';
 import 'flow_drop_target.dart';
 import 'flow_pill.dart';
@@ -332,9 +331,7 @@ class _FlowComposerState extends State<FlowComposer> {
   static const double _attachIconSize = 18;
   static const double _attachPadding = 7;
 
-  /// The card's lift, as an alpha over the ink — the attachment tiles'
-  /// idiom at the composer's tighter blur.
-  static const double _shadowOpacity = 0.02;
+  /// The card's lift: the theme's shadow ink at the composer's tighter blur.
   static const double _shadowBlur = 12;
 
   /// The drop wash over the card's ground — light enough that the field's
@@ -548,7 +545,7 @@ class _FlowComposerState extends State<FlowComposer> {
           side: BorderSide(
             color: active
                 ? (style?.sendBackgroundColor ?? colors.primary)
-                : colors.outline,
+                : colors.outlineVariant,
           ),
         ),
       ),
@@ -567,7 +564,7 @@ class _FlowComposerState extends State<FlowComposer> {
     final rest = style?.attachIconColor ?? colors.onSurfaceVariant;
     final Color foreground;
     if (!enabled) {
-      foreground = flowDisabledColor(rest);
+      foreground = colors.onSurfaceDisabled;
     } else if (_attachHovered) {
       foreground = colors.onSurface;
     } else {
@@ -722,10 +719,7 @@ class _FlowComposerState extends State<FlowComposer> {
                   : ground,
               borderRadius: radius,
               boxShadow: [
-                BoxShadow(
-                  color: colors.onSurface.withValues(alpha: _shadowOpacity),
-                  blurRadius: _shadowBlur,
-                ),
+                BoxShadow(color: colors.shadow, blurRadius: _shadowBlur),
               ],
             ),
             padding: widget.padding ?? _cardPadding,
@@ -770,6 +764,9 @@ class _FlowComposerState extends State<FlowComposer> {
                         enabled: widget.enabled,
                         minLines: 1,
                         maxLines: widget.maxLines,
+                        // The design's compressed composer: body face on
+                        // the 1.3 control line, so the empty card stands
+                        // at 116.
                         style: typography.bodyLarge
                             .copyWith(height: 1.3, color: colors.onSurface)
                             .merge(style?.textStyle),
