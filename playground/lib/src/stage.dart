@@ -38,7 +38,7 @@ class Stage extends StatelessWidget {
     if (device == StageDevice.web) {
       // A full-surface demo (the chat) owns the whole pane; object demos
       // sit centred on the canvas.
-      content = demoFillsStage(item)
+      content = demoFillsStage(item, variant: variant)
           ? demo
           : Center(
               child: SingleChildScrollView(
@@ -64,7 +64,7 @@ class Stage extends StatelessWidget {
               maxHeight: constraints.maxHeight - 108,
               // On the phone screen, object demos centre with room to
               // breathe; full surfaces keep filling it.
-              child: demoFillsStage(item)
+              child: demoFillsStage(item, variant: variant)
                   ? demo
                   : Center(
                       child: SingleChildScrollView(

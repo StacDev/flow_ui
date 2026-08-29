@@ -24,6 +24,10 @@ class FlowComposerStyle {
     this.sendForegroundColor,
     this.textStyle,
     this.hintColor,
+    this.attachIconColor,
+    this.dropHighlightColor,
+    this.errorBackgroundColor,
+    this.errorForegroundColor,
   });
 
   /// The card's fill. Defaults to `surfaceBright`, the raised card's
@@ -48,6 +52,23 @@ class FlowComposerStyle {
   /// The placeholder hint. Defaults to `onSurfaceMuted`.
   final Color? hintColor;
 
+  /// The attach button's resting glyph. Defaults to `onSurfaceVariant`;
+  /// hover still lifts it to `onSurface` regardless.
+  final Color? attachIconColor;
+
+  /// What the card lights up in while a file is dragged over it, when
+  /// the composer owns the drop (`onAttachmentsDropped`). Defaults to
+  /// `primary`: it paints the hairline solid and washes the card's fill
+  /// at 6%. Unused when nothing is wired to drop.
+  final Color? dropHighlightColor;
+
+  /// The error banner's wash and its hairline — the tab above the card
+  /// that `errorMessage` raises. Defaults to `errorContainer`.
+  final Color? errorBackgroundColor;
+
+  /// The error banner's glyph and text. Defaults to `onErrorContainer`.
+  final Color? errorForegroundColor;
+
   /// A copy where [other]'s fields win over this style's.
   FlowComposerStyle merge(FlowComposerStyle? other) {
     if (other == null) return this;
@@ -58,6 +79,10 @@ class FlowComposerStyle {
       sendForegroundColor: other.sendForegroundColor ?? sendForegroundColor,
       textStyle: other.textStyle ?? textStyle,
       hintColor: other.hintColor ?? hintColor,
+      attachIconColor: other.attachIconColor ?? attachIconColor,
+      dropHighlightColor: other.dropHighlightColor ?? dropHighlightColor,
+      errorBackgroundColor: other.errorBackgroundColor ?? errorBackgroundColor,
+      errorForegroundColor: other.errorForegroundColor ?? errorForegroundColor,
     );
   }
 
@@ -80,6 +105,22 @@ class FlowComposerStyle {
       ),
       textStyle: TextStyle.lerp(textStyle, other.textStyle, t),
       hintColor: Color.lerp(hintColor, other.hintColor, t),
+      attachIconColor: Color.lerp(attachIconColor, other.attachIconColor, t),
+      dropHighlightColor: Color.lerp(
+        dropHighlightColor,
+        other.dropHighlightColor,
+        t,
+      ),
+      errorBackgroundColor: Color.lerp(
+        errorBackgroundColor,
+        other.errorBackgroundColor,
+        t,
+      ),
+      errorForegroundColor: Color.lerp(
+        errorForegroundColor,
+        other.errorForegroundColor,
+        t,
+      ),
     );
   }
 
@@ -92,7 +133,11 @@ class FlowComposerStyle {
         other.sendBackgroundColor == sendBackgroundColor &&
         other.sendForegroundColor == sendForegroundColor &&
         other.textStyle == textStyle &&
-        other.hintColor == hintColor;
+        other.hintColor == hintColor &&
+        other.attachIconColor == attachIconColor &&
+        other.dropHighlightColor == dropHighlightColor &&
+        other.errorBackgroundColor == errorBackgroundColor &&
+        other.errorForegroundColor == errorForegroundColor;
   }
 
   @override
@@ -103,5 +148,9 @@ class FlowComposerStyle {
     sendForegroundColor,
     textStyle,
     hintColor,
+    attachIconColor,
+    dropHighlightColor,
+    errorBackgroundColor,
+    errorForegroundColor,
   );
 }

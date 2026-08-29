@@ -115,7 +115,7 @@ class _EmbedScreen extends StatelessWidget {
     final demo = demoFor(item, variant: request.variant);
     // Mirrors the stage's hosting: a full-surface demo owns the pane,
     // object demos centre on the surface with room to scroll.
-    final body = demoFillsStage(item)
+    final body = demoFillsStage(item, variant: request.variant)
         ? demo
         : Center(
             child: SingleChildScrollView(

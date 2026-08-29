@@ -33,7 +33,7 @@
 
 | Component | What it does |
 |---|---|
-| [`FlowChatView`](https://flowui.stac.dev/components/chat-view) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters) and a jump-to-latest button |
+| [`FlowChatView`](https://flowui.stac.dev/components/chat-view) | The full chat surface: bounded thread over a composer, centred at a readable width, with a zero state (greeting, lifted composer, starters), a jump-to-latest button, and drag-and-drop with a washed invitation overlay (web) |
 | [`FlowThread`](https://flowui.stac.dev/components/message-thread) | Scrollable conversation — reads from the top, anchoring to the newest message once it outgrows the viewport |
 | [`FlowMessage`](https://flowui.stac.dev/components/message-thread) | One turn — ink-wash user bubble, plain assistant, error bubble, typed content parts |
 | [`FlowStreamingText`](https://flowui.stac.dev/components/streaming-text) | Animated text reveal while a reply arrives |
@@ -43,12 +43,13 @@
 | [`FlowMarkdown`](https://flowui.stac.dev/components/markdown) | Assistant prose typeset from a built-in parser — headings, emphasis, lists, quotes, tables, links, and fences composing the code block; assistant turns render it by default and it streams gracefully |
 | [`FlowErrorState`](https://flowui.stac.dev/components/error-state) | Failure card with a host-written message and retry pill — failed turns render it automatically |
 | [`FlowMessageActions`](https://flowui.stac.dev/components/message-actions) | Copy / regenerate / edit / feedback row under a message |
-| [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, and leading/trailing action slots |
+| [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, the platform's file dialog (`showFlowAttachmentPicker` from your own menu, or a built-in attach button), image paste and card-scoped drop (web), and leading/trailing action slots |
 | [`FlowMenu`](https://flowui.stac.dev/components/menu) | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |
 | [`FlowModelSelector`](https://flowui.stac.dev/components/model-selector) | Model picker with effort and overflow submenus, sheet on phones |
 | [`FlowPill`](https://flowui.stac.dev/components/pill) | Removable pill for an enabled tool or mode in the composer's action row — label auto-drops on phones |
 | [`FlowAttachmentGroup`](https://flowui.stac.dev/components/attachments) | Image and file tiles with a type pill |
 | [`FlowAttachmentPreview`](https://flowui.stac.dev/components/attachments) | Full-screen image viewer with zoom and paging |
+| [`FlowDropTarget`](https://flowui.stac.dev/components/chat-view) | File-drop detection for any subtree (web) — decoded attachments out, hover state for your own treatment |
 | [`FlowSuggestion`](https://flowui.stac.dev/components/suggestions) / [`FlowSuggestionGroup`](https://flowui.stac.dev/components/suggestions) | Prompt starters — plain or outlined; scroll, wrap, or column layouts |
 | [`FlowGreeting`](https://flowui.stac.dev/components/greeting) | Zero-state headline |
 | [`FlowTheme`](https://flowui.stac.dev/theming) | Design tokens (colors and typography) as a `ThemeExtension`, with light and dark presets |
@@ -245,7 +246,10 @@ FlowThread(
 ```
 
 Attachments carry an `ImageProvider`, so network, file, memory, and asset
-images all work — the package never loads anything itself:
+images all work. Build them yourself, or let the package hand them to you
+ready-made — `showFlowAttachmentPicker` opens the platform's file dialog
+from your own menu (or the composer's built-in button does), and on the
+web the surface takes drops and the field takes pasted images:
 
 ```dart
 FlowMessageData(

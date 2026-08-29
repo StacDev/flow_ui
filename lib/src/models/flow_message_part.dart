@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show ImageProvider;
 
 import 'flow_attachment.dart';
 
@@ -20,10 +21,64 @@ class FlowTextPart extends FlowMessagePart {
 }
 
 /// Image attachments, rendered as a group of thumbnail tiles.
+///
+/// Parts render in the order given, so a sent turn's layout is however
+/// the host composed the list. The convention is attachments above and
+/// the caption under them — put this part ahead of the [FlowTextPart]:
+///
+/// ```dart
+/// FlowMessageData(
+///   id: 'm1',
+///   role: FlowMessageRole.user,
+///   parts: [
+///     FlowAttachmentPart(sent),
+///     FlowTextPart('What is the peak on the left?'),
+///   ],
+/// )
+/// ```
 class FlowAttachmentPart extends FlowMessagePart {
   const FlowAttachmentPart(this.attachments);
 
   final List<FlowAttachment> attachments;
+}
+
+/// A large-format image in a turn — a generated picture presented as
+/// content, unlike [FlowAttachmentPart]'s thumbnail tiles.
+///
+/// A null [image] renders the generating placeholder: a shimmering block
+/// at [aspectRatio]. Generation is data, as everywhere — the host
+/// re-renders with [image] set when the picture arrives, and the block
+/// becomes it.
+class FlowImagePart extends FlowMessagePart {
+  const FlowImagePart({
+    this.image,
+    this.aspectRatio = 1,
+    this.semanticLabel,
+    this.bytes,
+    this.mimeType,
+  }) : assert(aspectRatio > 0, 'aspectRatio must be positive');
+
+  /// The picture; any `ImageProvider`. Null while still generating.
+  final ImageProvider? image;
+
+  /// Width over height — shapes the placeholder and the picture's frame
+  /// alike, so nothing jumps when the image lands. Defaults to square.
+  final double aspectRatio;
+
+  /// Host-written description, read to assistive tech for both the
+  /// placeholder and the picture.
+  final String? semanticLabel;
+
+  /// The picture as the host received it, and its type — the same pair
+  /// [FlowAttachment] carries, and for the same reason: a generated image
+  /// is only half rendered if the conversation cannot go on about it, and
+  /// reaching back through the [ImageProvider] for the bytes is not an
+  /// API. Nothing in flow_ui reads either; a host that has them should
+  /// pass them so the next turn can send the picture back.
+  final Uint8List? bytes;
+
+  /// The type of [bytes], e.g. 'image/png'.
+  final String? mimeType;
 }
 
 /// Fenced code, rendered by a `FlowCodeBlock`.

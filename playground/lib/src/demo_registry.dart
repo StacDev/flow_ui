@@ -68,10 +68,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('pair', 'Conversation'),
       ('ai', 'Assistant'),
       ('user', 'User'),
+      ('image', 'With image'),
     ],
     PlaygroundItem.streamingMessage => const [
       ('animated', 'Animated'),
       ('static', 'Static'),
+      ('image', 'Image'),
     ],
     PlaygroundItem.codeBlock => const [
       ('dart', 'Dart'),
@@ -103,6 +105,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
     PlaygroundItem.attachments => const [
       ('composer', 'In composer'),
       ('tiles', 'Tiles only'),
+      ('drop', 'Drop files'),
     ],
     PlaygroundItem.thread => const [
       ('default', 'Default'),
@@ -135,8 +138,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
 }
 
 /// Whether the demo takes the whole stage pane (a full surface) rather
-/// than sitting as an object on the canvas.
-bool demoFillsStage(PlaygroundItem item) => item == PlaygroundItem.fullChat;
+/// than sitting as an object on the canvas. The chat always does; the
+/// attachments stage does for its drop variant, which is a chat surface
+/// with the treatment pinned up.
+bool demoFillsStage(PlaygroundItem item, {String? variant}) =>
+    item == PlaygroundItem.fullChat ||
+    (item == PlaygroundItem.attachments && variant == 'drop');
 
 /// The code panel's snippet for [item] — the real flow_ui usage, not the
 /// demo's plumbing. [variant] is the stage's active pill, so the code
@@ -195,12 +202,22 @@ FlowChatView(
     isStreaming: generating,
     onSend: send,
     onStop: stop,
+    attachments: pending,
+    onRemoveAttachment: removePending,
+    attachmentOptions: attachmentOptions,
+    onAttachmentRejected: showRejection,
     leadingActions: [
       FlowMenu(
         icon: PhosphorIconsRegular.plus,
         sheetTitle: 'Add to Chat',
-        entries: [...],
-        onSelected: toggleTool,
+        entries: [
+          FlowMenuOption(id: 'files', label: 'Add Files or Photos'),
+          ...,
+        ],
+        // 'Add Files or Photos' opens the package's own dialog:
+        // showFlowAttachmentPicker(options: ..., onRejected: ...)
+        // hands back decoded attachments to add to `pending`.
+        onSelected: (id) => id == 'files' ? pickFiles() : toggleTool(id),
       ),
       if (researchOn)
         FlowPill(

@@ -5,6 +5,7 @@ sidebar:
   order: 6
 ---
 
+import { Aside } from '@astrojs/starlight/components';
 import FlowDemo from '../../../components/FlowDemo.astro';
 
 `FlowComposer` is the raised input card: a multiline field that grows with
@@ -74,8 +75,250 @@ On hardware keyboards **Enter sends** and **Shift+Enter** inserts a
 newline — `submitOnEnter: false` opts out; mobile soft keyboards keep
 their newline key and send from the button. The field grows with the draft
 to `maxLines` (6) and scrolls beyond it, and `clearOnSend` empties it
-after a successful send. `onSend` receives the trimmed text and never
-fires empty.
+after a successful send. `onSend` receives the trimmed text, and fires
+empty only when something is attached — a picture with no caption is
+still a message.
+
+## Attach
+
+Three ways to open the platform's file dialog, and they differ only in
+who owns the control. All three hand you decoded `FlowAttachment`s;
+holding them is still yours — add them to state and pass them back
+through `attachments`.
+
+**From your own control** — the design's "+" menu — call
+`showFlowAttachmentPicker`. It resolves empty when the dialog is
+dismissed or everything was refused, and it never throws: a dialog that
+cannot open comes back through `onRejected` under an empty name. Call it
+synchronously from the tap — inside `onSelected`, not a post-frame
+callback — because on the web the dialog needs the gesture's user
+activation.
+
+```dart title="The design's route: 'Add Files or Photos' in the + menu"
+FlowComposer(
+  onSend: send,
+  attachments: pending,
+  onRemoveAttachment: removePending,
+  leadingActions: [
+    FlowMenu(
+      icon: Icons.add,
+      entries: const [FlowMenuOption(id: 'files', label: 'Add Files or Photos')],
+      onSelected: (id) {
+        if (id == 'files') {
+          showFlowAttachmentPicker(options: options, onRejected: reject)
+              .then((picked) => setState(() => pending.addAll(picked)));
+        }
+      },
+    ),
+  ],
+)
+```
+
+**From a built-in button** — `onAttachmentsPicked` renders an attach
+button first in the action row and opens the same dialog from it:
+
+```dart title="The package renders the button and opens the dialog"
+FlowComposer(
+  onSend: send,
+  onAttachmentsPicked: (picked) => setState(() => pending.addAll(picked)),
+  attachTooltip: 'Attach images',
+  attachments: pending,
+  onRemoveAttachment: removePending,
+)
+```
+
+**Picking yourself** — `onAttach` renders that same button as a plain
+intent, for a photo sheet, a camera, a menu of sources, anything the
+package has no business knowing about; whatever you gather goes back
+through `attachments` the same way.
+
+```dart title="Or own the picking"
+FlowComposer(
+  onSend: send,
+  onAttach: () async {
+    final file = await openGallerySheet();   // your picker
+    if (file != null) setState(() => pending.add(toAttachment(file)));
+  },
+  attachTooltip: 'Attach files',
+  attachments: pending,
+  onRemoveAttachment: removePending,
+)
+```
+
+Passing neither of the last two leaves the button off. Passing both
+asserts — one button cannot have two owners.
+
+### Turning it off
+
+Presence of a callback says the feature is *wired*; `attachmentsEnabled`
+says it is *available*. Set it false — for a plan tier, a model that
+takes no images, a thread that has closed — and every way in stops at
+once without unwiring anything: no attach button, no paste, no keyboard
+media, and a drop on the card is swallowed — the card stays a drop zone
+as far as the browser is concerned, showing the refusing cursor, so a
+file dropped on it never navigates the tab away. `FlowChatView` has the same flag for the
+surface's drop, so a host flips both together. Attachments already
+pending stay in the strip and can still be removed, and a `+` menu entry
+that calls `showFlowAttachmentPicker` is yours to hide alongside it.
+
+```dart title="Attachments wired, but off for this plan"
+FlowComposer(
+  attachmentsEnabled: plan.allowsUploads,
+  onAttachmentsPicked: addAttachments,
+  onAttachmentsPasted: addAttachments,
+  ...
+)
+```
+
+### What is accepted
+
+`attachmentOptions` says what the dialog offers and how what comes back
+is decoded. It defaults to images, with the full-screen preview capped at
+2048px and no file-size limit — a cap is policy, and policy is yours.
+Tiles need no cap of their own: each one decodes to its own size and the
+display's pixel ratio.
+
+```dart
+const FlowAttachmentOptions(
+  allowMultiple: true,
+  maxFileSize: 10 * 1024 * 1024,
+  accept: [FlowAttachmentTypeGroup.images],
+)
+```
+
+A `FlowAttachmentTypeGroup` names its types four ways — `extensions`,
+`mimeTypes`, `uniformTypeIdentifiers`, `webWildCards` — because the
+platforms disagree and each one throws when the family it reads is empty:
+Apple platforms want the type identifiers, Windows wants the extensions,
+Linux and Android take either extensions or MIME types, the web wants the
+wildcards. Fill in all four for a group that works everywhere, the way
+`FlowAttachmentTypeGroup.images` does.
+
+Anything the options refuse is reported to `onAttachmentRejected` with
+the file's name and a `FlowAttachmentRejection` — `tooLarge`,
+`unsupportedType`, `unreadable`. flow_ui ships no copy for these, so
+saying so is yours, and so is the wording.
+
+### Saying so
+
+Whatever the refusal — or any other error the composer should own up to
+— `errorMessage` raises the design's banner: a tab in the error wash
+tucked behind the card, with a warning glyph and your line beside it,
+wrapping from the glyph when long. The words are yours, and so is
+clearing it: it stays until the cross at its trailing edge fires
+`onErrorDismiss` and you set it back to null — or until you clear it on
+your own terms, in which case leave `onErrorDismiss` null and no cross
+is drawn.
+
+```dart title="The error banner"
+FlowComposer(
+  onSend: send,
+  onAttachmentRejected: (name, reason) => setState(() {
+    rejection = '$name is not an image';
+  }),
+  errorMessage: rejection,
+  onErrorDismiss: () => setState(() => rejection = null),
+  errorDismissTooltip: 'Dismiss',
+)
+```
+
+`errorIcon` swaps the drawn diamond for an icon of your own set;
+`FlowComposerStyle.errorBackgroundColor` and `errorForegroundColor`
+recolour the tab.
+
+<Aside type="caution" title="macOS needs an entitlement">
+The built-in picker uses `file_selector`, which on macOS needs
+`com.apple.security.files.user-selected.read-only` in **both**
+`macos/Runner/DebugProfile.entitlements` and
+`macos/Runner/Release.entitlements`. Without it the dialog opens onto
+nothing and no error is raised. Release is the one people forget.
+</Aside>
+
+On iOS and Android the dialog is the system **file** browser, not the
+photo gallery — that is the cost of staying on flutter.dev packages, and
+exactly the case `onAttach` exists for.
+
+### Drop on the card
+
+`onAttachmentsDropped` makes the card itself a drop target. While a file
+is over it the card lights up — the hairline goes solid and the fill
+takes a 6% wash, both in `FlowComposerStyle.dropHighlightColor`
+(`primary` by default) — and letting go hands back the same decoded
+`FlowAttachment`s the picker does, held to the same `attachmentOptions`.
+
+```dart title="Drop scoped to the composer"
+FlowComposer(
+  onSend: send,
+  onAttachmentsPicked: (picked) => setState(() => pending.addAll(picked)),
+  onAttachmentsDropped: (dropped) => setState(() => pending.addAll(dropped)),
+  attachments: pending,
+  onRemoveAttachment: removePending,
+)
+```
+
+There are **two places to wire a drop**, and they differ only in scope:
+
+| | Catches a drop | Treatment |
+|---|---|---|
+| `FlowComposer.onAttachmentsDropped` | over the composer card | the card lights up |
+| [`FlowChatView.onAttachmentsDropped`](/components/chat-view/#drag-and-drop) | anywhere on the surface | full-bleed tint and invitation card |
+
+The surface is the forgiving target and what most chat apps want; the
+card is for an app where the rest of the page has its own meaning for a
+dropped file. Wiring **both** is fine — the innermost target under the
+pointer wins, so the card takes drops aimed at it and the surface takes
+the rest.
+
+<Aside type="caution" title="Drop is web-only">
+The Flutter SDK implements OS file drop on the **web** and nowhere else.
+Off the web `onAttachmentsDropped` compiles and never fires, and a debug
+build prints a line saying so once — which is why the attach button, not
+the drop, is what carries this feature on every platform.
+</Aside>
+
+### Paste
+
+`onAttachmentsPasted` takes an image pasted into the field — Ctrl+V or
+Cmd+V — and hands it back decoded, held to the same `attachmentOptions`
+as everything else.
+
+```dart title="Three ways in, one handler"
+FlowComposer(
+  onSend: send,
+  onAttachmentsPicked: addAttachments,
+  onAttachmentsDropped: addAttachments,
+  onAttachmentsPasted: addAttachments,
+  attachments: pending,
+  onRemoveAttachment: removePending,
+)
+```
+
+It fires only while the field has focus, so a paste meant for another
+input on the page is left alone, and only when the clipboard actually
+holds a file — pasting text stays the field's own business, untouched.
+When the clipboard holds **both**, which is what copying a file in Finder
+or Explorer produces, the file is attached and the filename that would
+otherwise have landed in the draft is suppressed.
+
+<Aside type="caution" title="Paste is web-only too">
+Flutter's `Clipboard` reads plain text and nothing else, on every
+platform — `ClipboardData` has a single `text` variant, and its own
+documentation says images may come "in the future". There is nothing for
+the package to read off the web, so `onAttachmentsPasted` never fires
+there and a debug build says so once.
+
+Android is the near miss: media pasted through the **keyboard** rather
+than the system clipboard arrives on `onContentInserted` below, so wiring
+both covers more ground than either alone.
+</Aside>
+
+### Keyboard media
+
+On Android, `onContentInserted` receives media the software keyboard
+inserts — a GIF picked inside Gboard — as mime type plus bytes, the one
+media path the Flutter SDK covers without a plugin. It is IME insertion
+only, not clipboard paste; the bytes arrive with no file behind them, so
+build the `FlowAttachment` yourself and add it to `attachments`.
 
 ## Attachments
 
@@ -89,7 +332,11 @@ page shows the full flow, from the "+" menu to the sent message.
 global tokens: `backgroundColor` (the raised card's fill), `outlineColor`
 (flattens the gradient hairline to one solid color in every state),
 `sendBackgroundColor` and `sendForegroundColor` (the send/stop disc),
-`textStyle` (merged over the field's default), and `hintColor`. Install
+`textStyle` (merged over the field's default), `hintColor`,
+`attachIconColor` (the attach button's resting glyph),
+`dropHighlightColor` (what the card lights up in under a drag), and
+`errorBackgroundColor` / `errorForegroundColor` (the error banner's wash
+and ink). Install
 one on `FlowTheme.composerStyle` for every composer; the widget's `style`
 wins field by field.
 
@@ -104,6 +351,22 @@ wins field by field.
 - `attachments`, `onRemoveAttachment`, `removeAttachmentTooltip` — the
   pending row. `onAttachmentTap` *replaces* the built-in full-screen
   preview; `previewCloseTooltip` labels the preview's close button.
+- `showFlowAttachmentPicker` — opens the platform's dialog from your own
+  control and hands back decoded attachments; never throws.
+  `onAttachmentsPicked` — renders a built-in attach button that opens the
+  same dialog. `onAttach` — renders that button and leaves the picking to
+  you; the two are mutually exclusive, and neither one leaves the button
+  off.
+  `attachmentOptions` + `onAttachmentRejected` — what is accepted, and
+  what wasn't. `attachTooltip` names the button.
+  `onAttachmentsDropped` — drag-and-drop scoped to the card (web only);
+  `FlowChatView` has the whole-surface version.
+  `onAttachmentsPasted` — images pasted into the field (web only).
+  `attachmentsEnabled` — turns every way in off at once, handlers left
+  wired.
+  `errorMessage` + `errorIcon` — the error banner above the card;
+  `onErrorDismiss` + `errorDismissTooltip` draw its cross.
+  `onContentInserted` — Android keyboard media insertion.
 - `controller`, `focusNode`, `placeholder` — the field itself; pass your
   own `TextEditingController` to prefill or clear the draft.
   `placeholder` defaults to 'How can I help you today?' — the one string
