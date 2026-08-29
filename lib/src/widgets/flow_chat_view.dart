@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../models/flow_attachment.dart';
+import '../models/flow_attachment_options.dart';
+import '../styles/flow_chat_view_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
+import 'flow_drop_target.dart';
 import 'flow_thread.dart';
 
 /// How far back through the history the thread must be before the
@@ -56,6 +61,15 @@ class FlowChatView extends StatefulWidget {
     this.emptyComposerWidth = 640,
     this.emptySuggestionsWidth = 480,
     this.padding,
+    this.onAttachmentsDropped,
+    this.attachmentOptions = const FlowAttachmentOptions(),
+    this.onAttachmentRejected,
+    this.attachmentsEnabled = true,
+    this.dropActive = false,
+    this.dropLabel,
+    this.dropIcon,
+    this.dropIconSize,
+    this.style,
   }) : assert(
          thread != null ||
              composer != null ||
@@ -149,6 +163,82 @@ class FlowChatView extends StatefulWidget {
   /// is used as given on both, safe area included.
   final EdgeInsetsGeometry? padding;
 
+  /// Turns on the surface's own drag-and-drop and reports what lands on
+  /// it, read and decoded per [attachmentOptions]. Null leaves drops to
+  /// the browser, which is what makes the detection opt-in.
+  ///
+  /// The wider of the two places a drop can be wired: anywhere on the
+  /// surface counts, including over the thread, which is the forgiving
+  /// target most chat apps want. `FlowComposer.onAttachmentsDropped`
+  /// scopes the same thing to the composer card instead, for an app
+  /// where the rest of the page has its own meaning for a dropped file.
+  /// Wiring both is fine — the innermost target under the pointer wins,
+  /// so the card takes its own drops and this takes the rest.
+  ///
+  /// **The web only.** The Flutter SDK implements OS file drop nowhere
+  /// else — not in the framework, not in the engine, on any target — so
+  /// on desktop and mobile this callback compiles and never fires, and a
+  /// debug build says so once. That is what [dropActive] stays writable
+  /// for: a desktop host brings its own detection, flips that flag, and
+  /// feeds the files back through the composer's `attachments`. The two
+  /// coexist — the treatment shows while either is up.
+  ///
+  /// The attachments are the host's to hold, like the picker's: add them
+  /// to state and pass them to `FlowComposer.attachments`.
+  final ValueChanged<List<FlowAttachment>>? onAttachmentsDropped;
+
+  /// What a dropped file must be, and how it is decoded. Defaults to
+  /// images at sane decode caps. A drop never passes a dialog's filter,
+  /// so [FlowAttachmentOptions.accept] is enforced on arrival — anything
+  /// outside it goes to [onAttachmentRejected].
+  final FlowAttachmentOptions attachmentOptions;
+
+  /// A dropped file that [attachmentOptions] refused, with its name and
+  /// the reason. The package ships no copy for these; saying so is the
+  /// host's.
+  final void Function(String name, FlowAttachmentRejection reason)?
+  onAttachmentRejected;
+
+  /// Whether the surface takes drops right now. [onAttachmentsDropped]
+  /// says the feature is wired; this says it is available — false leaves
+  /// the handler in place and stops it firing, with no treatment raised.
+  /// The surface stays a drop zone as far as the browser is concerned, so
+  /// a file dropped on it is swallowed rather than navigating the tab.
+  /// The composer has the same switch for its own ways in; a host turns
+  /// both off together. [dropActive] is unaffected, being the host's own
+  /// override.
+  final bool attachmentsEnabled;
+
+  /// Raises the drop treatment by hand: a full-bleed tint over the
+  /// surface with a centred card inviting the drop. Pure feedback, never
+  /// a hit target.
+  ///
+  /// [onAttachmentsDropped] raises the same treatment on its own, so this
+  /// is for the hosts it can't serve — desktop, where the SDK has no file
+  /// drop and detection comes from a plugin whose enter/leave events flip
+  /// this flag. It is an override, not a switch: the treatment is up
+  /// while this is true *or* a drag is over the surface, and hosts that
+  /// were driving it before keep working untouched. Colors come from the
+  /// theme tokens.
+  final bool dropActive;
+
+  /// Host-localized invitation under the drop glyph, e.g. 'Drop files to
+  /// add to chat'. Null draws the glyph alone.
+  final String? dropLabel;
+
+  /// The drop glyph. Defaults to an upload arrow
+  /// (`Icons.file_upload_outlined`); its colour is
+  /// [FlowChatViewStyle.dropIconColor].
+  final IconData? dropIcon;
+
+  /// The drop glyph's size. Defaults to the design's 48.
+  final double? dropIconSize;
+
+  /// Per-instance restyling of the drop treatment, merged over
+  /// [FlowTheme.chatViewStyle]'s fields; nulls fall through to the theme
+  /// tokens.
+  final FlowChatViewStyle? style;
+
   @override
   State<FlowChatView> createState() => _FlowChatViewState();
 }
@@ -164,6 +254,23 @@ class _FlowChatViewState extends State<FlowChatView> {
   static const double _bottomInsetWide = 40;
   static const double _bottomInsetCompact = 24;
   static const double _jumpInset = 12;
+
+  /// The drop treatment: a vertical wash over the page, with the glyph
+  /// and the invitation sitting straight on it — no card, so the whole
+  /// surface reads as the target rather than a panel within it. The
+  /// design's gradient runs from `surfaceBright` at 40% to `surface` at
+  /// 80%, top to bottom, so the conversation stays legible through it
+  /// without competing with the label — which sits on
+  /// `titleSmallEmphasised`, a quiet one step above body — over the
+  /// design's 12 blur of the page beneath. Revealed on the jump button's
+  /// 150ms.
+  static const double _dropWashTopOpacity = 0.40;
+  static const double _dropWashBottomOpacity = 0.80;
+  static const double _dropBlurSigma = 12;
+  static const double _dropGlyphSize = 48;
+  static const double _dropGlyphGap = 16;
+  static const IconData _dropIcon = Icons.file_upload_outlined;
+  static const Duration _dropReveal = Duration(milliseconds: 150);
   static const double _composerGap = 8;
 
   /// The jump button's lift: the composer's shadow, so the disc and the
@@ -181,6 +288,11 @@ class _FlowChatViewState extends State<FlowChatView> {
 
   bool _showJump = false;
   Timer? _jumpDebounce;
+
+  /// Whether the package's own detection has a file drag over the
+  /// surface. Ors with [FlowChatView.dropActive] rather than replacing
+  /// it, so a host driving the flag by hand keeps its treatment.
+  bool _dropHover = false;
 
   @override
   void initState() {
@@ -256,6 +368,29 @@ class _FlowChatViewState extends State<FlowChatView> {
     // covers the home indicator.
     final safeBottom = MediaQuery.paddingOf(context).bottom;
 
+    // Outside the SafeArea, so the drop rectangle is the whole surface —
+    // the treatment is full-bleed and the target should match it. A plain
+    // pass-through off the web, where it registers nothing.
+    return FlowDropTarget(
+      onDropped: widget.onAttachmentsDropped,
+      enabled: widget.attachmentsEnabled,
+      onHoverChanged: _handleDropHover,
+      attachmentOptions: widget.attachmentOptions,
+      onAttachmentRejected: widget.onAttachmentRejected,
+      child: _buildSurface(context, safeBottom),
+    );
+  }
+
+  /// The effective style: the widget's over the theme's, tokens beneath.
+  FlowChatViewStyle? _styleOf(BuildContext context) =>
+      context.flowTheme.chatViewStyle?.merge(widget.style) ?? widget.style;
+
+  void _handleDropHover(bool hovering) {
+    if (_dropHover == hovering) return;
+    setState(() => _dropHover = hovering);
+  }
+
+  Widget _buildSurface(BuildContext context, double safeBottom) {
     return GestureDetector(
       // Taps that reach the surface itself — dead space, the thread, a
       // settled message — dismiss the keyboard, the chat convention.
@@ -273,36 +408,135 @@ class _FlowChatViewState extends State<FlowChatView> {
           FocusManager.instance.primaryFocus?.unfocus();
         }
       },
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < _compactBreakpoint;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (widget.header != null) widget.header!,
-                if (widget.empty && !compact)
-                  // The wide zero state: the composer leaves the bottom edge
-                  // and the whole cluster centres itself instead.
-                  Expanded(child: _emptyCentre(constraints.maxWidth))
-                else ...[
-                  Expanded(
-                    child: widget.empty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: _sideInset,
-                              ),
-                              child: widget.greeting,
-                            ),
-                          )
-                        : _threadArea(context),
-                  ),
-                  ..._composerZone(compact, safeBottom),
-                ],
-              ],
-            );
-          },
+      // The drop treatment layers over everything, full-bleed while the
+      // chrome stays inside the SafeArea — the attachment preview's rule.
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < _compactBreakpoint;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.header != null) widget.header!,
+                    if (widget.empty && !compact)
+                      // The wide zero state: the composer leaves the bottom edge
+                      // and the whole cluster centres itself instead.
+                      Expanded(child: _emptyCentre(constraints.maxWidth))
+                    else ...[
+                      Expanded(
+                        child: widget.empty
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: _sideInset,
+                                  ),
+                                  child: widget.greeting,
+                                ),
+                              )
+                            : _threadArea(context),
+                      ),
+                      ..._composerZone(compact, safeBottom),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ),
+          Positioned.fill(child: _dropOverlay(context)),
+        ],
+      ),
+    );
+  }
+
+  /// The drop treatment: a tint over the whole surface and a centred
+  /// card inviting the drop. Always mounted so the reveal animates both
+  /// ways, always ignoring the pointer — it is feedback, not a target —
+  /// and out of the semantics tree until active, where the card
+  /// announces as a live region.
+  Widget _dropOverlay(BuildContext context) {
+    final active = widget.dropActive || _dropHover;
+
+    // Driven by a tween rather than an AnimatedOpacity so the treatment
+    // can leave the tree entirely once it is hidden. A BackdropFilter
+    // repaints the whole viewport for as long as it exists, and a
+    // conversation nobody is dragging over should pay nothing for a
+    // feature it is not using.
+    return IgnorePointer(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(end: active ? 1 : 0),
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : _dropReveal,
+        builder: (context, t, child) {
+          if (t == 0) return const SizedBox.shrink();
+          return Opacity(opacity: t, child: child);
+        },
+        child: ExcludeSemantics(
+          excluding: !active,
+          child: _dropTreatment(context),
+        ),
+      ),
+    );
+  }
+
+  /// The blur, the wash over it, and the invitation on top of both.
+  Widget _dropTreatment(BuildContext context) {
+    final colors = context.flowColors;
+    final style = _styleOf(context);
+    final label = widget.dropLabel;
+
+    final gradient =
+        style?.dropGradient ??
+        LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            colors.surfaceBright.withValues(alpha: _dropWashTopOpacity),
+            colors.surface.withValues(alpha: _dropWashBottomOpacity),
+          ],
+        );
+
+    // ClipRect bounds the filter to the overlay, as the preview's does.
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: _dropBlurSigma,
+          sigmaY: _dropBlurSigma,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(gradient: gradient),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _sideInset),
+              child: Semantics(
+                liveRegion: true,
+                container: true,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.dropIcon ?? _dropIcon,
+                      size: widget.dropIconSize ?? _dropGlyphSize,
+                      color: style?.dropIconColor ?? colors.onSurface,
+                    ),
+                    if (label != null) ...[
+                      const SizedBox(height: _dropGlyphGap),
+                      Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: context.flowTypography.titleSmallEmphasised
+                            .copyWith(color: colors.onSurface)
+                            .merge(style?.dropLabelStyle),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -4,8 +4,26 @@ import 'package:material_ui/material_ui.dart';
 String messageSnippet([String? variant]) => switch (variant) {
   'ai' => _assistant,
   'user' => _user,
+  'image' => _image,
   _ => _pair,
 };
+
+const String _image = '''
+// A sent image lifts out of the bubble into a card above it: the file,
+// then what was said about it. Parts render in order, so the attachment
+// part goes first. A picture with no caption draws no bubble at all.
+FlowMessage(
+  FlowMessageData(
+    id: 'u1',
+    role: FlowMessageRole.user,
+    parts: [
+      FlowAttachmentPart([
+        FlowAttachment(id: 'a1', thumbnail: picked, label: 'sunset.png'),
+      ]),
+      FlowTextPart('Which font is used in this image?'),
+    ],
+  ),
+)''';
 
 const String _user = '''
 // The user turn: an ink-wash bubble, trailing-aligned.
@@ -112,7 +130,25 @@ class _MessageDemoState extends State<MessageDemo> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (variant != 'ai')
+            if (variant == 'image')
+              FlowMessage(
+                const FlowMessageData(
+                  id: 'u1',
+                  role: FlowMessageRole.user,
+                  parts: [
+                    FlowAttachmentPart([
+                      FlowAttachment(
+                        id: 'a1',
+                        thumbnail: AssetImage('assets/demo/generated.png'),
+                        label: 'sunset.png',
+                      ),
+                    ]),
+                    FlowTextPart('Which font is used in this image?'),
+                  ],
+                ),
+                previewCloseTooltip: 'Close',
+              )
+            else if (variant != 'ai')
               FlowMessage(
                 FlowMessageData.text(
                   id: 'u1',
@@ -121,7 +157,7 @@ class _MessageDemoState extends State<MessageDemo> {
                 ),
               ),
             if (variant == 'pair') const SizedBox(height: 26),
-            if (variant != 'user')
+            if (variant != 'user' && variant != 'image')
               FlowMessage(
                 const FlowMessageData(
                   id: 'a1',

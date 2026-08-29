@@ -47,6 +47,17 @@ class _FullChatDemoState extends State<FullChatDemo> {
   String _effortId = 'extra';
   int _nextId = 0;
 
+  /// Picked and dropped images waiting to be sent. The package decodes
+  /// them; holding them is still the host's job.
+  final List<FlowAttachment> _pending = [];
+  String? _rejection;
+
+  /// One cap for every way in — the menu's dialog, a drop, a paste — so
+  /// a file gets the same answer whichever it takes.
+  static const FlowAttachmentOptions _attachmentOptions = FlowAttachmentOptions(
+    maxFileSize: 10 * 1024 * 1024,
+  );
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -55,13 +66,55 @@ class _FullChatDemoState extends State<FullChatDemo> {
     super.dispose();
   }
 
+  void _addAttachments(List<FlowAttachment> attachments) {
+    setState(() {
+      _rejection = null;
+      _pending.addAll(attachments);
+    });
+  }
+
+  /// 'Add Files or Photos' in the "+" menu: the package's own dialog,
+  /// opened from the host's control. Called synchronously from the
+  /// menu's onSelected so the web keeps the tap's user activation.
+  Future<void> _pickFiles() async {
+    final picked = await showFlowAttachmentPicker(
+      options: _attachmentOptions,
+      onRejected: _reject,
+    );
+    if (!mounted || picked.isEmpty) return;
+    _addAttachments(picked);
+  }
+
+  /// The package has no copy for a refusal, by design — this is the
+  /// host's wording, on the composer's error banner until its cross clears it.
+  void _reject(String name, FlowAttachmentRejection reason) {
+    final why = switch (reason) {
+      FlowAttachmentRejection.tooLarge => 'is larger than 10 MB',
+      FlowAttachmentRejection.unsupportedType => 'is not an image',
+      FlowAttachmentRejection.unreadable => 'could not be read',
+    };
+    setState(() => _rejection = '$name $why');
+  }
+
   void _send(String text) {
     _timer?.cancel();
     final id = 'sent${_nextId++}';
+    final sent = List.of(_pending);
     setState(() {
+      _pending.clear();
+      _rejection = null;
       _messages = [
         ..._messages,
-        FlowMessageData.text(id: id, role: FlowMessageRole.user, text: text),
+        FlowMessageData(
+          id: id,
+          role: FlowMessageRole.user,
+          parts: [
+            // Attachments above, caption below — parts render in order,
+            // so this list is the layout.
+            if (sent.isNotEmpty) FlowAttachmentPart(sent),
+            if (text.isNotEmpty) FlowTextPart(text),
+          ],
+        ),
         FlowMessageData(
           id: '$id-reply',
           role: FlowMessageRole.assistant,
@@ -116,6 +169,13 @@ class _FullChatDemoState extends State<FullChatDemo> {
   @override
   Widget build(BuildContext context) {
     return FlowChatView(
+      // Real drag-and-drop — the playground runs on the web, the one
+      // platform the SDK gives file drop. The pinned treatment lives on
+      // the Attachments stage.
+      onAttachmentsDropped: _addAttachments,
+      onAttachmentRejected: _reject,
+      attachmentOptions: _attachmentOptions,
+      dropLabel: 'Drop files to add to chat',
       empty: _messages.isEmpty,
       greeting: const FlowGreeting(
         icon: PhosphorIconsRegular.sunHorizon,
@@ -145,6 +205,18 @@ class _FullChatDemoState extends State<FullChatDemo> {
         isStreaming: _generating,
         onSend: _send,
         onStop: _stop,
+        // Picking goes through the "+" menu below; paste lands here.
+        onAttachmentsPasted: _addAttachments,
+        onAttachmentRejected: _reject,
+        attachmentOptions: _attachmentOptions,
+        errorMessage: _rejection,
+        onErrorDismiss: () => setState(() => _rejection = null),
+        errorDismissTooltip: 'Dismiss',
+        attachments: List.of(_pending),
+        removeAttachmentTooltip: 'Remove',
+        previewCloseTooltip: 'Close',
+        onRemoveAttachment: (id) =>
+            setState(() => _pending.removeWhere((a) => a.id == id)),
         leadingActions: [
           FlowMenu(
             icon: PhosphorIconsRegular.plus,
@@ -182,10 +254,13 @@ class _FullChatDemoState extends State<FullChatDemo> {
               ),
             ],
             onSelected: (id) {
-              if (id == 'research') {
-                setState(() => _researchOn = !_researchOn);
-              } else if (id == 'web-search') {
-                setState(() => _webSearchOn = !_webSearchOn);
+              switch (id) {
+                case 'files':
+                  unawaited(_pickFiles());
+                case 'research':
+                  setState(() => _researchOn = !_researchOn);
+                case 'web-search':
+                  setState(() => _webSearchOn = !_webSearchOn);
               }
             },
           ),

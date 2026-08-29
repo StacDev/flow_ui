@@ -8,7 +8,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 Two hard constraints shape everything here:
 
-- **No third-party dependencies.** `dependencies:` in `pubspec.yaml` contains only the Flutter SDK and Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev. Nothing outside that. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
+- **Two dependencies beyond flutter.dev, each argued.** `dependencies:` in `pubspec.yaml` holds the Flutter SDK, Flutter's own first-party packages — `material_ui` (Material's home since Flutter 3.47) and its transitive set, all published by flutter.dev — plus `file_selector` (flutter.dev), the plugin behind the composer's attach button, and `google_fonts` (material.io), which fetches Google Sans and Google Sans Code at runtime. No font files ship. Nothing else, and adding one is a decision rather than a convenience: it must not force configuration on hosts that never touch the feature (this is why `file_selector` and not `image_picker`, which writes a permission, a FileProvider and a Play-services entry into every host's Android manifest), and the PR has to argue it. What the two we have do ask for is documented: the fonts need `android.permission.INTERNET` and macOS `com.apple.security.network.client`; the picker needs macOS `com.apple.security.files.user-selected.read-only`. Dev dependencies (`flutter_test`, `flutter_lints`) are fine.
 - **Nothing model-facing.** Components render state passed in and report intent out through callbacks. No prompts, schemas, provider/network calls, or any LLM awareness — that belongs to the layers built on top.
 
 The theme, the conversation components (message, thread, streaming text, actions, loading), the composer and its menus, attachments with their preview, suggestions, and the chat surface are implemented; the roadmap below tracks the rest. Message content is modeled as typed parts (`lib/src/models/`) — sealed `FlowMessagePart` subtypes rendered by `FlowMessage`, with `FlowCustomPart` + `FlowCustomPartBuilder` as the extension seam for host-injected content.
@@ -79,7 +79,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 12 | Message composer | | ✅ |
 | 13 | Model selector | effort & overflow submenus; sheet on phones | ✅ |
 | 14 | Menu | icon-trigger menu: groups, submenus, toggles; sheet on phones | ✅ |
-| 15 | Attachments | images and files, type pill; videos pending | ✅ |
+| 15 | Attachments | images and files, type pill; built-in picker and web file drop; videos pending | ✅ |
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |
 | 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |

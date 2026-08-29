@@ -10,16 +10,30 @@ import '../utils/flow_circle_button.dart';
 
 const Duration _transition = Duration(milliseconds: 180);
 
-/// Frosted glass over the page: enough tint to carry the chrome, enough
-/// blur to push what shows through into the background without erasing it.
-const double _backdropBlur = 16;
-const double _backdropOpacity = 0.72;
+/// Frosted glass over the page — the chat view's drop treatment, so the
+/// two frosts read as one: a 12 blur under a vertical wash from
+/// `surfaceBright` at 40% to `surface` at 80%, enough tint to carry the
+/// chrome without erasing what shows through.
+const double _backdropBlur = 12;
+const double _backdropTopOpacity = 0.40;
+const double _backdropBottomOpacity = 0.80;
 
 /// The design's viewer metrics: the image inset from the screen edge, and
 /// the top bar's inset and internal gap.
 const EdgeInsets _pagePadding = EdgeInsets.all(24);
 const double _barInset = 12;
 const double _barGap = 12;
+
+/// The close disc, on the jump button's idiom: an opaque ground, a firm
+/// hairline and the theme's shadow, so it reads over any picture — a
+/// translucent wash vanished over a dark photo in the light theme and a
+/// light one in the dark. 34 on pointer platforms (18 glyph + 8), 44 on
+/// touch (20 + 12), the platform taken from the theme like the composer's.
+const double _closeIconSize = 18;
+const double _closePadding = 8;
+const double _closeTouchIconSize = 20;
+const double _closeTouchPadding = 12;
+const double _closeShadowBlur = 12;
 
 /// One filter for the whole animation: a [BackdropFilter] repaints the entire
 /// viewport whenever its filter changes, so the fade animates the tint only.
@@ -95,8 +109,9 @@ Future<void> showFlowAttachmentPreview({
 /// A full-screen look at one attachment, with the rest of its group a swipe
 /// away, over a frosted view of the page beneath.
 ///
-/// Each image is zoomable and pannable; on a hardware keyboard Escape closes
-/// and the arrow keys page. Usually reached through
+/// Each image is zoomable and pannable. A tap on the frosted space around
+/// the picture closes the viewer, as the close button does; on a hardware
+/// keyboard Escape closes and the arrow keys page. Usually reached through
 /// [showFlowAttachmentPreview] rather than built directly.
 class FlowAttachmentPreview extends StatefulWidget {
   FlowAttachmentPreview({
@@ -214,8 +229,21 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
                     opacity: routeAnimation.drive(
                       CurveTween(curve: Curves.easeOut),
                     ),
-                    child: ColoredBox(
-                      color: colors.surface.withValues(alpha: _backdropOpacity),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            colors.surfaceBright.withValues(
+                              alpha: _backdropTopOpacity,
+                            ),
+                            colors.surface.withValues(
+                              alpha: _backdropBottomOpacity,
+                            ),
+                          ],
+                        ),
+                      ),
                       child: const SizedBox.expand(),
                     ),
                   ),
@@ -245,6 +273,7 @@ class _FlowAttachmentPreviewState extends State<FlowAttachmentPreview> {
                           attachment: widget.attachments[index],
                           padding: _pagePadding,
                           onZoomChanged: _setZoomed,
+                          onDismiss: _close,
                         ),
                       ),
                     ),
@@ -299,11 +328,15 @@ class _ZoomablePage extends StatefulWidget {
     required this.attachment,
     required this.padding,
     required this.onZoomChanged,
+    required this.onDismiss,
   });
 
   final FlowAttachment attachment;
   final EdgeInsets padding;
   final ValueChanged<bool> onZoomChanged;
+
+  /// A tap that lands on the frosted space rather than the picture.
+  final VoidCallback onDismiss;
 
   @override
   State<_ZoomablePage> createState() => _ZoomablePageState();
@@ -343,24 +376,43 @@ class _ZoomablePageState extends State<_ZoomablePage> {
     // part of the transformed content, so zooming to 5x would blow a 24dp
     // gutter up to 120dp and widen the dead band at the pan extremes.
     final image = widget.attachment.previewImage;
-    return Padding(
-      padding: widget.padding,
-      child: InteractiveViewer(
-        transformationController: _transform,
-        minScale: 1,
-        maxScale: 5,
-        // An attachment with no image of its own can't be opened from its own
-        // tile, but paging can still land on one from a neighbour.
-        child: image == null
-            ? const FlowAttachmentError(iconSize: 48, filled: false)
-            : Image(
-                image: image,
-                fit: BoxFit.contain,
-                errorBuilder: flowAttachmentErrorBuilder(
-                  iconSize: 48,
-                  filled: false,
+    // Two tap targets, one inside the other, and the arena hands a tap to
+    // the innermost: on the picture it lands on the absorbing detector
+    // and nothing happens; anywhere else — the frosted space, the gutter
+    // outside the viewer — it reaches the outer one and closes. Drags and
+    // pinches are the viewer's and the pager's as before, since a tap
+    // recognizer only wins a pointer that never moved.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onDismiss,
+      child: Padding(
+        padding: widget.padding,
+        child: InteractiveViewer(
+          transformationController: _transform,
+          minScale: 1,
+          maxScale: 5,
+          // An attachment with no image of its own can't be opened from
+          // its own tile, but paging can still land on one from a
+          // neighbour.
+          child: image == null
+              ? const FlowAttachmentError(iconSize: 48, filled: false)
+              // Centred so the image's box is the picture's painted
+              // bounds rather than the whole viewport — under a tight
+              // constraint it would fill the page and swallow every tap.
+              : Center(
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Image(
+                      image: image,
+                      fit: BoxFit.contain,
+                      errorBuilder: flowAttachmentErrorBuilder(
+                        iconSize: 48,
+                        filled: false,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -385,6 +437,9 @@ class _TopBar extends StatelessWidget {
     final typography = context.flowTypography;
     final label = caption;
     final count = counter;
+    final platform = Theme.of(context).platform;
+    final touch =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.android;
 
     return Row(
       children: [
@@ -418,12 +473,32 @@ class _TopBar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: _barGap),
-        FlowCircleButton(
-          icon: Icons.close,
-          background: colors.surfaceContainerHigh,
-          foreground: colors.onSurface,
-          tooltip: closeTooltip,
-          onTap: onClose,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: colors.shadow, blurRadius: _closeShadowBlur),
+            ],
+          ),
+          // The hairline rides in front of the disc — behind it, the
+          // opaque circle would paint over the stroke. outlineVariant, the
+          // firm one, because the disc sits over host pixels.
+          foregroundDecoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.outlineVariant),
+          ),
+          child: FlowCircleButton(
+            icon: Icons.close,
+            // surfaceBright rather than the jump button's surface: the
+            // backdrop here is surface at 72%, and a surface disc would
+            // sink into it.
+            background: colors.surfaceBright,
+            foreground: colors.onSurface,
+            iconSize: touch ? _closeTouchIconSize : _closeIconSize,
+            padding: touch ? _closeTouchPadding : _closePadding,
+            tooltip: closeTooltip,
+            onTap: onClose,
+          ),
         ),
       ],
     );

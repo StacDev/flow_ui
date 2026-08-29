@@ -5,6 +5,7 @@ sidebar:
   order: 12
 ---
 
+import { Aside } from '@astrojs/starlight/components';
 import FlowDemo from '../../../components/FlowDemo.astro';
 
 `FlowChatView` is the chat surface assembled: a bounded thread above a
@@ -54,6 +55,116 @@ Pass the **same** `ScrollController` to the thread and to
 `threadController:` — taking finished widgets means the view can't
 reach in and attach its own. Null leaves the button out entirely.
 
+## Drag and drop
+
+`onAttachmentsDropped` turns the whole surface into a drop target. While
+a file is dragged over it, a full-bleed tint covers the page with a
+centred card inviting the drop (`dropLabel`, host-localized); let go and
+the callback fires with the files read and decoded into
+`FlowAttachment`s, ready to hand to the composer.
+
+```dart title="The package detects the drop and decodes what lands"
+FlowChatView(
+  onAttachmentsDropped: (dropped) => setState(() => pending.addAll(dropped)),
+  onAttachmentRejected: showRejection,
+  attachmentOptions: const FlowAttachmentOptions(
+    maxFileSize: 10 * 1024 * 1024,
+  ),
+  dropLabel: 'Drop images to attach',
+  thread: thread,
+  composer: FlowComposer(
+    onSend: send,
+    attachments: pending,
+    onRemoveAttachment: removePending,
+  ),
+)
+```
+
+`attachmentOptions` and `onAttachmentRejected` work exactly as they do on
+the [composer](/components/composer/#what-is-accepted) — and matter more
+here, because a dropped file never passed through a dialog's filter, so
+the accept list is enforced on arrival rather than merely suggested. Pass
+the same options object to both and a file gets the same answer whichever
+way it arrives.
+
+<Aside type="caution" title="Drop is web-only">
+The Flutter SDK implements OS file drop on the **web** and nowhere else —
+not in the framework, not in the engine, on any target. On desktop, iOS
+and Android `onAttachmentsDropped` compiles and never fires; a debug
+build prints a line saying so once. Desktop apps that want drop bring
+their own detection and drive `dropActive` by hand, which is what that
+flag stays writable for.
+</Aside>
+
+```dart title="Desktop: your detection, the package's treatment"
+DropRegion(                       // any drop package
+  onDropEnter: (_) => setState(() => hovering = true),
+  onDropLeave: (_) => setState(() => hovering = false),
+  onPerformDrop: (files) => addAttachments(files),
+  child: FlowChatView(
+    dropActive: hovering,
+    dropLabel: 'Drop files to attach',
+    thread: thread,
+    composer: composer,
+  ),
+)
+```
+
+`dropActive` is an override, not a switch: the treatment is up while it
+is true **or** a real drag is over the surface, so the two coexist and
+hosts that were driving the flag before keep working untouched.
+
+<FlowDemo demo="attachments" variant="drop" height={480} title="The drop treatment" />
+
+The treatment is a vertical wash over a 12px blur of the page —
+`surfaceBright` at 40% down to `surface` at 80% — with the glyph and the
+invitation straight on it: no card, so the whole surface reads as the
+target. It is pure
+feedback: it never intercepts a pointer, it announces `dropLabel` to
+assistive tech when it appears, and it leaves the widget tree entirely
+while idle, so a conversation nobody is dragging over pays nothing for
+it.
+
+All of it is yours to change. `dropIcon`, `dropIconSize` and `dropLabel`
+are widget parameters, and `FlowChatViewStyle` carries the wash, the
+glyph's colour and the label's text style:
+
+```dart title="Retheming the drop treatment"
+FlowChatView(
+  onAttachmentsDropped: addAttachments,
+  dropLabel: 'Drop files to add to chat',
+  dropIcon: PhosphorIconsRegular.uploadSimple,
+  style: FlowChatViewStyle(
+    dropGradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xCCFFFFFF), Color(0xF2FFFFFF)],
+    ),
+    dropIconColor: Color(0xFF1A1A1A),
+    dropLabelStyle: TextStyle(fontSize: 28),
+  ),
+)
+```
+
+Install a `FlowChatViewStyle` on `FlowTheme.chatViewStyle` to restyle
+every surface at once; a widget's own `style` wins field by field.
+
+### Or scope it to the composer
+
+[`FlowComposer.onAttachmentsDropped`](/components/composer/#drop-on-the-card)
+is the same detection scoped to the input card, which lights up instead
+of the page. Use it where the rest of the surface has its own meaning for
+a dropped file; use this one — the wider, more forgiving target — for an
+ordinary chat. Wiring both is fine: the innermost target under the
+pointer wins, so the card takes drops aimed at it and the surface takes
+the rest.
+
+For a surface that is neither, `FlowDropTarget` is the detection on its
+own: wrap any subtree, take `onDropped` and `onHoverChanged`, and draw
+whatever treatment you like. Its `enabled` is the same switch as
+`attachmentsEnabled`: off keeps the zone registered and swallows drops
+rather than letting the browser navigate to the file.
+
 ## Key API
 
 - `thread` — usually a `FlowThread`, given the bounded height it needs.
@@ -61,6 +172,13 @@ reach in and attach its own. Null leaves the button out entirely.
   a real state of a chat, so the surface stands up on its own.
 - `composer` — required, but nullable: an explicit `composer: null`
   renders no input, a read-only surface.
+- `onAttachmentsDropped` — the surface's own drag-and-drop (web only),
+  handing back decoded attachments. `attachmentOptions` +
+  `onAttachmentRejected` — what a dropped file must be, and what wasn't.
+  `attachmentsEnabled` — turns the surface's drop off, handler left
+  wired; pair it with the composer's.
+  `dropLabel` — the invitation card's line. `dropActive` — raises the
+  same treatment by hand, for desktop hosts with their own detection.
 - `empty` + `greeting` + `suggestions` — the zero state; the host flips
   `empty` (typically `messages.isEmpty`).
 - `header` — optional full-bleed bar above the thread; `aboveComposer`
