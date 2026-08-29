@@ -195,6 +195,16 @@
   body and the inline span, drop from 14 to 13 on their 1.6 and 1.5
   lines.
 
+- **Fix** — the thread no longer strands at a scroll offset outside its
+  range: the newest message clipped under the list's bottom edge with
+  blank space beneath, or a blank band above the oldest. Flutter keeps an
+  offset that has left the range — a drag that dismisses the keyboard
+  grows the viewport mid-gesture while a reply is still growing — and
+  only the next gesture pulled it back. `FlowThread` now clamps an idle
+  position back into range, on every metrics change and scroll end, and
+  creates its own controller when the host passes none.
+
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut
