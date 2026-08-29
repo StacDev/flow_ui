@@ -47,6 +47,11 @@ enum PlaygroundItem {
     'flow_attachments.dart',
   ),
   thread('Thread', PhosphorIconsRegular.chats, 'flow_thread.dart'),
+  threadList(
+    'Thread List',
+    PhosphorIconsRegular.clockCounterClockwise,
+    'flow_thread_list.dart',
+  ),
   messageActions(
     'Message Actions',
     PhosphorIconsRegular.thumbsUp,

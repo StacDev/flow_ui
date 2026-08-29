@@ -1,0 +1,126 @@
+---
+title: Thread List
+description: Conversation history for a side panel — host-labeled sections of thread rows, single selection by id, unread and pinned marks.
+sidebar:
+  order: 17
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowThreadList` is the conversation history an assistant app hangs in
+its side panel: sections of title-only thread rows, one of them selected.
+Everything on it is data the host passes in — section labels, ordering,
+which threads are pinned or unread — and tapping a row reports the
+thread's id through `onThreadSelected`; opening the conversation is the
+host's move. The package ships no strings and derives nothing, so
+grouping by date and formatting labels stay in the host's locale.
+
+The list is lazy underneath and needs a bounded height, like
+`FlowThread` — an `Expanded` in a column, or a sized parent. For a panel
+that scrolls on its own, `shrinkWrap: true` swaps to the embedded form:
+measured by content, non-scrolling.
+
+## Sections
+
+Host-labeled sections — 'Pinned', 'Today' — render as muted headers
+between the runs. A pinned thread carries the muted pin; an unread one
+the primary dot and the emphasised title cut. Long titles ellipsize, and
+a `tooltip` can carry the full text:
+
+<FlowDemo demo="thread-list" variant="sections" height={520} title="Sections" />
+
+```dart title="The grouped history"
+FlowThreadList(
+  sections: [
+    FlowThreadListSection(
+      label: 'Pinned',
+      items: [
+        FlowThreadListItem(id: 'p1', title: 'Trip planning', pinned: true),
+      ],
+    ),
+    FlowThreadListSection(
+      label: 'Today',
+      items: [
+        FlowThreadListItem(id: 't1', title: 'Weekly meal plan', unread: true),
+        FlowThreadListItem(id: 't2', title: 'Debugging the composer'),
+      ],
+    ),
+  ],
+  selectedId: openThreadId,
+  onThreadSelected: openThread,
+)
+```
+
+## Flat
+
+`FlowThreadList.flat` is the ungrouped form — one label-less section
+under the hood, for a host that hasn't sorted its history yet:
+
+<FlowDemo demo="thread-list" variant="flat" height={440} title="Flat list" />
+
+```dart title="The ungrouped history"
+FlowThreadList.flat(
+  items: [
+    for (final thread in recents)
+      FlowThreadListItem(id: thread.id, title: thread.title),
+  ],
+  selectedId: openThreadId,
+  onThreadSelected: openThread,
+)
+```
+
+## Leading icons
+
+Each thread can carry a leading glyph — a project or agent mark. Without
+one the row starts at the title:
+
+<FlowDemo demo="thread-list" variant="icons" height={440} title="With icons" />
+
+```dart title="Threads with a mark"
+FlowThreadListItem(
+  id: 't1',
+  title: 'Design review notes',
+  icon: Icons.folder_outlined,
+)
+```
+
+## Accessibility
+
+Rows announce as buttons and carry the platform's own selected state; the
+pin and the dot are visual only. `semanticLabel` is where their meaning
+reaches assistive tech, composed by the host in its own locale's word
+order:
+
+```dart title="What a screen reader hears"
+FlowThreadListItem(
+  id: 't3',
+  title: 'Weekly meal plan',
+  unread: true,
+  semanticLabel: 'Weekly meal plan, unread',
+)
+```
+
+## Restyling
+
+`FlowThreadListStyle` overrides the list's colors without touching the
+global tokens: `selectedColor`, `hoverColor` (translucent, so it
+composites over the selection), `titleStyle` and `sectionLabelStyle`
+(merged over their defaults), `iconColor`, `pinColor`, and
+`unreadDotColor`. Install one on `FlowTheme.threadListStyle` for every
+list; the widget's `style` wins field by field. There is deliberately no
+background field — the list is transparent, and the host's panel owns
+the ground.
+
+## Key API
+
+- `FlowThreadList` — `sections`, `selectedId`, `onThreadSelected`
+  (null renders rows inert but not grayed — the titles stay content, and
+  the selection fill still shows), `controller`, `shrinkWrap`, plus
+  `padding`, `itemSpacing`, `rowPadding` and `rowRadius` over the
+  provisional 36px row (10 inside, an 8px corner, rows 2 apart).
+- `FlowThreadList.flat` — `items` as one label-less section.
+- `FlowThreadListSection` — optional host-localized `label` + `items`;
+  an empty section takes no space, header included.
+- `FlowThreadListItem` — `id`, `title`, optional `icon`, `pinned`,
+  `unread`, `tooltip`, `semanticLabel`. Ids must be unique across the
+  whole list; callbacks report ids, never indices.

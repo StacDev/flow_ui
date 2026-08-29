@@ -28,7 +28,7 @@ elements and the remaining AI states are on the way.
 | Component | Status |
 | --- | --- |
 | Message & Thread | <span class="badge-done">Shipped</span> |
-| Thread list | <span class="badge-todo">Planned</span> |
+| Thread list | <span class="badge-done">Shipped</span> |
 | Message actions | <span class="badge-done">Shipped</span> |
 | Streaming text | <span class="badge-done">Shipped</span> |
 | Message composer | <span class="badge-done">Shipped</span> |

@@ -30,6 +30,7 @@
 /playground/pill                /playground/  200
 /playground/attachments         /playground/  200
 /playground/thread              /playground/  200
+/playground/thread-list         /playground/  200
 /playground/message-actions     /playground/  200
 /playground/streaming-text      /playground/  200
 /playground/shimmer-text        /playground/  200

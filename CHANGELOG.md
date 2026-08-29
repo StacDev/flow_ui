@@ -2,6 +2,11 @@
 
 ## 0.3.0 (unreleased)
 
+- **Thread list** — `FlowThreadList`, the side panel's conversation
+  history: host-labeled sections of title-only rows, single selection by
+  id, an unread dot and pinned glyph, and a leading icon slot. Metrics
+  are provisional pending a design frame; `FlowThreadListStyle` joins the
+  component styles with a `FlowTheme.threadListStyle` default.
 - **Attachment input** — the composer can now get the files itself.
   `FlowComposer.onAttachmentsPicked` renders the attach button and opens
   the platform's file dialog, handing back `FlowAttachment`s already read
