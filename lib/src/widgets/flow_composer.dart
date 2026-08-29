@@ -75,7 +75,8 @@ import 'flow_pill.dart';
 /// Both are web-only — the SDK has no OS file drop and no image
 /// clipboard anywhere else — so the attach button is what carries the
 /// feature on every other platform, and most hosts point all of these at
-/// the same handler.
+/// the same handler. [attachmentsEnabled] turns every way in off at once
+/// without unwiring any of them.
 ///
 /// Once something is pending, an empty field is no longer nothing to
 /// send: [onSend] fires with an empty string, because a picture with no
@@ -104,6 +105,7 @@ class FlowComposer extends StatefulWidget {
     this.onAttachmentsPasted,
     this.attachmentOptions = const FlowAttachmentOptions(),
     this.onAttachmentRejected,
+    this.attachmentsEnabled = true,
     this.attachTooltip,
     this.onContentInserted,
     this.errorMessage,
@@ -252,6 +254,22 @@ class FlowComposer extends StatefulWidget {
   /// so is their wording.
   final void Function(String name, FlowAttachmentRejection reason)?
   onAttachmentRejected;
+
+  /// Whether the ways in are on right now. Presence of a callback says
+  /// the feature is *wired*; this says it is *available* — off for a plan
+  /// tier, a model that takes no images, a thread that has closed.
+  ///
+  /// False leaves every handler in place and stops them firing: the
+  /// attach button is not rendered, the card takes no drop, the field
+  /// takes no paste, and the keyboard offers no media. Attachments
+  /// already pending stay in the strip and can still be removed — they
+  /// are the host's state, and hiding them would lose what the user
+  /// already did. A host's own control that calls
+  /// [showFlowAttachmentPicker] is the host's to hide alongside this.
+  ///
+  /// [enabled] is the wider switch: false there refuses every way in as
+  /// well as typing and sending.
+  final bool attachmentsEnabled;
 
   /// Host-localized label for the attach button; also its accessible
   /// name.
@@ -448,7 +466,12 @@ class _FlowComposerState extends State<FlowComposer> {
     _pasteRegistration = flowRegisterPasteTarget(
       // Read at paste time, not captured, so focus and enablement can
       // change without the registration having to keep up.
-      isActive: () => !_disposed && mounted && widget.enabled && _focused,
+      isActive: () =>
+          !_disposed &&
+          mounted &&
+          widget.enabled &&
+          widget.attachmentsEnabled &&
+          _focused,
       onPaste: _handlePaste,
     );
 
@@ -832,7 +855,9 @@ class _FlowComposerState extends State<FlowComposer> {
       // Gated like the picker, the paste and attachment removal: while
       // the composer is disabled a drag must not light the card up or
       // deliver anything.
-      onDropped: widget.enabled ? widget.onAttachmentsDropped : null,
+      onDropped: widget.enabled && widget.attachmentsEnabled
+          ? widget.onAttachmentsDropped
+          : null,
       onHoverChanged: _handleDropHover,
       attachmentOptions: widget.attachmentOptions,
       onAttachmentRejected: widget.onAttachmentRejected,
@@ -929,7 +954,8 @@ class _FlowComposerState extends State<FlowComposer> {
                         // Android's IME rich-content path, the one media
                         // input the SDK covers without a plugin.
                         contentInsertionConfiguration:
-                            widget.onContentInserted == null
+                            widget.onContentInserted == null ||
+                                !widget.attachmentsEnabled
                             ? null
                             : ContentInsertionConfiguration(
                                 onContentInserted: widget.onContentInserted!,
@@ -956,8 +982,9 @@ class _FlowComposerState extends State<FlowComposer> {
                       // The built-in attach affordance leads the row; being
                       // outside the loop keeps the pill-pair gap logic
                       // reading only the host's actions.
-                      if (widget.onAttach != null ||
-                          widget.onAttachmentsPicked != null) ...[
+                      if (widget.attachmentsEnabled &&
+                          (widget.onAttach != null ||
+                              widget.onAttachmentsPicked != null)) ...[
                         _buildAttachButton(context),
                         const SizedBox(width: _leadingGap),
                       ],

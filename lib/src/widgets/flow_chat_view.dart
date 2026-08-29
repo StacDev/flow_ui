@@ -64,6 +64,7 @@ class FlowChatView extends StatefulWidget {
     this.onAttachmentsDropped,
     this.attachmentOptions = const FlowAttachmentOptions(),
     this.onAttachmentRejected,
+    this.attachmentsEnabled = true,
     this.dropActive = false,
     this.dropLabel,
     this.dropIcon,
@@ -197,6 +198,14 @@ class FlowChatView extends StatefulWidget {
   /// host's.
   final void Function(String name, FlowAttachmentRejection reason)?
   onAttachmentRejected;
+
+  /// Whether the surface takes drops right now. [onAttachmentsDropped]
+  /// says the feature is wired; this says it is available — false leaves
+  /// the handler in place and stops it firing, with no treatment raised.
+  /// The composer has the same switch for its own ways in; a host turns
+  /// both off together. [dropActive] is unaffected, being the host's own
+  /// override.
+  final bool attachmentsEnabled;
 
   /// Raises the drop treatment by hand: a full-bleed tint over the
   /// surface with a centred card inviting the drop. Pure feedback, never
@@ -361,7 +370,7 @@ class _FlowChatViewState extends State<FlowChatView> {
     // the treatment is full-bleed and the target should match it. A plain
     // pass-through off the web, where it registers nothing.
     return FlowDropTarget(
-      onDropped: widget.onAttachmentsDropped,
+      onDropped: widget.attachmentsEnabled ? widget.onAttachmentsDropped : null,
       onHoverChanged: _handleDropHover,
       attachmentOptions: widget.attachmentOptions,
       onAttachmentRejected: widget.onAttachmentRejected,

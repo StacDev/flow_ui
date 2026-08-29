@@ -45,6 +45,11 @@
   carries `dropGradient`, `dropIconColor` and `dropLabelStyle`;
   `dropIcon` and `dropIconSize` join `dropLabel` as widget parameters.
   The treatment leaves the widget tree while idle.
+- **Turning attachments off** — `attachmentsEnabled` on `FlowComposer`
+  and `FlowChatView`. Presence of a callback says a way in is wired;
+  this says it is available: false stops the button, drop, paste and
+  keyboard media at once without unwiring any of them, while pending
+  attachments stay removable.
 - **Escape hatches** — `onAttach` renders the same attach button and
   leaves the picking to the host, for a gallery sheet or a camera.
   `dropActive` stays writable as an override, since drop detection is

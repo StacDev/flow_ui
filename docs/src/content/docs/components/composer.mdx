@@ -148,6 +148,26 @@ FlowComposer(
 Passing neither of the last two leaves the button off. Passing both
 asserts — one button cannot have two owners.
 
+### Turning it off
+
+Presence of a callback says the feature is *wired*; `attachmentsEnabled`
+says it is *available*. Set it false — for a plan tier, a model that
+takes no images, a thread that has closed — and every way in stops at
+once without unwiring anything: no attach button, no drop on the card,
+no paste, no keyboard media. `FlowChatView` has the same flag for the
+surface's drop, so a host flips both together. Attachments already
+pending stay in the strip and can still be removed, and a `+` menu entry
+that calls `showFlowAttachmentPicker` is yours to hide alongside it.
+
+```dart title="Attachments wired, but off for this plan"
+FlowComposer(
+  attachmentsEnabled: plan.allowsUploads,
+  onAttachmentsPicked: addAttachments,
+  onAttachmentsPasted: addAttachments,
+  ...
+)
+```
+
 ### What is accepted
 
 `attachmentOptions` says what the dialog offers and how what comes back
@@ -340,6 +360,8 @@ wins field by field.
   `onAttachmentsDropped` — drag-and-drop scoped to the card (web only);
   `FlowChatView` has the whole-surface version.
   `onAttachmentsPasted` — images pasted into the field (web only).
+  `attachmentsEnabled` — turns every way in off at once, handlers left
+  wired.
   `errorMessage` + `errorIcon` — the error banner above the card;
   `onErrorDismiss` + `errorDismissTooltip` draw its cross.
   `onContentInserted` — Android keyboard media insertion.
