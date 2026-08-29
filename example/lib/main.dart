@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flow_ui/flow_ui.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -462,7 +463,9 @@ class _ChatScreenState extends State<ChatScreen> {
         // Drag-and-drop, handled by the package. Web only — the SDK
         // implements OS file drop nowhere else — and a no-op elsewhere,
         // which is why the attach button carries the same job.
-        onAttachmentsDropped: _addAttachments,
+        // Web only: the SDK implements OS file drop nowhere else, and the
+        // package says so at runtime when handed the callback elsewhere.
+        onAttachmentsDropped: kIsWeb ? _addAttachments : null,
         onAttachmentRejected: _rejectAttachment,
         attachmentOptions: _attachmentOptions,
         dropLabel: 'Drop files to add to chat',
@@ -496,9 +499,11 @@ class _ChatScreenState extends State<ChatScreen> {
           isStreaming: _generating,
           onSend: _send,
           onStop: _stop,
+          sendTooltip: 'Send',
+          stopTooltip: 'Stop',
           // Picking goes through the "+" menu below; paste and drop land
           // in the same place — three ways in, one handler.
-          onAttachmentsPasted: _addAttachments,
+          onAttachmentsPasted: kIsWeb ? _addAttachments : null,
           onAttachmentRejected: _rejectAttachment,
           attachmentOptions: _attachmentOptions,
           // The design's error banner above the card; the words are this

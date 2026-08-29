@@ -10,6 +10,8 @@ import '../styles/flow_composer_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_intake.dart';
 import '../utils/flow_circle_button.dart';
+import '../utils/flow_selection_theme.dart';
+import '../utils/flow_touch_target.dart';
 import '../utils/flow_clipboard_paste.dart';
 import '../utils/flow_file_picker.dart';
 import '../utils/flow_gradient_outline.dart';
@@ -99,6 +101,8 @@ class FlowComposer extends StatefulWidget {
     this.onAttachmentTap,
     this.removeAttachmentTooltip,
     this.previewCloseTooltip,
+    this.sendTooltip,
+    this.stopTooltip,
     this.onAttach,
     this.onAttachmentsPicked,
     this.onAttachmentsDropped,
@@ -275,6 +279,14 @@ class FlowComposer extends StatefulWidget {
   /// Host-localized label for the attach button; also its accessible
   /// name.
   final String? attachTooltip;
+
+  /// Host-localized label for the send disc; also its accessible name.
+  /// Without one assistive tech announces an unnamed button.
+  final String? sendTooltip;
+
+  /// Host-localized label for the stop disc while streaming; also its
+  /// accessible name.
+  final String? stopTooltip;
 
   /// Raises the error banner: the design's tab above the card, in the
   /// error wash with a warning glyph and this line. Null draws nothing.
@@ -670,7 +682,7 @@ class _FlowComposerState extends State<FlowComposer> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return button;
+    return FlowTouchTarget(child: button);
   }
 
   Widget _buildSendStopButton(BuildContext context) {
@@ -687,6 +699,7 @@ class _FlowComposerState extends State<FlowComposer> {
           background: discColor,
           foreground: glyphColor,
           padding: _stopPadding,
+          tooltip: widget.stopTooltip,
           onTap: widget.onStop,
         ),
       );
@@ -695,26 +708,29 @@ class _FlowComposerState extends State<FlowComposer> {
       valueListenable: _controller,
       builder: (context, value, _) {
         final canSend = _canSend(value.text.trim());
-        return _ringed(
-          context,
-          active: canSend,
-          disc: Material(
-            // Disabled keeps the arrow's ink and only drains the disc:
-            // primary gives way to the 30% disabled wash.
-            color: canSend ? discColor : colors.onSurfaceDisabled,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: canSend ? _send : null,
-              customBorder: const CircleBorder(),
-              child: CustomPaint(
-                // The design's arrow is a thin stroke, not the chunky
-                // Material glyph.
-                painter: _ArrowUpPainter(color: glyphColor),
-              ),
+        final sendTooltip = widget.sendTooltip;
+        Widget disc = Material(
+          // Disabled keeps the arrow's ink and only drains the disc:
+          // primary gives way to the 30% disabled wash.
+          color: canSend ? discColor : colors.onSurfaceDisabled,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: canSend ? _send : null,
+            customBorder: const CircleBorder(),
+            child: CustomPaint(
+              // The design's arrow is a thin stroke, not the chunky
+              // Material glyph.
+              painter: _ArrowUpPainter(color: glyphColor),
             ),
           ),
         );
+        // Tooltip contributes the accessible name too, per the attach
+        // button's precedent.
+        if (sendTooltip != null) {
+          disc = Tooltip(message: sendTooltip, child: disc);
+        }
+        return _ringed(context, active: canSend, disc: disc);
       },
     );
   }
@@ -813,22 +829,24 @@ class _FlowComposerState extends State<FlowComposer> {
     // The banner sits above the card and outside the drop target: it is
     // not somewhere to drop a file. AnimatedSize grows it in from the
     // card's top edge, so the thread above eases up rather than jumping.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AnimatedSize(
-          duration: MediaQuery.disableAnimationsOf(context)
-              ? Duration.zero
-              : _errorReveal,
-          curve: Curves.easeOut,
-          alignment: Alignment.bottomCenter,
-          child: errorMessage == null
-              ? const SizedBox.shrink()
-              : _buildErrorBanner(context, errorMessage),
-        ),
-        _buildCard(context),
-      ],
+    return FlowSelectionTheme(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AnimatedSize(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : _errorReveal,
+            curve: Curves.easeOut,
+            alignment: Alignment.bottomCenter,
+            child: errorMessage == null
+                ? const SizedBox.shrink()
+                : _buildErrorBanner(context, errorMessage),
+          ),
+          _buildCard(context),
+        ],
+      ),
     );
   }
 

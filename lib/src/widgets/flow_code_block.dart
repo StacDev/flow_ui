@@ -4,6 +4,7 @@ import '../styles/flow_code_block_style.dart';
 import '../theme/flow_syntax_colors.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_syntax_highlighter.dart';
+import '../utils/flow_touch_target.dart';
 
 export '../utils/flow_syntax_highlighter.dart'
     show FlowCodeLanguage, FlowSyntaxRule, FlowSyntaxToken;
@@ -383,6 +384,6 @@ class _CopyButtonState extends State<_CopyButton> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return button;
+    return FlowTouchTarget(child: button);
   }
 }

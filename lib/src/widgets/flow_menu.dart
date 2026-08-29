@@ -4,6 +4,7 @@ import '../styles/flow_menu_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_menu_core.dart';
 import '../utils/flow_menu_sheet.dart';
+import '../utils/flow_touch_target.dart';
 
 /// One entry in a [FlowMenu]: an option or a divider.
 @immutable
@@ -278,7 +279,7 @@ class _FlowMenuState extends State<FlowMenu> {
         if (tooltip != null) {
           trigger = Tooltip(message: tooltip, child: trigger);
         }
-        return trigger;
+        return FlowTouchTarget(child: trigger);
       },
     );
   }

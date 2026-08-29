@@ -204,6 +204,19 @@
   position back into range, on every metrics change and scroll end, and
   creates its own controller when the host passes none.
 
+- **Touch targets** — the message actions, the composer's attach and
+  stop discs, the attachment tile's cross, the error tab's cross, the
+  menu triggers and the code block's copy affordance now accept a finger
+  from a 44px reach on phones, sized per site so a neighbour's taps stay
+  its own, with the drawn frames unchanged. Pointer platforms are
+  untouched.
+- **Send and stop names** — `FlowComposer.sendTooltip` and `stopTooltip`
+  name the discs for assistive tech; before, both announced as unnamed
+  buttons.
+- **Fix** — the caret, selection wash and handles across the chat view
+  and the composer take the Flow primary rather than the host
+  `ColorScheme`'s, which on a stock `ThemeData` was Material's purple.
+
 
 ## 0.2.0
 

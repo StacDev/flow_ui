@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'flow_touch_target.dart';
+
 // Internal chrome shared by the composer, the attachment tiles and the
 // attachment preview. Not exported from the package barrel.
 
@@ -75,6 +77,6 @@ class FlowCircleButton extends StatelessWidget {
     if (message != null) {
       button = Tooltip(message: message, child: button);
     }
-    return button;
+    return FlowTouchTarget(child: button);
   }
 }

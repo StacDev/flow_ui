@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_message_actions_style.dart';
 import '../theme/flow_theme.dart';
+import '../utils/flow_touch_target.dart';
 
 /// One action in a [FlowMessageActions] row.
 ///
@@ -202,6 +203,14 @@ class _ActionButtonState extends State<_ActionButton> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return button;
+    // The row keeps the design's 20px frames on a 4px pitch; a finger
+    // gets the pitch sideways and the design's 44 vertically, mostly
+    // downward into the gap between turns, off the text above.
+    return FlowTouchTarget(
+      minWidth: _frameSize + 4,
+      minHeight: 44,
+      topShare: 0.2,
+      child: button,
+    );
   }
 }
