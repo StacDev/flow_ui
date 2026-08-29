@@ -41,7 +41,8 @@ class FlowComposerStyle {
   /// The glyph on the send/stop disc. Defaults to `onPrimary`.
   final Color? sendForegroundColor;
 
-  /// Merged over the field's default `bodyLarge` + `onSurface` style.
+  /// Merged over the field's default `bodyLarge` + `onSurface` on the
+  /// compressed composer's 1.3 line; a `height` here replaces that.
   final TextStyle? textStyle;
 
   /// The placeholder hint. Defaults to `onSurfaceMuted`.

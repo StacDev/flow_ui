@@ -26,7 +26,7 @@ class FlowSuggestionStyle {
   /// transparent on the plain one.
   final Color? backgroundColor;
 
-  /// The outlined form's hairline. Defaults to `outlineVariant`; the
+  /// The outlined form's hairline. Defaults to `outline`; the
   /// plain form draws none regardless.
   final Color? borderColor;
 
@@ -35,7 +35,7 @@ class FlowSuggestionStyle {
 
   /// Icon and label ink at rest. Defaults to `onSurface` on the outlined
   /// form and `onSurfaceVariant` on the plain one; hover lifts both to
-  /// `onSurface` regardless.
+  /// `onSurface`, and disabled paints `onSurfaceDisabled`, regardless.
   final Color? foregroundColor;
 
   /// Merged over the default label style.

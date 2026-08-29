@@ -2,6 +2,34 @@
 
 ## 0.3.0 (unreleased)
 
+- **Component inks and type roles** — a pass over every component against
+  the palette and scale. Grounds that were hand-rolled ink alphas now take
+  container tokens: attachment tiles (`surfaceContainerLow`, `High` behind
+  an image), the user bubble (`surfaceContainerLow`), the error card and
+  the inline-code chip (`surfaceContainer`); the code block's hover edge
+  and the menu sheet's border are `outlineVariant`. Disabled content is
+  `onSurfaceDisabled` everywhere — a host's own colour override no longer
+  shows faded when disabled. Type: the greeting is `headlineMedium` (32),
+  markdown `#`/`##`/`###` take the emphasised title cuts, the code block's
+  header is `labelMedium`, the error card's title `bodyMediumEmphasised`,
+  bubble text sits on the body line (1.5), and the `code` token is 14 (was
+  13). Message actions are 15px glyphs on fixed 20px frames, 4 apart,
+  washing with `surfaceContainer` on hover; the jump-to-latest shadow
+  matches the cards' 2%. Defaults only — no signatures change.
+
+- **Colors** — presets retuned to the design file: ink `#111110`, a hot-pink
+  `secondary` (markdown links follow), an indigo `tertiary`, a softer
+  `error`, new `success` and `warning` groups, and a `shadow` role — the ink
+  at 2%, alpha included — that every raised element's shadow now reads.
+  Accent containers are now washes of their accent (8% accents, 6%
+  statuses) with the accent as the `on` colour. **Breaking:** `outline`
+  and `outlineVariant` swap meaning — `outline` is the faint hairline
+  (7%), `outlineVariant` the firm one (12%) — the nine new roles are
+  required constructor parameters (`copyWith` on a preset is unaffected),
+  and markdown links default to `secondary` rather than `tertiary`. The
+  dark preset follows: lifted accents that carry `#1E1E1E` as their `on`
+  ink, and hairlines brought down to 8% and 12%.
+
 - **Typefaces** — Google Sans replaces Figtree and Google Sans Code replaces
   Geist Mono. Neither is bundled: the package depends on `google_fonts`,
   which fetches each cut on first use and caches it (ship the files under a

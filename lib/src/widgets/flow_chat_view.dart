@@ -166,10 +166,8 @@ class _FlowChatViewState extends State<FlowChatView> {
   static const double _jumpInset = 12;
   static const double _composerGap = 8;
 
-  /// The jump button's lift, as an alpha over the ink — the composer's
-  /// idiom, stronger on the small floating disc so it separates from the
-  /// content scrolling beneath it.
-  static const double _jumpShadowOpacity = 0.08;
+  /// The jump button's lift: the composer's shadow, so the disc and the
+  /// card it floats above share one.
   static const double _jumpShadowBlur = 12;
 
   /// The zero state's rhythm: greeting 32 above the composer; suggestions
@@ -360,9 +358,7 @@ class _FlowChatViewState extends State<FlowChatView> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: colors.onSurface.withValues(
-                          alpha: _jumpShadowOpacity,
-                        ),
+                        color: colors.shadow,
                         blurRadius: _jumpShadowBlur,
                       ),
                     ],
@@ -371,7 +367,7 @@ class _FlowChatViewState extends State<FlowChatView> {
                   // the opaque circle would paint over the stroke.
                   foregroundDecoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: colors.outlineVariant),
+                    border: Border.all(color: colors.outline),
                   ),
                   child: FlowCircleButton(
                     icon: Icons.arrow_downward,
