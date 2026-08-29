@@ -869,158 +869,193 @@ class _FlowComposerState extends State<FlowComposer> {
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovered = true),
         onExit: (_) => setState(() => _hovered = false),
-        child: CustomPaint(
-          // The outline is painted rather than a layout border so the card
-          // never shifts as it swaps between its rest and active gradients.
-          foregroundPainter: FlowGradientOutlinePainter(
-            radius: radius,
-            start: _dropHover
-                ? highlight
-                : outline ??
-                      colors.onSurface.withValues(
-                        alpha: active ? _outlineActiveAlpha : _outlineRestAlpha,
-                      ),
-            end: _dropHover
-                ? highlight
-                : outline ??
-                      colors.onSurface.withValues(
-                        alpha: active
-                            ? _outlineActiveFadeAlpha
-                            : _outlineRestFadeAlpha,
-                      ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              // The composer is the design's raised card: it sits above the
-              // page rather than tinting it, in both themes, under a
-              // barely-there ambient lift. The drop wash blends into the
-              // ground rather than layering over it, so the card stays the
-              // one opaque surface even while lit.
-              color: _dropHover
-                  ? Color.alphaBlend(
-                      highlight.withValues(alpha: _dropWashAlpha),
-                      ground,
-                    )
-                  : ground,
-              borderRadius: radius,
-              boxShadow: [
-                BoxShadow(color: colors.shadow, blurRadius: _shadowBlur),
-              ],
-            ),
-            padding: widget.padding ?? _cardPadding,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (widget.attachments.isNotEmpty) ...[
-                  // The inset rides inside the strip's scroll view rather
-                  // than around it: at rest nothing moves, but once the
-                  // strip overflows the tiles scroll under the gutter and
-                  // the last one is cut at the card's edge — the cue that
-                  // there is more, with no counter to draw.
-                  FlowAttachmentGroup(
-                    attachments: widget.attachments,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _contentInset,
-                    ),
-                    onTap: widget.onAttachmentTap,
-                    // Editing is what `enabled` gates; viewing an attachment
-                    // that is already pending stays available, as does the
-                    // send button while streaming.
-                    onRemove: widget.enabled ? widget.onRemoveAttachment : null,
-                    removeTooltip: widget.removeAttachmentTooltip,
-                    previewCloseTooltip: widget.previewCloseTooltip,
-                  ),
-                  const SizedBox(height: _attachmentGap),
-                ],
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: _contentInset,
-                  ),
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      minHeight: _fieldMinHeight,
-                    ),
-                    alignment: AlignmentDirectional.topStart,
-                    child: Focus(
-                      onKeyEvent: _handleKeyEvent,
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        enabled: widget.enabled,
-                        minLines: 1,
-                        maxLines: widget.maxLines,
-                        // The design's compressed composer: body face on
-                        // the 1.3 control line, so the empty card stands
-                        // at 116.
-                        style: typography.bodyLarge
-                            .copyWith(height: 1.3, color: colors.onSurface)
-                            .merge(style?.textStyle),
-                        // Android's IME rich-content path, the one media
-                        // input the SDK covers without a plugin.
-                        contentInsertionConfiguration:
-                            widget.onContentInserted == null ||
-                                !widget.attachmentsEnabled
-                            ? null
-                            : ContentInsertionConfiguration(
-                                onContentInserted: widget.onContentInserted!,
-                              ),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: InputBorder.none,
-                          hintText: widget.placeholder,
-                          hintStyle: typography.bodyLarge.copyWith(
-                            height: 1.3,
-                            color: style?.hintColor ?? colors.onSurfaceMuted,
+        // The whole card is the field's hit target: a click on the padding,
+        // the gap under the field or the empty stretch of the action row
+        // brings the caret in, as it would on a plain text box, and the
+        // pointer reads as a text cursor over all of it to say so. The
+        // buttons, the tiles and the field itself sit deeper in the tree,
+        // so their own taps still win the arena and their own cursors
+        // still show.
+        cursor: widget.enabled
+            ? SystemMouseCursors.text
+            : SystemMouseCursors.basic,
+        // The card joins the field's tap region. The field drops focus on a
+        // pointer *down* outside its region (desktop, web, and any mouse
+        // press), so without this a click on the padding would blur on the
+        // down and refocus on the up — cancelling IME composition and firing
+        // the host's focus listeners twice. It has to be the field's *default*
+        // group, not a private one: the selection handles and the Copy/Paste
+        // toolbar live in that default group, and a field moved out of it
+        // would blur on a press on its own toolbar.
+        child: TextFieldTapRegion(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: widget.enabled ? _focusNode.requestFocus : null,
+            child: CustomPaint(
+              // The outline is painted rather than a layout border so the
+              // card never shifts as it swaps between its rest and active
+              // gradients.
+              foregroundPainter: FlowGradientOutlinePainter(
+                radius: radius,
+                start: _dropHover
+                    ? highlight
+                    : outline ??
+                          colors.onSurface.withValues(
+                            alpha: active
+                                ? _outlineActiveAlpha
+                                : _outlineRestAlpha,
                           ),
-                          contentPadding: EdgeInsets.zero,
+                end: _dropHover
+                    ? highlight
+                    : outline ??
+                          colors.onSurface.withValues(
+                            alpha: active
+                                ? _outlineActiveFadeAlpha
+                                : _outlineRestFadeAlpha,
+                          ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  // The composer is the design's raised card: it sits above the
+                  // page rather than tinting it, in both themes, under a
+                  // barely-there ambient lift. The drop wash blends into the
+                  // ground rather than layering over it, so the card stays the
+                  // one opaque surface even while lit.
+                  color: _dropHover
+                      ? Color.alphaBlend(
+                          highlight.withValues(alpha: _dropWashAlpha),
+                          ground,
+                        )
+                      : ground,
+                  borderRadius: radius,
+                  boxShadow: [
+                    BoxShadow(color: colors.shadow, blurRadius: _shadowBlur),
+                  ],
+                ),
+                padding: widget.padding ?? _cardPadding,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.attachments.isNotEmpty) ...[
+                      // The inset rides inside the strip's scroll view rather
+                      // than around it: at rest nothing moves, but once the
+                      // strip overflows the tiles scroll under the gutter and
+                      // the last one is cut at the card's edge — the cue that
+                      // there is more, with no counter to draw.
+                      FlowAttachmentGroup(
+                        attachments: widget.attachments,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: _contentInset,
+                        ),
+                        onTap: widget.onAttachmentTap,
+                        // Editing is what `enabled` gates; viewing an attachment
+                        // that is already pending stays available, as does the
+                        // send button while streaming.
+                        onRemove: widget.enabled
+                            ? widget.onRemoveAttachment
+                            : null,
+                        removeTooltip: widget.removeAttachmentTooltip,
+                        previewCloseTooltip: widget.previewCloseTooltip,
+                      ),
+                      const SizedBox(height: _attachmentGap),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _contentInset,
+                      ),
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minHeight: _fieldMinHeight,
+                        ),
+                        alignment: AlignmentDirectional.topStart,
+                        child: Focus(
+                          onKeyEvent: _handleKeyEvent,
+                          child: TextField(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            enabled: widget.enabled,
+                            minLines: 1,
+                            maxLines: widget.maxLines,
+                            // The design's compressed composer: body face on
+                            // the 1.3 control line, so the empty card stands
+                            // at 116.
+                            style: typography.bodyLarge
+                                .copyWith(height: 1.3, color: colors.onSurface)
+                                .merge(style?.textStyle),
+                            // Android's IME rich-content path, the one media
+                            // input the SDK covers without a plugin.
+                            contentInsertionConfiguration:
+                                widget.onContentInserted == null ||
+                                    !widget.attachmentsEnabled
+                                ? null
+                                : ContentInsertionConfiguration(
+                                    onContentInserted:
+                                        widget.onContentInserted!,
+                                  ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              hintText: widget.placeholder,
+                              hintStyle: typography.bodyLarge.copyWith(
+                                height: 1.3,
+                                color:
+                                    style?.hintColor ?? colors.onSurfaceMuted,
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: _fieldGap),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _actionInset,
+                      ),
+                      child: Row(
+                        children: [
+                          // The built-in attach affordance leads the row; being
+                          // outside the loop keeps the pill-pair gap logic
+                          // reading only the host's actions.
+                          if (widget.attachmentsEnabled &&
+                              (widget.onAttach != null ||
+                                  widget.onAttachmentsPicked != null)) ...[
+                            _buildAttachButton(context),
+                            const SizedBox(width: _leadingGap),
+                          ],
+                          for (
+                            var i = 0;
+                            i < widget.leadingActions.length;
+                            i++
+                          ) ...[
+                            widget.leadingActions[i],
+                            // Two neighbouring pills read as a set and take the
+                            // design's wider step — 8, closing to 6 on phones —
+                            // while everything else keeps the action row's 4.
+                            SizedBox(
+                              width:
+                                  i + 1 < widget.leadingActions.length &&
+                                      widget.leadingActions[i] is FlowPill &&
+                                      widget.leadingActions[i + 1] is FlowPill
+                                  ? (_isMobile(context)
+                                        ? _mobilePillGap
+                                        : _pillGap)
+                                  : _leadingGap,
+                            ),
+                          ],
+                          const Spacer(),
+                          for (final action in widget.trailingActions) ...[
+                            action,
+                            const SizedBox(width: _trailingGap),
+                          ],
+                          _buildSendStopButton(context),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: _fieldGap),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: _actionInset),
-                  child: Row(
-                    children: [
-                      // The built-in attach affordance leads the row; being
-                      // outside the loop keeps the pill-pair gap logic
-                      // reading only the host's actions.
-                      if (widget.attachmentsEnabled &&
-                          (widget.onAttach != null ||
-                              widget.onAttachmentsPicked != null)) ...[
-                        _buildAttachButton(context),
-                        const SizedBox(width: _leadingGap),
-                      ],
-                      for (
-                        var i = 0;
-                        i < widget.leadingActions.length;
-                        i++
-                      ) ...[
-                        widget.leadingActions[i],
-                        // Two neighbouring pills read as a set and take the
-                        // design's wider step — 8, closing to 6 on phones —
-                        // while everything else keeps the action row's 4.
-                        SizedBox(
-                          width:
-                              i + 1 < widget.leadingActions.length &&
-                                  widget.leadingActions[i] is FlowPill &&
-                                  widget.leadingActions[i + 1] is FlowPill
-                              ? (_isMobile(context) ? _mobilePillGap : _pillGap)
-                              : _leadingGap,
-                        ),
-                      ],
-                      const Spacer(),
-                      for (final action in widget.trailingActions) ...[
-                        action,
-                        const SizedBox(width: _trailingGap),
-                      ],
-                      _buildSendStopButton(context),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
