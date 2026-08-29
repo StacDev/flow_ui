@@ -260,15 +260,22 @@ class _FlowThreadListState extends State<FlowThreadList> {
       // The embedded form is one coherent thing: measured by content and
       // not a scrolling region of its own — the host's panel scrolls.
       physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: widget.padding,
+      // Resolved, never null: a null ListView padding silently absorbs
+      // the MediaQuery's safe-area insets, and this list's edges belong
+      // to the host's panel.
+      padding: widget.padding ?? EdgeInsets.zero,
       itemCount: entries.length,
       itemBuilder: (context, index) {
         switch (entries[index]) {
           case _HeaderEntry(:final label):
             return Padding(
-              padding: EdgeInsetsDirectional.only(
-                start: resolvedRowPadding.left,
-                end: resolvedRowPadding.right,
+              // Physical, not directional: the row padding is already
+              // resolved above, and re-entering directional space would
+              // apply the text direction a second time — mirroring the
+              // header's insets against the rows' in RTL.
+              padding: EdgeInsets.only(
+                left: resolvedRowPadding.left,
+                right: resolvedRowPadding.right,
                 top: index == 0 ? 0 : _sectionGapAbove,
                 bottom: _sectionGapBelow,
               ),
