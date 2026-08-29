@@ -161,7 +161,9 @@ the rest.
 
 For a surface that is neither, `FlowDropTarget` is the detection on its
 own: wrap any subtree, take `onDropped` and `onHoverChanged`, and draw
-whatever treatment you like.
+whatever treatment you like. Its `enabled` is the same switch as
+`attachmentsEnabled`: off keeps the zone registered and swallows drops
+rather than letting the browser navigate to the file.
 
 ## Key API
 

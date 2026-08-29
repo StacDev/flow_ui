@@ -202,6 +202,8 @@ class FlowChatView extends StatefulWidget {
   /// Whether the surface takes drops right now. [onAttachmentsDropped]
   /// says the feature is wired; this says it is available — false leaves
   /// the handler in place and stops it firing, with no treatment raised.
+  /// The surface stays a drop zone as far as the browser is concerned, so
+  /// a file dropped on it is swallowed rather than navigating the tab.
   /// The composer has the same switch for its own ways in; a host turns
   /// both off together. [dropActive] is unaffected, being the host's own
   /// override.
@@ -370,7 +372,8 @@ class _FlowChatViewState extends State<FlowChatView> {
     // the treatment is full-bleed and the target should match it. A plain
     // pass-through off the web, where it registers nothing.
     return FlowDropTarget(
-      onDropped: widget.attachmentsEnabled ? widget.onAttachmentsDropped : null,
+      onDropped: widget.onAttachmentsDropped,
+      enabled: widget.attachmentsEnabled,
       onHoverChanged: _handleDropHover,
       attachmentOptions: widget.attachmentOptions,
       onAttachmentRejected: widget.onAttachmentRejected,

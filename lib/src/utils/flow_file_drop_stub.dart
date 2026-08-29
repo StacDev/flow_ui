@@ -20,6 +20,7 @@ class FlowDropRegistration {
 FlowDropRegistration? flowRegisterDropTarget({
   required int viewId,
   required Rect? Function() bounds,
+  required bool Function() isEnabled,
   required void Function(bool hovering) onHover,
   required void Function(List<FlowFileCandidate> files) onDrop,
 }) => null;

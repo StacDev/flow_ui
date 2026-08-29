@@ -39,6 +39,7 @@ class FlowDropRegistration {
 FlowDropRegistration? flowRegisterDropTarget({
   required int viewId,
   required Rect? Function() bounds,
+  required bool Function() isEnabled,
   required void Function(bool hovering) onHover,
   required void Function(List<FlowFileCandidate> files) onDrop,
 }) {
@@ -49,7 +50,7 @@ FlowDropRegistration? flowRegisterDropTarget({
     viewId,
     () => _ViewDropListener(viewId, host as dom.HTMLElement),
   );
-  final target = _DropTarget(bounds, onHover, onDrop);
+  final target = _DropTarget(bounds, isEnabled, onHover, onDrop);
   view._add(target);
   return FlowDropRegistration._(view, target);
 }
@@ -62,9 +63,13 @@ final Map<int, _ViewDropListener> _views = <int, _ViewDropListener>{};
 const Duration _watchdogIdle = Duration(milliseconds: 700);
 
 class _DropTarget {
-  _DropTarget(this.bounds, this.onHover, this.onDrop);
+  _DropTarget(this.bounds, this.isEnabled, this.onHover, this.onDrop);
 
   final Rect? Function() bounds;
+
+  /// Read at event time, so a target switched off mid-drag shows the
+  /// refusing cursor at once.
+  final bool Function() isEnabled;
   final void Function(bool hovering) onHover;
   final void Function(List<FlowFileCandidate> files) onDrop;
 }
@@ -141,7 +146,9 @@ class _ViewDropListener {
     // the correct behaviour, and defaulting it away everywhere would be
     // the package overreaching past its own widget.
     event.preventDefault();
-    event.dataTransfer?.dropEffect = 'copy';
+    // A target that is off still claims the drop — the alternative is the
+    // browser navigating to the file — but says so with the cursor.
+    event.dataTransfer?.dropEffect = target.isEnabled() ? 'copy' : 'none';
   }
 
   void _handleDragLeave(dom.DragEvent event) {

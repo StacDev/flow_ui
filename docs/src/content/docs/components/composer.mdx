@@ -153,8 +153,10 @@ asserts — one button cannot have two owners.
 Presence of a callback says the feature is *wired*; `attachmentsEnabled`
 says it is *available*. Set it false — for a plan tier, a model that
 takes no images, a thread that has closed — and every way in stops at
-once without unwiring anything: no attach button, no drop on the card,
-no paste, no keyboard media. `FlowChatView` has the same flag for the
+once without unwiring anything: no attach button, no paste, no keyboard
+media, and a drop on the card is swallowed — the card stays a drop zone
+as far as the browser is concerned, showing the refusing cursor, so a
+file dropped on it never navigates the tab away. `FlowChatView` has the same flag for the
 surface's drop, so a host flips both together. Attachments already
 pending stay in the strip and can still be removed, and a `+` menu entry
 that calls `showFlowAttachmentPicker` is yours to hide alongside it.

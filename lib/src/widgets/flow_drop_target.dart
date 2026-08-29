@@ -34,6 +34,7 @@ class FlowDropTarget extends StatefulWidget {
     required this.child,
     this.onDropped,
     this.onHoverChanged,
+    this.enabled = true,
     this.attachmentOptions = const FlowAttachmentOptions(),
     this.onAttachmentRejected,
   });
@@ -48,6 +49,18 @@ class FlowDropTarget extends StatefulWidget {
   /// Whether a file drag is currently over the child. Raise the drop
   /// treatment from this.
   final ValueChanged<bool>? onHoverChanged;
+
+  /// Whether drops are taken right now. [onDropped] says the target is
+  /// wired; this says it is on.
+  ///
+  /// False keeps the target *registered* — the browser is still told the
+  /// rectangle is a drop zone, and shows its refusing cursor over it —
+  /// and swallows what lands: no treatment is raised and nothing is
+  /// delivered. Unregistering instead would hand
+  /// the drop back to the browser, whose default for a file is to
+  /// navigate the tab to it, which is not what "off" means to someone
+  /// who has just dropped a photo on a chat.
+  final bool enabled;
 
   /// What is accepted, and how what lands is decoded. A dropped file
   /// never passed through a dialog's filter, so
@@ -78,6 +91,10 @@ class _FlowDropTargetState extends State<FlowDropTarget> {
   /// framework is already unmounting.
   bool _disposed = false;
 
+  /// What the listener last said, kept even while [FlowDropTarget.enabled]
+  /// is false so a switch flipped mid-drag can report the right thing.
+  bool _hovering = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -92,6 +109,13 @@ class _FlowDropTargetState extends State<FlowDropTarget> {
     super.didUpdateWidget(oldWidget);
     if ((widget.onDropped == null) != (oldWidget.onDropped == null)) {
       _register();
+    }
+    // Flipping the switch mid-drag: the treatment comes down at once
+    // when it goes off, and back up — if a drag is still over us — when
+    // it comes on. The listener only reports transitions, so it would
+    // not repeat the hover on its own.
+    if (widget.enabled != oldWidget.enabled && _hovering) {
+      widget.onHoverChanged?.call(widget.enabled);
     }
   }
 
@@ -113,6 +137,7 @@ class _FlowDropTargetState extends State<FlowDropTarget> {
     _registration = flowRegisterDropTarget(
       viewId: viewId,
       bounds: _bounds,
+      isEnabled: () => widget.enabled,
       onHover: _handleHover,
       onDrop: _handleDrop,
     );
@@ -143,10 +168,15 @@ class _FlowDropTargetState extends State<FlowDropTarget> {
 
   void _handleHover(bool hovering) {
     if (_disposed || !mounted) return;
+    _hovering = hovering;
+    if (!widget.enabled) return;
     widget.onHoverChanged?.call(hovering);
   }
 
   Future<void> _handleDrop(List<FlowFileCandidate> files) async {
+    // Swallowed, not delivered: the listener has already kept the
+    // browser from navigating, which is the point of staying registered.
+    if (!widget.enabled) return;
     final attachments = await flowIntakeAttachments(
       files,
       options: widget.attachmentOptions,

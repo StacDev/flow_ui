@@ -260,8 +260,9 @@ class FlowComposer extends StatefulWidget {
   /// tier, a model that takes no images, a thread that has closed.
   ///
   /// False leaves every handler in place and stops them firing: the
-  /// attach button is not rendered, the card takes no drop, the field
-  /// takes no paste, and the keyboard offers no media. Attachments
+  /// attach button is not rendered, the card swallows a drop rather than
+  /// handing it to the browser, the field takes no paste, and the
+  /// keyboard offers no media. Attachments
   /// already pending stay in the strip and can still be removed — they
   /// are the host's state, and hiding them would lose what the user
   /// already did. A host's own control that calls
@@ -854,10 +855,10 @@ class _FlowComposerState extends State<FlowComposer> {
     return FlowDropTarget(
       // Gated like the picker, the paste and attachment removal: while
       // the composer is disabled a drag must not light the card up or
-      // deliver anything.
-      onDropped: widget.enabled && widget.attachmentsEnabled
-          ? widget.onAttachmentsDropped
-          : null,
+      // deliver anything — but the target stays registered, so the
+      // browser does not navigate to the file instead.
+      onDropped: widget.onAttachmentsDropped,
+      enabled: widget.enabled && widget.attachmentsEnabled,
       onHoverChanged: _handleDropHover,
       attachmentOptions: widget.attachmentOptions,
       onAttachmentRejected: widget.onAttachmentRejected,

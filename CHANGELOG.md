@@ -49,7 +49,10 @@
   and `FlowChatView`. Presence of a callback says a way in is wired;
   this says it is available: false stops the button, drop, paste and
   keyboard media at once without unwiring any of them, while pending
-  attachments stay removable.
+  attachments stay removable. A drop target that is off stays registered
+  and swallows what lands, so the browser never navigates to a dropped
+  file; `FlowDropTarget.enabled` is the same switch for a host's own
+  target.
 - **Escape hatches** — `onAttach` renders the same attach button and
   leaves the picking to the host, for a gallery sheet or a camera.
   `dropActive` stays writable as an override, since drop detection is
