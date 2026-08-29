@@ -177,6 +177,13 @@
   inline-code chip, quote, table and rule inks. All additive — nothing
   breaks.
 
+- **Fix** — the composer's card is now the field's hit target: a click on
+  its padding, the gap under the field or the empty stretch of the action
+  row focuses the field, and the pointer shows the text cursor over all of
+  it. Before, only the field's own text run took the click, so a card
+  with a short draft was mostly dead space. The buttons, the tiles and
+  the host's actions keep their own taps and cursors.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut
