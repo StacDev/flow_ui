@@ -570,7 +570,17 @@ class _FlowChatViewState extends State<FlowChatView> {
       controller: widget.threadController,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: thread,
+        // The controller only speaks when its offset moves; a thread that
+        // remounts — a host keying it per conversation — attaches a fresh
+        // position at zero in silence, and the jump button would keep
+        // the last conversation's state. Its first metrics say otherwise.
+        child: NotificationListener<ScrollMetricsNotification>(
+          onNotification: (notification) {
+            if (notification.depth == 0) _handleScroll();
+            return false;
+          },
+          child: thread,
+        ),
       ),
     );
     if (widget.threadController == null) return scrollArea;

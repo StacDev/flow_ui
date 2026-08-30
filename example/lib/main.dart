@@ -72,7 +72,60 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final ScrollController _scroll = ScrollController();
 
-  List<FlowMessageData> _messages = const [];
+  /// Every conversation this screen has held, newest first, and the one
+  /// on screen. The thread list in the drawer reads these; the chat view
+  /// only ever sees the active one.
+  final Map<String, List<FlowMessageData>> _threads = {'t0': const []};
+  final List<String> _threadOrder = ['t0'];
+  String _activeThread = 't0';
+  int _nextThread = 1;
+
+  /// The composer's text, and each thread's draft while another is on
+  /// screen — a draft belongs to the conversation it was typed in.
+  final TextEditingController _draft = TextEditingController();
+  final Map<String, String> _drafts = {};
+
+  List<FlowMessageData> get _messages => _threads[_activeThread] ?? const [];
+  set _messages(List<FlowMessageData> value) => _threads[_activeThread] = value;
+
+  /// A thread is named by its opening question.
+  String _titleOf(String id) {
+    for (final message in _threads[id] ?? const <FlowMessageData>[]) {
+      if (message.role != FlowMessageRole.user) continue;
+      final text = message.plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
+      if (text.isEmpty) continue;
+      return text.length > 40 ? '${text.substring(0, 40)}…' : text;
+    }
+    return 'New chat';
+  }
+
+  void _openThread(String id) {
+    if (id == _activeThread) return;
+    if (_generating) _stop();
+    _drafts[_activeThread] = _draft.text;
+    _draft.text = _drafts[id] ?? '';
+    setState(() {
+      _activeThread = id;
+      _pending.clear();
+      _rejection = null;
+    });
+  }
+
+  void _newThread() {
+    // An untouched thread is already the new chat.
+    if (_messages.isEmpty) return;
+    if (_generating) _stop();
+    _drafts[_activeThread] = _draft.text;
+    _draft.clear();
+    setState(() {
+      _activeThread = 't${_nextThread++}';
+      _threads[_activeThread] = const [];
+      _threadOrder.insert(0, _activeThread);
+      _pending.clear();
+      _rejection = null;
+    });
+  }
+
   StreamSubscription<GeminiDelta>? _reply;
   int _nextId = 0;
   String _model = 'gemini-3.6-flash';
@@ -111,6 +164,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _copiedReset?.cancel();
     _reply?.cancel();
     _scroll.dispose();
+    _draft.dispose();
     super.dispose();
   }
 
@@ -202,6 +256,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _generate() {
     final id = 'a${_nextId++}';
+    // The turn stays with this conversation even if another is opened
+    // before its last delta or its picture's measurement lands.
+    final thread = _activeThread;
     final history = List.of(_messages);
     final generatesImages = _imageModels.contains(_model);
     setState(() {
@@ -274,12 +331,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       if (ratio == null || !identical(picture, bytes)) return;
                       aspectRatio = ratio;
                       if (_messages.any((m) => m.id == id)) {
-                        _update(id, parts: parts(settled: _reply == null));
+                        _update(
+                          id,
+                          thread: thread,
+                          parts: parts(settled: _reply == null),
+                        );
                       }
                     });
                 }
                 _update(
                   id,
+                  thread: thread,
                   parts: parts(settled: false),
                   status: FlowMessageStatus.streaming,
                 );
@@ -289,6 +351,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 failed = true;
                 _update(
                   id,
+                  thread: thread,
                   status: FlowMessageStatus.error,
                   parts: [
                     ...parts(settled: true),
@@ -319,6 +382,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   _update(
                     id,
+                    thread: thread,
                     parts: parts(settled: true),
                     status: FlowMessageStatus.complete,
                   );
@@ -345,6 +409,9 @@ class _ChatScreenState extends State<ChatScreen> {
   /// arrived yet, where completing would leave an empty turn: the still
   /// pending reply is removed instead.
   void _stop() {
+    // Only a turn in flight has anything to stop: the composer calls this
+    // while streaming, and a thread switch may not be.
+    if (!_generating) return;
     _reply?.cancel();
     _reply = null;
     final last = _messages.last;
@@ -525,15 +592,19 @@ class _ChatScreenState extends State<ChatScreen> {
     _generate();
   }
 
+  /// Rewrites one turn, in [thread] — the conversation it belongs to,
+  /// which a decode landing late may no longer be the one on screen.
   void _update(
     String id, {
     List<FlowMessagePart>? parts,
     FlowMessageStatus? status,
+    String? thread,
   }) {
     if (!mounted) return;
+    final target = thread ?? _activeThread;
     setState(() {
-      _messages = [
-        for (final m in _messages)
+      _threads[target] = [
+        for (final m in _threads[target] ?? const <FlowMessageData>[])
           if (m.id == id) m.copyWith(parts: parts, status: status) else m,
       ];
     });
@@ -541,12 +612,102 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.flowColors;
+    final typography = context.flowTypography;
     return Scaffold(
-      backgroundColor: context.flowColors.surface,
+      backgroundColor: colors.surface,
+      // The app's own chrome, in the Flow tokens: a flat bar on the page
+      // ground, the thread's title, the drawer and a new chat.
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        title: Text(
+          _titleOf(_activeThread),
+          style: typography.labelLargeEmphasised.copyWith(
+            color: colors.onSurface,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            tooltip: 'Chats',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_square),
+            tooltip: 'New chat',
+            onPressed: _newThread,
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        backgroundColor: colors.surfaceBright,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Text(
+                      'Chats',
+                      style: typography.titleSmallEmphasised.copyWith(
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    const Spacer(),
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: const Icon(Icons.edit_square),
+                        tooltip: 'New chat',
+                        color: colors.onSurfaceVariant,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _newThread();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Builder(
+                  builder: (context) => FlowThreadList(
+                    sections: [
+                      FlowThreadListSection(
+                        label: 'Today',
+                        items: [
+                          for (final id in _threadOrder)
+                            FlowThreadListItem(
+                              id: id,
+                              title: _titleOf(id),
+                              tooltip: _titleOf(id),
+                            ),
+                        ],
+                      ),
+                    ],
+                    selectedId: _activeThread,
+                    onThreadSelected: (id) {
+                      Navigator.of(context).pop();
+                      _openThread(id);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: FlowChatView(
-        // Drag-and-drop, handled by the package. Web only — the SDK
-        // implements OS file drop nowhere else — and a no-op elsewhere,
-        // which is why the attach button carries the same job.
         // Web only: the SDK implements OS file drop nowhere else, and the
         // package says so at runtime when handed the callback elsewhere.
         onAttachmentsDropped: kIsWeb ? _addAttachments : null,
@@ -559,6 +720,8 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Good afternoon',
         ),
         thread: FlowThread(
+          // A fresh list per conversation: its own offset and fit state.
+          key: ValueKey(_activeThread),
           messages: _messages,
           controller: _scroll,
           thinkingLabel: 'Thinking…',
@@ -584,6 +747,7 @@ class _ChatScreenState extends State<ChatScreen> {
         threadController: _scroll,
         jumpToLatestTooltip: 'Jump to latest',
         composer: FlowComposer(
+          controller: _draft,
           isStreaming: _generating,
           onSend: _send,
           onStop: _stop,
