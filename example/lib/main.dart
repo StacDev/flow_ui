@@ -485,7 +485,7 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'select':
         showFlowTextSelection(
           context: context,
-          text: message.plainText,
+          message: message,
           closeTooltip: 'Close',
         );
       case 'up':

@@ -233,8 +233,8 @@
   conversation a `SelectionArea` on pointer platforms: drag across turns,
   copy with the shortcut, the message menu still on right-click. Phones
   select from the menu: `showFlowTextSelection` pushes a full-screen page
-  of a message's text for the platform's handles, and
-  `FlowMessageData.plainText` is the text to hand it.
+  of a message, typeset as it was in the thread, for the platform's
+  handles; `FlowMessageData.plainText` joins its text for a copy.
 
 ## 0.2.0
 

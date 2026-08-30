@@ -128,14 +128,14 @@ On pointer platforms the thread is a `SelectionArea` by default
 messages' own gestures sit below it, so a right-click still opens the
 message menu. Phones can't have both, since there the long-press *is*
 the menu, so they select from it: `showFlowTextSelection` pushes a
-full-screen page of the message's `plainText` where a long-press selects
-a word and the platform's handles take over.
+full-screen page of the message, typeset as it was in the thread, where a
+long-press selects a word and the platform's handles take over.
 
 ```dart title="Select text from the menu"
 onMessageMenuSelected: (message, id) => switch (id) {
   'select' => showFlowTextSelection(
     context: context,
-    text: message.plainText,
+    message: message,
     closeTooltip: 'Close',
   ),
   _ => handle(message, id),

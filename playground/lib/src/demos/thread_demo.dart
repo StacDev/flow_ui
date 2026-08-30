@@ -53,10 +53,11 @@ FlowThread(
   ],
   onMessageMenuSelected: (message, id) => switch (id) {
     // Phones select prose from the menu: a full-screen page of the
-    // message's plain text. Pointer platforms drag-select in place.
+    // message, typeset as in the thread. Pointer platforms drag-select
+    // in place.
     'select' => showFlowTextSelection(
       context: context,
-      text: message.plainText,
+      message: message,
       closeTooltip: 'Close',
     ),
     _ => handle(message, id),
@@ -212,7 +213,7 @@ class _ThreadDemoState extends State<ThreadDemo> {
     if (id == 'select') {
       showFlowTextSelection(
         context: context,
-        text: message.plainText,
+        message: message,
         closeTooltip: 'Close',
       );
       return;
