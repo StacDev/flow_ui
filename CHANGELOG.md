@@ -235,6 +235,10 @@
   select from the menu: `showFlowTextSelection` pushes a full-screen page
   of a message, typeset as it was in the thread, for the platform's
   handles; `FlowMessageData.plainText` joins its text for a copy.
+- **Fix** — the chat view's jump-to-latest button follows a thread that
+  remounts, as a host keying `FlowThread` per conversation does: the new
+  list's first metrics reset it rather than the last list's offset
+  lingering until a scroll.
 
 ## 0.2.0
 
