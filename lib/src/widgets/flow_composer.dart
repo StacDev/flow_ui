@@ -10,6 +10,8 @@ import '../styles/flow_composer_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_intake.dart';
 import '../utils/flow_circle_button.dart';
+import '../utils/flow_selection_theme.dart';
+import '../utils/flow_touch_target.dart';
 import '../utils/flow_clipboard_paste.dart';
 import '../utils/flow_file_picker.dart';
 import '../utils/flow_gradient_outline.dart';
@@ -99,6 +101,8 @@ class FlowComposer extends StatefulWidget {
     this.onAttachmentTap,
     this.removeAttachmentTooltip,
     this.previewCloseTooltip,
+    this.sendTooltip,
+    this.stopTooltip,
     this.onAttach,
     this.onAttachmentsPicked,
     this.onAttachmentsDropped,
@@ -276,6 +280,14 @@ class FlowComposer extends StatefulWidget {
   /// name.
   final String? attachTooltip;
 
+  /// Host-localized label for the send disc; also its accessible name.
+  /// Without one assistive tech announces an unnamed button.
+  final String? sendTooltip;
+
+  /// Host-localized label for the stop disc while streaming; also its
+  /// accessible name.
+  final String? stopTooltip;
+
   /// Raises the error banner: the design's tab above the card, in the
   /// error wash with a warning glyph and this line. Null draws nothing.
   ///
@@ -348,6 +360,18 @@ class _FlowComposerState extends State<FlowComposer> {
   );
   static const double _contentInset = 18;
   static const double _actionInset = 10;
+
+  /// The action row's reach on touch platforms: the attach glyph and the
+  /// send disc stay their drawn 32 wide and take 40 tall, the row growing
+  /// 4 each way into the field gap above and the card's bottom padding
+  /// below, so the card keeps its height and nothing moves.
+  static const double _rowTouch = 40;
+  static const double _rowTouchGrowth = (_rowTouch - _buttonFrame) / 2;
+  static const EdgeInsetsGeometry _cardPaddingTouch =
+      EdgeInsetsDirectional.fromSTEB(1, 19, 1, 11 - _rowTouchGrowth);
+
+  /// The error tab's cross takes the tab's 30 on touch platforms.
+  static const double _errorDismissTouch = 30;
   static const double _attachmentGap = 12;
   static const double _fieldGap = 16;
   static const double _leadingGap = 4;
@@ -601,24 +625,39 @@ class _FlowComposerState extends State<FlowComposer> {
     BuildContext context, {
     required bool active,
     required Widget disc,
+    required VoidCallback? onTap,
   }) {
     final colors = context.flowColors;
     final style = _styleOf(context);
-    return Container(
-      width: _buttonFrame,
-      height: _buttonFrame,
-      alignment: Alignment.center,
-      decoration: ShapeDecoration(
-        color: style?.backgroundColor ?? colors.surfaceBright,
-        shape: CircleBorder(
-          side: BorderSide(
-            color: active
-                ? (style?.sendBackgroundColor ?? colors.primary)
-                : colors.outlineVariant,
+    // The disc keeps its 32 frame and takes the row's 40 on touch.
+    return FlowTouchTarget(
+      minWidth: _buttonFrame,
+      minHeight: _rowTouch,
+      child: GestureDetector(
+        // The ring around the disc is the button too: a tap on it, or
+        // one the reach lands on the frame, fires without the ink. Out of
+        // the semantics tree: the disc's own button node carries the
+        // name, and a second tap node beside it would announce unnamed.
+        behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
+        onTap: onTap,
+        child: Container(
+          width: _buttonFrame,
+          height: _buttonFrame,
+          alignment: Alignment.center,
+          decoration: ShapeDecoration(
+            color: style?.backgroundColor ?? colors.surfaceBright,
+            shape: CircleBorder(
+              side: BorderSide(
+                color: active
+                    ? (style?.sendBackgroundColor ?? colors.primary)
+                    : colors.outlineVariant,
+              ),
+            ),
           ),
+          child: SizedBox.square(dimension: _buttonDisc, child: disc),
         ),
       ),
-      child: SizedBox.square(dimension: _buttonDisc, child: disc),
     );
   }
 
@@ -670,7 +709,11 @@ class _FlowComposerState extends State<FlowComposer> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return button;
+    return FlowTouchTarget(
+      minWidth: _buttonFrame,
+      minHeight: _rowTouch,
+      child: button,
+    );
   }
 
   Widget _buildSendStopButton(BuildContext context) {
@@ -682,11 +725,13 @@ class _FlowComposerState extends State<FlowComposer> {
       return _ringed(
         context,
         active: true,
+        onTap: widget.onStop,
         disc: FlowCircleButton(
           icon: Icons.stop_rounded,
           background: discColor,
           foreground: glyphColor,
           padding: _stopPadding,
+          tooltip: widget.stopTooltip,
           onTap: widget.onStop,
         ),
       );
@@ -695,25 +740,33 @@ class _FlowComposerState extends State<FlowComposer> {
       valueListenable: _controller,
       builder: (context, value, _) {
         final canSend = _canSend(value.text.trim());
+        final sendTooltip = widget.sendTooltip;
+        Widget disc = Material(
+          // Disabled keeps the arrow's ink and only drains the disc:
+          // primary gives way to the 30% disabled wash.
+          color: canSend ? discColor : colors.onSurfaceDisabled,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: canSend ? _send : null,
+            customBorder: const CircleBorder(),
+            child: CustomPaint(
+              // The design's arrow is a thin stroke, not the chunky
+              // Material glyph.
+              painter: _ArrowUpPainter(color: glyphColor),
+            ),
+          ),
+        );
+        // Tooltip contributes the accessible name too, per the attach
+        // button's precedent.
+        if (sendTooltip != null) {
+          disc = Tooltip(message: sendTooltip, child: disc);
+        }
         return _ringed(
           context,
           active: canSend,
-          disc: Material(
-            // Disabled keeps the arrow's ink and only drains the disc:
-            // primary gives way to the 30% disabled wash.
-            color: canSend ? discColor : colors.onSurfaceDisabled,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: canSend ? _send : null,
-              customBorder: const CircleBorder(),
-              child: CustomPaint(
-                // The design's arrow is a thin stroke, not the chunky
-                // Material glyph.
-                painter: _ArrowUpPainter(color: glyphColor),
-              ),
-            ),
-          ),
+          onTap: canSend ? _send : null,
+          disc: disc,
         );
       },
     );
@@ -729,7 +782,11 @@ class _FlowComposerState extends State<FlowComposer> {
     final foreground = style?.errorForegroundColor ?? colors.onErrorContainer;
     final icon = widget.errorIcon;
     final onDismiss = widget.onErrorDismiss;
-    const dismissDisc = _errorDismissIconSize + _errorDismissPadding * 2;
+    // On touch the cross reaches the tab's 30, which the padding then
+    // gives up entirely, so the tab keeps its height either way.
+    final dismissDisc = FlowTouchTarget.isTouch(context)
+        ? _errorDismissTouch
+        : _errorDismissIconSize + _errorDismissPadding * 2;
     final verticalPadding = onDismiss == null
         ? _errorVerticalPadding
         : _errorVerticalPadding - (dismissDisc - _errorIconSize) / 2;
@@ -796,6 +853,7 @@ class _FlowComposerState extends State<FlowComposer> {
                       hoverColor: background,
                       iconSize: _errorDismissIconSize,
                       padding: _errorDismissPadding,
+                      touchMinSize: _errorDismissTouch,
                       tooltip: widget.errorDismissTooltip,
                       onTap: onDismiss,
                     ),
@@ -813,22 +871,24 @@ class _FlowComposerState extends State<FlowComposer> {
     // The banner sits above the card and outside the drop target: it is
     // not somewhere to drop a file. AnimatedSize grows it in from the
     // card's top edge, so the thread above eases up rather than jumping.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AnimatedSize(
-          duration: MediaQuery.disableAnimationsOf(context)
-              ? Duration.zero
-              : _errorReveal,
-          curve: Curves.easeOut,
-          alignment: Alignment.bottomCenter,
-          child: errorMessage == null
-              ? const SizedBox.shrink()
-              : _buildErrorBanner(context, errorMessage),
-        ),
-        _buildCard(context),
-      ],
+    return FlowSelectionTheme(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AnimatedSize(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : _errorReveal,
+            curve: Curves.easeOut,
+            alignment: Alignment.bottomCenter,
+            child: errorMessage == null
+                ? const SizedBox.shrink()
+                : _buildErrorBanner(context, errorMessage),
+          ),
+          _buildCard(context),
+        ],
+      ),
     );
   }
 
@@ -837,6 +897,7 @@ class _FlowComposerState extends State<FlowComposer> {
   Widget _buildCard(BuildContext context) {
     final colors = context.flowColors;
     final typography = context.flowTypography;
+    final touch = FlowTouchTarget.isTouch(context);
 
     final active = widget.enabled && (_focused || _hovered);
     final radius = widget.borderRadius ?? _cardRadius;
@@ -932,7 +993,9 @@ class _FlowComposerState extends State<FlowComposer> {
                     BoxShadow(color: colors.shadow, blurRadius: _shadowBlur),
                   ],
                 ),
-                padding: widget.padding ?? _cardPadding,
+                padding:
+                    widget.padding ??
+                    (touch ? _cardPaddingTouch : _cardPadding),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1008,7 +1071,9 @@ class _FlowComposerState extends State<FlowComposer> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: _fieldGap),
+                    SizedBox(
+                      height: touch ? _fieldGap - _rowTouchGrowth : _fieldGap,
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: _actionInset,

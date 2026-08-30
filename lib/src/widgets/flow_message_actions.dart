@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_message_actions_style.dart';
 import '../theme/flow_theme.dart';
+import '../utils/flow_touch_target.dart';
 
 /// One action in a [FlowMessageActions] row.
 ///
@@ -92,6 +93,15 @@ class FlowMessageActions extends StatelessWidget {
   /// value, not a scale step.
   static const double _gap = 4;
 
+  /// The strip's reach above its frames on touch platforms: each button
+  /// lays out this much taller with its frame at the bottom, and
+  /// `FlowMessage` gives up the same run of its footer gap, so the frames
+  /// stay put while the strip reaches up into the gap — or as much of it
+  /// as the gap holds, through [FlowFooterReach]. Sideways the buttons
+  /// share the strip's pitch between them, the edge ones keeping their
+  /// frames flush with the strip's ends.
+  static const double touchReach = 12;
+
   /// Rendered in order.
   final List<FlowMessageAction> actions;
 
@@ -109,16 +119,40 @@ class FlowMessageActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final effective =
         context.flowTheme.messageActionsStyle?.merge(style) ?? style;
-    // The design's action strip: 15px glyphs on 20px frames, 4 apart.
+    // The design's action strip: 15px glyphs on 20px frames, 4 apart. On
+    // touch the gaps belong to the buttons instead — each edge button
+    // takes half a gap on its outer side, the rest a full gap — so the
+    // pitch and every frame's place are unchanged while a finger between
+    // two frames still lands on one.
+    final touch = FlowTouchTarget.isTouch(context);
+    final last = actions.length - 1;
+    double reachWidth(int i) {
+      if (!touch || last == 0) return _ActionButtonState._frameSize;
+      return _ActionButtonState._frameSize +
+          (i == 0 || i == last ? _gap / 2 : _gap);
+    }
+
+    // Shares are physical, and a Row mirrors under RTL: the first action
+    // keeps its frame at the strip's start and the last at its end,
+    // whichever side those are.
+    final ltr = Directionality.of(context) == TextDirection.ltr;
+    double leftShare(int i) {
+      if (i == 0) return ltr ? 0 : 1;
+      if (i == last) return ltr ? 1 : 0;
+      return 0.5;
+    }
+
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < actions.length; i++) ...[
-          if (i > 0) const SizedBox(width: _gap),
+          if (i > 0 && !touch) const SizedBox(width: _gap),
           _ActionButton(
             action: actions[i],
             iconSize: iconSize,
             style: effective,
+            reachWidth: reachWidth(i),
+            leftShare: leftShare(i),
           ),
         ],
       ],
@@ -133,11 +167,18 @@ class _ActionButton extends StatefulWidget {
     required this.action,
     required this.iconSize,
     this.style,
+    required this.reachWidth,
+    required this.leftShare,
   });
 
   final FlowMessageAction action;
   final double iconSize;
   final FlowMessageActionsStyle? style;
+
+  /// The button's share of the strip's pitch on touch platforms, and
+  /// where its frame sits in it.
+  final double reachWidth;
+  final double leftShare;
 
   @override
   State<_ActionButton> createState() => _ActionButtonState();
@@ -202,6 +243,33 @@ class _ActionButtonState extends State<_ActionButton> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return button;
+    // The frame keeps its place: its share of the pitch sideways, the
+    // footer gap the message gave up above, seated at the bottom.
+    final reach =
+        FlowFooterReach.maybeOf(context) ?? FlowMessageActions.touchReach;
+    return FlowTouchTarget(
+      minWidth: widget.reachWidth,
+      minHeight: _frameSize + reach,
+      topShare: 1,
+      leftShare: widget.leftShare,
+      child: button,
+    );
   }
+}
+
+/// How far a [FlowMessageActions] strip may reach above its frames on
+/// touch platforms: the run of footer gap its message has given up.
+/// `FlowMessage` sets it to the gap it has; a strip on its own takes the
+/// full [FlowMessageActions.touchReach].
+class FlowFooterReach extends InheritedWidget {
+  const FlowFooterReach({super.key, required this.reach, required super.child});
+
+  final double reach;
+
+  static double? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<FlowFooterReach>()?.reach;
+
+  @override
+  bool updateShouldNotify(FlowFooterReach oldWidget) =>
+      reach != oldWidget.reach;
 }

@@ -1,17 +1,26 @@
+import 'dart:math' as math;
+
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_attachment.dart';
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../styles/flow_menu_style.dart' show FlowMenuPresentation;
 import '../styles/flow_message_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_error.dart';
+import '../utils/flow_menu_core.dart';
+import '../utils/flow_menu_entries.dart';
 import '../utils/flow_shimmer_sweep.dart';
+import '../utils/flow_touch_target.dart';
 import 'flow_attachment_group.dart';
 import 'flow_attachment_preview.dart';
 import 'flow_code_block.dart';
 import 'flow_error_state.dart';
 import 'flow_markdown.dart';
+import 'flow_message_actions.dart';
+import 'flow_menu.dart' show FlowMenuEntry, FlowMenuOption;
 import 'flow_streaming_text.dart';
 import 'flow_thinking_indicator.dart';
 
@@ -55,6 +64,8 @@ class FlowMessage extends StatelessWidget {
     this.retryLabel,
     this.leading,
     this.footer,
+    this.menuEntries,
+    this.onMenuSelected,
     this.maxBubbleWidthFraction = 0.75,
     this.textStyle,
     this.charactersPerSecond = 300,
@@ -125,6 +136,20 @@ class FlowMessage extends StatelessWidget {
   /// Slot below the content, e.g. message actions.
   final Widget? footer;
 
+  /// The message's context menu — the AI apps' long-press: copy, edit,
+  /// regenerate, feedback, whatever the host offers. Options and dividers
+  /// like [FlowMenu.entries], labels the host's. Opens on a long-press
+  /// with a haptic on touch, and on a right-click on pointer platforms; a
+  /// sheet on phones, a popover at the pointer elsewhere, by the theme's
+  /// platform like the menus. Null or empty draws no menu.
+  ///
+  /// Long-presses inside a selectable region — a code block — keep
+  /// selecting; the menu takes the rest of the message.
+  final List<FlowMenuEntry>? menuEntries;
+
+  /// The chosen option's id. Null draws no menu.
+  final ValueChanged<String>? onMenuSelected;
+
   /// User-bubble max width as a fraction of the available width.
   final double maxBubbleWidthFraction;
 
@@ -193,13 +218,36 @@ class FlowMessage extends StatelessWidget {
 
   bool get _isError => message.status == FlowMessageStatus.error;
 
+  /// The footer under its gap. A [FlowMessageActions] strip on touch
+  /// platforms reaches up into the gap instead: the strip grows by what
+  /// the gap holds, the gap shrinks by the same, and the frames draw where
+  /// the design put them.
+  Widget _footer(BuildContext context, Widget footer, double gap) {
+    if (footer is! FlowMessageActions || !FlowTouchTarget.isTouch(context)) {
+      return Padding(
+        padding: EdgeInsets.only(top: gap),
+        child: footer,
+      );
+    }
+    final reach = math.min(gap, FlowMessageActions.touchReach);
+    return Padding(
+      padding: EdgeInsets.only(top: gap - reach),
+      child: FlowFooterReach(reach: reach, child: footer),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return switch (message.role) {
+    final built = switch (message.role) {
       FlowMessageRole.user => _buildUser(context),
       FlowMessageRole.assistant => _buildAssistant(context),
       FlowMessageRole.system => _buildSystem(context),
     };
+    final entries = menuEntries;
+    final onMenu = onMenuSelected;
+    if (entries == null || onMenu == null) return built;
+    if (!entries.any((entry) => entry is FlowMenuOption)) return built;
+    return _MessageMenu(entries: entries, onSelected: onMenu, child: built);
   }
 
   Widget _buildUser(BuildContext context) {
@@ -260,11 +308,7 @@ class FlowMessage extends StatelessWidget {
                 constraints: BoxConstraints(maxWidth: maxWidth),
                 child: bubble,
               ),
-            if (footer != null)
-              Padding(
-                padding: const EdgeInsets.only(top: _userFooterGap),
-                child: footer,
-              ),
+            if (footer != null) _footer(context, footer!, _userFooterGap),
           ],
         );
       },
@@ -317,11 +361,7 @@ class FlowMessage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         content,
-        if (footer != null)
-          Padding(
-            padding: const EdgeInsets.only(top: _assistantFooterGap),
-            child: footer,
-          ),
+        if (footer != null) _footer(context, footer!, _assistantFooterGap),
       ],
     );
 
@@ -704,6 +744,73 @@ class _SentImageTileState extends State<_SentImageTile> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The message's context menu: a long-press or right-click anywhere on
+/// the message's own content opens the host's entries, as the phone sheet
+/// or a popover anchored where the pointer is. Defers to its child for
+/// hit-testing so the blank run beside a user bubble is not the message.
+class _MessageMenu extends StatefulWidget {
+  const _MessageMenu({
+    required this.entries,
+    required this.onSelected,
+    required this.child,
+  });
+
+  final List<FlowMenuEntry> entries;
+  final ValueChanged<String> onSelected;
+  final Widget child;
+
+  @override
+  State<_MessageMenu> createState() => _MessageMenuState();
+}
+
+class _MessageMenuState extends State<_MessageMenu> {
+  final MenuController _controller = MenuController();
+
+  void _open(Offset position, {required bool haptic}) {
+    final style = context.flowTheme.menuStyle;
+    if (flowMenuPresentsAsSheet(context, FlowMenuPresentation.auto)) {
+      // The touch confirmation the platforms' own long-presses give.
+      if (haptic) HapticFeedback.mediumImpact();
+      showFlowMenuEntriesSheet(
+        context: context,
+        entries: widget.entries,
+        style: style,
+        onSelected: widget.onSelected,
+      );
+      return;
+    }
+    _controller.open(position: position);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.flowTheme.menuStyle;
+    return MenuAnchor(
+      controller: _controller,
+      style: flowMenuStyle(context, style: style),
+      menuChildren: [
+        FlowMenuCard(
+          style: style,
+          children: flowMenuEntryRows(
+            context,
+            widget.entries,
+            style: style,
+            onSelected: widget.onSelected,
+          ),
+        ),
+      ],
+      child: GestureDetector(
+        behavior: HitTestBehavior.deferToChild,
+        onLongPressStart: (details) =>
+            _open(details.localPosition, haptic: true),
+        onSecondaryTapUp: (details) =>
+            _open(details.localPosition, haptic: false),
+        child: widget.child,
       ),
     );
   }

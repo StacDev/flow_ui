@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'flow_touch_target.dart';
+
 // Internal chrome shared by the composer, the attachment tiles and the
 // attachment preview. Not exported from the package barrel.
 
@@ -24,6 +26,7 @@ class FlowCircleButton extends StatelessWidget {
     this.iconSize = 18,
     this.padding,
     this.hoverColor,
+    this.touchMinSize = 0,
   });
 
   final IconData icon;
@@ -50,6 +53,10 @@ class FlowCircleButton extends StatelessWidget {
   /// [background] — the right behaviour when the disc is translucent.
   final Color? hoverColor;
 
+  /// A finger's reach on touch platforms, reserved square in layout; zero
+  /// leaves the disc its drawn size. Sites pass what they can hold.
+  final double touchMinSize;
+
   @override
   Widget build(BuildContext context) {
     Widget button = Material(
@@ -75,6 +82,11 @@ class FlowCircleButton extends StatelessWidget {
     if (message != null) {
       button = Tooltip(message: message, child: button);
     }
-    return button;
+    if (touchMinSize <= 0) return button;
+    return FlowTouchTarget(
+      minWidth: touchMinSize,
+      minHeight: touchMinSize,
+      child: button,
+    );
   }
 }

@@ -195,6 +195,47 @@
   body and the inline span, drop from 14 to 13 on their 1.6 and 1.5
   lines.
 
+- **Fix** — the thread no longer strands at a scroll offset outside its
+  range: the newest message clipped under the list's bottom edge with
+  blank space beneath, or a blank band above the oldest. Flutter keeps an
+  offset that has left the range — a drag that dismisses the keyboard
+  grows the viewport mid-gesture while a reply is still growing — and
+  only the next gesture pulled it back. `FlowThread` now clamps an idle
+  position back into range, on every metrics change and scroll end, and
+  creates its own controller when the host passes none.
+
+- **Touch targets** — the message actions, the composer's attach glyph
+  and error-dismiss cross, the menu triggers and the code block's copy
+  affordance take a finger's reach on phones: the actions strip its
+  pitch wide and the footer gap taller on its 20px frames, the attach,
+  menu and send discs the row's 40 tall, the copy 36, the dismiss 30,
+  each reserved in layout and absorbed from the gap beside it, so the
+  drawn frames stay where the design put them. Pointer platforms are
+  untouched.
+- **Send and stop names** — `FlowComposer.sendTooltip` and `stopTooltip`
+  name the discs for assistive tech; before, both announced as unnamed
+  buttons.
+- **Fix** — the caret, selection wash and handles across the chat view
+  and the composer take the Flow primary rather than the host
+  `ColorScheme`'s, which on a stock `ThemeData` was Material's purple.
+
+- **Message menu** — the AI apps' long-press. `FlowThread.messageMenu`
+  hands back a message's entries (`FlowMenuOption`s and dividers, labels
+  the host's) and `onMessageMenuSelected` reports the pick with its
+  message; `FlowMessage` takes the pair as `menuEntries` and
+  `onMenuSelected`. A long-press with a haptic on touch, a right-click on
+  pointer platforms; the phone sheet or a popover at the pointer, by the
+  theme's platform like the other menus. The example offers copy,
+  feedback, regenerate and delete; the playground's thread stage gains a
+  Long-press menu variant.
+
+- **Selecting text** — `FlowThread.selectable` (on by default) makes the
+  conversation a `SelectionArea` on pointer platforms: drag across turns,
+  copy with the shortcut, the message menu still on right-click. Phones
+  select from the menu: `showFlowTextSelection` pushes a full-screen page
+  of a message, typeset as it was in the thread, for the platform's
+  handles; `FlowMessageData.plainText` joins its text for a copy.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut

@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../utils/flow_selection_theme.dart';
+import 'flow_menu.dart' show FlowMenuEntry;
 import 'flow_message.dart';
 
 /// The scrollable conversation, a list of [FlowMessageData]s.
@@ -36,6 +39,9 @@ class FlowThread extends StatefulWidget {
     this.itemSpacing,
     this.messageBuilder,
     this.messageFooter,
+    this.messageMenu,
+    this.onMessageMenuSelected,
+    this.selectable = true,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
   });
@@ -116,6 +122,24 @@ class FlowThread extends StatefulWidget {
   /// the builder owns the whole message.
   final Widget? Function(FlowMessageData message)? messageFooter;
 
+  /// Each message's context menu, the AI apps' long-press: the entries
+  /// for [message], or empty for none — a streaming turn, say. Labels are
+  /// the host's; see [FlowMessage.menuEntries] for how it opens.
+  final List<FlowMenuEntry> Function(FlowMessageData message)? messageMenu;
+
+  /// The chosen option for the message it was opened on.
+  final void Function(FlowMessageData message, String id)?
+  onMessageMenuSelected;
+
+  /// Whether prose can be drag-selected across the conversation on
+  /// pointer platforms — the web's reading convention, copied with the
+  /// platform shortcut. The messages' own gestures sit below the
+  /// selection and keep winning: a right-click still opens
+  /// [messageMenu]. Touch platforms select through the menu instead,
+  /// via `showFlowTextSelection`, since there the long-press *is* the
+  /// menu.
+  final bool selectable;
+
   /// Forwarded to [FlowMessage] for streaming text parts.
   final double charactersPerSecond;
 
@@ -158,6 +182,9 @@ class _FlowThreadState extends State<FlowThread> {
   bool _fits = false;
   Timer? _fitsHold;
 
+  /// Whether a settle is already queued for the frame's end.
+  bool _settling = false;
+
   /// Whether any message is mid-turn, read each build. The fit flip is
   /// frozen while streaming: swapping the list's viewport type remounts
   /// the whole subtree, resetting every reveal — mid-stream that reset
@@ -177,7 +204,61 @@ class _FlowThreadState extends State<FlowThread> {
     super.dispose();
   }
 
-  void _handleMetrics(ScrollMetrics metrics) {
+  /// How far outside its range an idle position may sit before it is
+  /// pulled back: sub-pixel drift is not a stranded offset.
+  static const double _settleTolerance = 0.5;
+
+  static bool _inRange(ScrollMetrics metrics) =>
+      metrics.pixels >= metrics.minScrollExtent - _settleTolerance &&
+      metrics.pixels <= metrics.maxScrollExtent + _settleTolerance;
+
+  /// An idle position must sit inside its range. Flutter leaves one that
+  /// has already left it where it is: `RangeMaintainingScrollPhysics`
+  /// stops enforcing the boundary once a position is out of range and
+  /// carries the overshoot as the range shrinks, and only a gesture's
+  /// ballistic pulls it back. The keyboard is how it gets there — a drag
+  /// dismisses it (the default `keyboardDismissBehavior`), the viewport
+  /// grows mid-gesture while a reply is still growing, and the range
+  /// collapses under the offset. A reversed list stranded past its end
+  /// shows its content shifted down, the newest message clipped under the
+  /// list's own bottom edge and the jump button hidden below its
+  /// threshold: a thread cut off mid-screen with blank space beneath. Past
+  /// its start, a blank band above the oldest message instead. Clamping
+  /// back in is what the physics does at the end of every gesture, done
+  /// here for the idle case it skips.
+  ///
+  /// Runs on every metrics change and on every scroll end: the range
+  /// collapses mid-gesture, when a jump would fight the physics, and a
+  /// gesture merely ending changes no metrics — so each covers the other.
+  /// The correction goes through the position that fired the
+  /// notification, found from its context, so the list needs no
+  /// controller of its own and keeps the primary one a host relies on for
+  /// the chat view's scrollbar and the status-bar tap.
+  void _settleIfOff(ScrollMetrics metrics, BuildContext? context) {
+    if (context == null || _settling || _inRange(metrics)) return;
+    final scrollable = context.findAncestorStateOfType<ScrollableState>();
+    if (scrollable == null) return;
+    _settling = true;
+    // Metrics arrive during layout; the jump waits for the frame's end.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _settling = false;
+      if (!mounted || !scrollable.mounted) return;
+      final position = scrollable.position;
+      // Re-read live: the offset the notification reported may have moved
+      // on, and a gesture or its ballistic in progress settles on its own.
+      if (position.isScrollingNotifier.value || _inRange(position)) return;
+      position.jumpTo(
+        clampDouble(
+          position.pixels,
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        ),
+      );
+    });
+  }
+
+  void _handleMetrics(ScrollMetrics metrics, BuildContext context) {
+    _settleIfOff(metrics, context);
     final fits = metrics.maxScrollExtent <= 0;
     final first = _metricsFits == null;
     _metricsFits = fits;
@@ -252,62 +333,85 @@ class _FlowThreadState extends State<FlowThread> {
     final onAttachmentTap = widget.onAttachmentTap;
     final onRetry = widget.onRetry;
     final onLinkTap = widget.onLinkTap;
+    final onMenuSelected = widget.onMessageMenuSelected;
     final messages = widget.messages;
     _syncStreaming(messages);
 
-    return NotificationListener<ScrollMetricsNotification>(
+    final platform = Theme.of(context).platform;
+    final pointer =
+        platform != TargetPlatform.iOS && platform != TargetPlatform.android;
+
+    Widget list = NotificationListener<ScrollEndNotification>(
       onNotification: (notification) {
-        // Depth 0 is the thread's own list — scrollers nested inside
-        // messages (attachment strips, code blocks) report deeper and
-        // must not steer the fit.
-        if (notification.depth == 0) _handleMetrics(notification.metrics);
+        if (notification.depth == 0) {
+          _settleIfOff(notification.metrics, notification.context);
+        }
         return false;
       },
-      child: Align(
-        alignment: AlignmentDirectional.topCenter,
-        child: ListView.builder(
-          controller: widget.controller,
-          reverse: true,
-          shrinkWrap: _fits,
-          scrollCacheExtent: _cacheExtent,
-          keyboardDismissBehavior: widget.keyboardDismissBehavior,
-          padding: widget.padding ?? _defaultPadding,
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            // Reversed list: index 0 is the newest (bottom) message.
-            final message = messages[messages.length - 1 - index];
-            final isOldest = index == messages.length - 1;
-            return Padding(
-              key: ValueKey(message.id),
-              padding: EdgeInsets.only(top: isOldest ? 0 : gap),
-              child:
-                  widget.messageBuilder?.call(context, message) ??
-                  FlowMessage(
-                    message,
-                    customPartBuilder: widget.customPartBuilder,
-                    onAttachmentTap: onAttachmentTap == null
-                        ? null
-                        : (attachmentId) =>
-                              onAttachmentTap(message, attachmentId),
-                    previewCloseTooltip: widget.previewCloseTooltip,
-                    onCodeCopy: widget.onCodeCopy,
-                    copiedCodePart: widget.copiedCodePart,
-                    codeCopyTooltip: widget.codeCopyTooltip,
-                    markdown: widget.markdown,
-                    onLinkTap: onLinkTap == null
-                        ? null
-                        : (href) => onLinkTap(message, href),
-                    onRetry: onRetry == null ? null : () => onRetry(message),
-                    errorTitle: widget.errorTitle,
-                    retryLabel: widget.retryLabel,
-                    charactersPerSecond: widget.charactersPerSecond,
-                    thinkingLabel: widget.thinkingLabel,
-                    footer: widget.messageFooter?.call(message),
-                  ),
-            );
-          },
+      child: NotificationListener<ScrollMetricsNotification>(
+        onNotification: (notification) {
+          // Depth 0 is the thread's own list — scrollers nested inside
+          // messages (attachment strips, code blocks) report deeper and
+          // must not steer the fit.
+          if (notification.depth == 0) {
+            _handleMetrics(notification.metrics, notification.context);
+          }
+          return false;
+        },
+        child: Align(
+          alignment: AlignmentDirectional.topCenter,
+          child: ListView.builder(
+            controller: widget.controller,
+            reverse: true,
+            shrinkWrap: _fits,
+            scrollCacheExtent: _cacheExtent,
+            keyboardDismissBehavior: widget.keyboardDismissBehavior,
+            padding: widget.padding ?? _defaultPadding,
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              // Reversed list: index 0 is the newest (bottom) message.
+              final message = messages[messages.length - 1 - index];
+              final isOldest = index == messages.length - 1;
+              return Padding(
+                key: ValueKey(message.id),
+                padding: EdgeInsets.only(top: isOldest ? 0 : gap),
+                child:
+                    widget.messageBuilder?.call(context, message) ??
+                    FlowMessage(
+                      message,
+                      customPartBuilder: widget.customPartBuilder,
+                      onAttachmentTap: onAttachmentTap == null
+                          ? null
+                          : (attachmentId) =>
+                                onAttachmentTap(message, attachmentId),
+                      previewCloseTooltip: widget.previewCloseTooltip,
+                      onCodeCopy: widget.onCodeCopy,
+                      copiedCodePart: widget.copiedCodePart,
+                      codeCopyTooltip: widget.codeCopyTooltip,
+                      markdown: widget.markdown,
+                      onLinkTap: onLinkTap == null
+                          ? null
+                          : (href) => onLinkTap(message, href),
+                      onRetry: onRetry == null ? null : () => onRetry(message),
+                      errorTitle: widget.errorTitle,
+                      retryLabel: widget.retryLabel,
+                      charactersPerSecond: widget.charactersPerSecond,
+                      thinkingLabel: widget.thinkingLabel,
+                      footer: widget.messageFooter?.call(message),
+                      menuEntries: widget.messageMenu?.call(message),
+                      onMenuSelected: onMenuSelected == null
+                          ? null
+                          : (id) => onMenuSelected(message, id),
+                    ),
+              );
+            },
+          ),
         ),
       ),
     );
+    if (!widget.selectable || !pointer) return list;
+    // In the Flow accent wherever the thread is mounted, not only under
+    // the chat view's own selection theme.
+    return FlowSelectionTheme(child: SelectionArea(child: list));
   }
 }

@@ -9,6 +9,7 @@ import '../models/flow_attachment_options.dart';
 import '../styles/flow_chat_view_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
+import '../utils/flow_selection_theme.dart';
 import 'flow_drop_target.dart';
 import 'flow_thread.dart';
 
@@ -371,13 +372,17 @@ class _FlowChatViewState extends State<FlowChatView> {
     // Outside the SafeArea, so the drop rectangle is the whole surface —
     // the treatment is full-bleed and the target should match it. A plain
     // pass-through off the web, where it registers nothing.
-    return FlowDropTarget(
-      onDropped: widget.onAttachmentsDropped,
-      enabled: widget.attachmentsEnabled,
-      onHoverChanged: _handleDropHover,
-      attachmentOptions: widget.attachmentOptions,
-      onAttachmentRejected: widget.onAttachmentRejected,
-      child: _buildSurface(context, safeBottom),
+    // Editing and selection in the Flow accent for everything on the
+    // surface — the composer's caret, a selected code block's wash.
+    return FlowSelectionTheme(
+      child: FlowDropTarget(
+        onDropped: widget.onAttachmentsDropped,
+        enabled: widget.attachmentsEnabled,
+        onHoverChanged: _handleDropHover,
+        attachmentOptions: widget.attachmentOptions,
+        onAttachmentRejected: widget.onAttachmentRejected,
+        child: _buildSurface(context, safeBottom),
+      ),
     );
   }
 

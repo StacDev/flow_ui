@@ -113,6 +113,7 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('default', 'Default'),
       ('streaming', 'Streaming'),
       ('short', 'Short'),
+      ('menu', 'Long-press menu'),
     ],
     PlaygroundItem.threadList => const [
       ('sections', 'Sections'),
