@@ -129,8 +129,9 @@ class _FlowMenuState extends State<FlowMenu> {
   static const double _triggerIconSize = 18;
   static const double _triggerPadding = 7;
 
-  /// The trigger's reach on touch platforms: the composer row's 40.
-  static const double _triggerTouch = 40;
+  /// The trigger's reach on touch platforms: its drawn 32 wide, the
+  /// composer row's 40 tall, so a rail of triggers never shifts.
+  static const double _triggerTouchHeight = 40;
 
   bool _hovered = false;
 
@@ -283,8 +284,8 @@ class _FlowMenuState extends State<FlowMenu> {
           trigger = Tooltip(message: tooltip, child: trigger);
         }
         return FlowTouchTarget(
-          minWidth: _triggerTouch,
-          minHeight: _triggerTouch,
+          minWidth: _triggerIconSize + _triggerPadding * 2,
+          minHeight: _triggerTouchHeight,
           child: trigger,
         );
       },

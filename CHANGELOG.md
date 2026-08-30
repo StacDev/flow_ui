@@ -206,11 +206,12 @@
 
 - **Touch targets** — the message actions, the composer's attach glyph
   and error-dismiss cross, the menu triggers and the code block's copy
-  affordance take a finger's reach on phones: the actions strip the
-  row's pitch wide by 32 tall on its 20px frames, the attach and menu
-  triggers 40, the copy 36, the dismiss 30, each reserved in layout and
-  absorbed from the gap beside it, so the drawn frames stay where the
-  design put them. Pointer platforms are untouched.
+  affordance take a finger's reach on phones: the actions strip its
+  pitch wide and the footer gap taller on its 20px frames, the attach,
+  menu and send discs the row's 40 tall, the copy 36, the dismiss 30,
+  each reserved in layout and absorbed from the gap beside it, so the
+  drawn frames stay where the design put them. Pointer platforms are
+  untouched.
 - **Send and stop names** — `FlowComposer.sendTooltip` and `stopTooltip`
   name the discs for assistive tech; before, both announced as unnamed
   buttons.

@@ -25,6 +25,7 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
     this.minWidth = 44,
     this.minHeight = 44,
     this.topShare = 0.5,
+    this.leftShare = 0.5,
     required Widget super.child,
   });
 
@@ -33,6 +34,11 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
 
   /// How much of the spare height sits above the child, 0–1.
   final double topShare;
+
+  /// How much of the spare width sits left of the child, 0–1: a strip's
+  /// first button keeps its frame at the strip's start, its last at the
+  /// end.
+  final double leftShare;
 
   /// Whether the theme's platform is one driven by touch.
   static bool isTouch(BuildContext context) {
@@ -47,6 +53,7 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
       minWidth: touch ? minWidth : 0,
       minHeight: touch ? minHeight : 0,
       topShare: topShare,
+      leftShare: leftShare,
     );
   }
 
@@ -59,7 +66,8 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
     renderObject
       ..minWidth = touch ? minWidth : 0
       ..minHeight = touch ? minHeight : 0
-      ..topShare = topShare;
+      ..topShare = topShare
+      ..leftShare = leftShare;
   }
 }
 
@@ -70,6 +78,7 @@ class RenderFlowTouchTarget extends RenderShiftedBox {
     required this._minWidth,
     required this._minHeight,
     required this._topShare,
+    required this._leftShare,
     RenderBox? child,
   }) : super(child);
 
@@ -91,6 +100,13 @@ class RenderFlowTouchTarget extends RenderShiftedBox {
   set topShare(double value) {
     if (value == _topShare) return;
     _topShare = value;
+    markNeedsLayout();
+  }
+
+  double _leftShare;
+  set leftShare(double value) {
+    if (value == _leftShare) return;
+    _leftShare = value;
     markNeedsLayout();
   }
 
@@ -130,7 +146,7 @@ class RenderFlowTouchTarget extends RenderShiftedBox {
     child.layout(constraints, parentUsesSize: true);
     size = constraints.constrain(_reserve(child.size));
     (child.parentData! as BoxParentData).offset = Offset(
-      (size.width - child.size.width) / 2,
+      (size.width - child.size.width) * _leftShare,
       (size.height - child.size.height) * _topShare,
     );
   }

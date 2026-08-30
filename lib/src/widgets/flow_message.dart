@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_attachment.dart';
@@ -195,14 +197,22 @@ class FlowMessage extends StatelessWidget {
 
   bool get _isError => message.status == FlowMessageStatus.error;
 
-  /// The gap above the footer, less the reach a [FlowMessageActions] strip
-  /// takes above its frames on touch platforms: the strip grows up into
-  /// the gap and the frames draw where the design put them.
-  double _footerGap(BuildContext context, double gap) {
+  /// The footer under its gap. A [FlowMessageActions] strip on touch
+  /// platforms reaches up into the gap instead: the strip grows by what
+  /// the gap holds, the gap shrinks by the same, and the frames draw where
+  /// the design put them.
+  Widget _footer(BuildContext context, Widget footer, double gap) {
     if (footer is! FlowMessageActions || !FlowTouchTarget.isTouch(context)) {
-      return gap;
+      return Padding(
+        padding: EdgeInsets.only(top: gap),
+        child: footer,
+      );
     }
-    return (gap - FlowMessageActions.touchReach).clamp(0.0, gap);
+    final reach = math.min(gap, FlowMessageActions.touchReach);
+    return Padding(
+      padding: EdgeInsets.only(top: gap - reach),
+      child: FlowFooterReach(reach: reach, child: footer),
+    );
   }
 
   @override
@@ -272,13 +282,7 @@ class FlowMessage extends StatelessWidget {
                 constraints: BoxConstraints(maxWidth: maxWidth),
                 child: bubble,
               ),
-            if (footer != null)
-              Padding(
-                padding: EdgeInsets.only(
-                  top: _footerGap(context, _userFooterGap),
-                ),
-                child: footer,
-              ),
+            if (footer != null) _footer(context, footer!, _userFooterGap),
           ],
         );
       },
@@ -331,13 +335,7 @@ class FlowMessage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         content,
-        if (footer != null)
-          Padding(
-            padding: EdgeInsets.only(
-              top: _footerGap(context, _assistantFooterGap),
-            ),
-            child: footer,
-          ),
+        if (footer != null) _footer(context, footer!, _assistantFooterGap),
       ],
     );
 
