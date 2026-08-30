@@ -80,6 +80,11 @@ class _ChatScreenState extends State<ChatScreen> {
   String _activeThread = 't0';
   int _nextThread = 1;
 
+  /// The composer's text, and each thread's draft while another is on
+  /// screen — a draft belongs to the conversation it was typed in.
+  final TextEditingController _draft = TextEditingController();
+  final Map<String, String> _drafts = {};
+
   List<FlowMessageData> get _messages => _threads[_activeThread] ?? const [];
   set _messages(List<FlowMessageData> value) => _threads[_activeThread] = value;
 
@@ -97,6 +102,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void _openThread(String id) {
     if (id == _activeThread) return;
     if (_generating) _stop();
+    _drafts[_activeThread] = _draft.text;
+    _draft.text = _drafts[id] ?? '';
     setState(() {
       _activeThread = id;
       _pending.clear();
@@ -108,6 +115,8 @@ class _ChatScreenState extends State<ChatScreen> {
     // An untouched thread is already the new chat.
     if (_messages.isEmpty) return;
     if (_generating) _stop();
+    _drafts[_activeThread] = _draft.text;
+    _draft.clear();
     setState(() {
       _activeThread = 't${_nextThread++}';
       _threads[_activeThread] = const [];
@@ -155,6 +164,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _copiedReset?.cancel();
     _reply?.cancel();
     _scroll.dispose();
+    _draft.dispose();
     super.dispose();
   }
 
@@ -720,6 +730,7 @@ class _ChatScreenState extends State<ChatScreen> {
         threadController: _scroll,
         jumpToLatestTooltip: 'Jump to latest',
         composer: FlowComposer(
+          controller: _draft,
           isStreaming: _generating,
           onSend: _send,
           onStop: _stop,
