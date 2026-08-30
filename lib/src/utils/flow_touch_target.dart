@@ -1,20 +1,21 @@
-import 'package:flutter/rendering.dart'
-    show BoxHitTestEntry, BoxHitTestResult, RenderProxyBox;
+import 'dart:math' as math;
+
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Widens a small control's hit area on touch platforms without changing
-/// its layout. The design draws message actions on a 20px frame and the
-/// composer's glyph buttons on 24–32px discs; a finger needs 44 (Apple) to
-/// 48 (Material) and neither guideline is met by the frame alone. Material
-/// reserves that space in layout, which would open the rows up; this keeps
-/// the drawn size and accepts hits from the surrounding [minWidth] by
-/// [minHeight], [topShare] of the vertical extension above the child and
-/// the rest below.
+/// Reserves a finger's reach around a small control on touch platforms.
+/// The design draws message actions on a 20px frame and the composer's
+/// glyph buttons on 24–32px discs; a finger needs 44 (Apple) to 48
+/// (Material). Every ancestor rejects a pointer outside its own box before
+/// its children are asked, so the reach has to exist in layout: this lays
+/// out at least [minWidth] by [minHeight], seats the child with [topShare]
+/// of the spare height above it, and routes a hit anywhere in the box to
+/// the child's nearest edge — Material's own tap-target padding.
 ///
-/// Sized per site rather than a flat 44: a hit area that reaches into a
-/// neighbouring control steals its taps, since siblings are hit-tested in
-/// reverse order rather than by distance. A row of 20px actions on a 4px
-/// pitch keeps [minWidth] at 24 and takes its reach vertically.
+/// Sized per site rather than a flat 44, and absorbed from the gap beside
+/// the control where one exists — the message strip grows up into the
+/// footer gap, the composer's attach into the row inset — so the drawn
+/// frames stay where the design put them.
 ///
 /// A pointer platform passes straight through, by the theme's platform as
 /// the menus and the composer resolve it, so hosts and tests can steer it.
@@ -30,17 +31,18 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
   final double minWidth;
   final double minHeight;
 
-  /// How much of the vertical extension sits above the child, 0–1.
+  /// How much of the spare height sits above the child, 0–1.
   final double topShare;
 
-  static bool _touch(BuildContext context) {
+  /// Whether the theme's platform is one driven by touch.
+  static bool isTouch(BuildContext context) {
     final platform = Theme.of(context).platform;
     return platform == TargetPlatform.iOS || platform == TargetPlatform.android;
   }
 
   @override
   RenderFlowTouchTarget createRenderObject(BuildContext context) {
-    final touch = _touch(context);
+    final touch = isTouch(context);
     return RenderFlowTouchTarget(
       minWidth: touch ? minWidth : 0,
       minHeight: touch ? minHeight : 0,
@@ -53,7 +55,7 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
     BuildContext context,
     RenderFlowTouchTarget renderObject,
   ) {
-    final touch = _touch(context);
+    final touch = isTouch(context);
     renderObject
       ..minWidth = touch ? minWidth : 0
       ..minHeight = touch ? minHeight : 0
@@ -61,41 +63,95 @@ class FlowTouchTarget extends SingleChildRenderObjectWidget {
   }
 }
 
-/// The render side of [FlowTouchTarget]: lays out as its child and accepts
-/// hits from the wider reach.
-class RenderFlowTouchTarget extends RenderProxyBox {
+/// The render side of [FlowTouchTarget]: the child's size grown to the
+/// minimums, the child seated inside, every hit in the box the child's.
+class RenderFlowTouchTarget extends RenderShiftedBox {
   RenderFlowTouchTarget({
-    required this.minWidth,
-    required this.minHeight,
-    required this.topShare,
-  });
+    required this._minWidth,
+    required this._minHeight,
+    required this._topShare,
+    RenderBox? child,
+  }) : super(child);
 
-  double minWidth;
-  double minHeight;
-  double topShare;
+  double _minWidth;
+  set minWidth(double value) {
+    if (value == _minWidth) return;
+    _minWidth = value;
+    markNeedsLayout();
+  }
+
+  double _minHeight;
+  set minHeight(double value) {
+    if (value == _minHeight) return;
+    _minHeight = value;
+    markNeedsLayout();
+  }
+
+  double _topShare;
+  set topShare(double value) {
+    if (value == _topShare) return;
+    _topShare = value;
+    markNeedsLayout();
+  }
+
+  Size _reserve(Size childSize) => Size(
+    math.max(childSize.width, _minWidth),
+    math.max(childSize.height, _minHeight),
+  );
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      math.max(child?.getMinIntrinsicWidth(height) ?? 0, _minWidth);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      math.max(child?.getMaxIntrinsicWidth(height) ?? 0, _minWidth);
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      math.max(child?.getMinIntrinsicHeight(width) ?? 0, _minHeight);
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      math.max(child?.getMaxIntrinsicHeight(width) ?? 0, _minHeight);
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.constrain(
+    _reserve(child?.getDryLayout(constraints) ?? Size.zero),
+  );
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.constrain(_reserve(Size.zero));
+      return;
+    }
+    child.layout(constraints, parentUsesSize: true);
+    size = constraints.constrain(_reserve(child.size));
+    (child.parentData! as BoxParentData).offset = Offset(
+      (size.width - child.size.width) / 2,
+      (size.height - child.size.height) * _topShare,
+    );
+  }
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (child == null) return false;
-    final extraX = (minWidth - size.width).clamp(0.0, double.infinity);
-    final extraY = (minHeight - size.height).clamp(0.0, double.infinity);
-    final reach = Rect.fromLTRB(
-      -extraX / 2,
-      -extraY * topShare,
-      size.width + extraX / 2,
-      size.height + extraY * (1 - topShare),
+    if (super.hitTest(result, position: position)) return true;
+    final child = this.child;
+    if (child == null || !size.contains(position)) return false;
+    // In the reach but off the child: the hit lands on the child's
+    // nearest edge, so its gesture and ink both accept it.
+    final offset = (child.parentData! as BoxParentData).offset;
+    final local = position - offset;
+    final nearest = Offset(
+      local.dx.clamp(0.0, child.size.width - 0.01),
+      local.dy.clamp(0.0, child.size.height - 0.01),
     );
-    if (!reach.contains(position)) return false;
-    // A hit outside the child's own bounds lands on its nearest edge, so
-    // the control's gesture and ink both accept it.
-    final inside = Offset(
-      position.dx.clamp(0.0, size.width - 0.01),
-      position.dy.clamp(0.0, size.height - 0.01),
+    return result.addWithRawTransform(
+      transform: MatrixUtils.forceToPoint(nearest),
+      position: nearest,
+      hitTest: (result, position) => child.hitTest(result, position: nearest),
     );
-    if (hitTestChildren(result, position: inside)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
   }
 }

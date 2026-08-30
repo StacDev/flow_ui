@@ -204,12 +204,13 @@
   position back into range, on every metrics change and scroll end, and
   creates its own controller when the host passes none.
 
-- **Touch targets** — the message actions, the composer's attach and
-  stop discs, the attachment tile's cross, the error tab's cross, the
-  menu triggers and the code block's copy affordance now accept a finger
-  from a 44px reach on phones, sized per site so a neighbour's taps stay
-  its own, with the drawn frames unchanged. Pointer platforms are
-  untouched.
+- **Touch targets** — the message actions, the composer's attach glyph
+  and error-dismiss cross, the menu triggers and the code block's copy
+  affordance take a finger's reach on phones: the actions strip the
+  row's pitch wide by 32 tall on its 20px frames, the attach and menu
+  triggers 40, the copy 36, the dismiss 30, each reserved in layout and
+  absorbed from the gap beside it, so the drawn frames stay where the
+  design put them. Pointer platforms are untouched.
 - **Send and stop names** — `FlowComposer.sendTooltip` and `stopTooltip`
   name the discs for assistive tech; before, both announced as unnamed
   buttons.

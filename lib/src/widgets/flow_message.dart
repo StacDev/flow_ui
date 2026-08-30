@@ -7,11 +7,13 @@ import '../styles/flow_message_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_error.dart';
 import '../utils/flow_shimmer_sweep.dart';
+import '../utils/flow_touch_target.dart';
 import 'flow_attachment_group.dart';
 import 'flow_attachment_preview.dart';
 import 'flow_code_block.dart';
 import 'flow_error_state.dart';
 import 'flow_markdown.dart';
+import 'flow_message_actions.dart';
 import 'flow_streaming_text.dart';
 import 'flow_thinking_indicator.dart';
 
@@ -193,6 +195,16 @@ class FlowMessage extends StatelessWidget {
 
   bool get _isError => message.status == FlowMessageStatus.error;
 
+  /// The gap above the footer, less the reach a [FlowMessageActions] strip
+  /// takes above its frames on touch platforms: the strip grows up into
+  /// the gap and the frames draw where the design put them.
+  double _footerGap(BuildContext context, double gap) {
+    if (footer is! FlowMessageActions || !FlowTouchTarget.isTouch(context)) {
+      return gap;
+    }
+    return (gap - FlowMessageActions.touchReach).clamp(0.0, gap);
+  }
+
   @override
   Widget build(BuildContext context) {
     return switch (message.role) {
@@ -262,7 +274,9 @@ class FlowMessage extends StatelessWidget {
               ),
             if (footer != null)
               Padding(
-                padding: const EdgeInsets.only(top: _userFooterGap),
+                padding: EdgeInsets.only(
+                  top: _footerGap(context, _userFooterGap),
+                ),
                 child: footer,
               ),
           ],
@@ -319,7 +333,9 @@ class FlowMessage extends StatelessWidget {
         content,
         if (footer != null)
           Padding(
-            padding: const EdgeInsets.only(top: _assistantFooterGap),
+            padding: EdgeInsets.only(
+              top: _footerGap(context, _assistantFooterGap),
+            ),
             child: footer,
           ),
       ],

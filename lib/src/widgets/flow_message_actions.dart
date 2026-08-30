@@ -93,6 +93,13 @@ class FlowMessageActions extends StatelessWidget {
   /// value, not a scale step.
   static const double _gap = 4;
 
+  /// The strip's reach above its frames on touch platforms: each button
+  /// lays out `touchReach` taller with its frame at the bottom, and
+  /// `FlowMessage` gives up the same 12 of its footer gap, so the frames
+  /// stay put while the strip reaches up into the gap. Sideways each
+  /// takes the strip's pitch.
+  static const double touchReach = 12;
+
   /// Rendered in order.
   final List<FlowMessageAction> actions;
 
@@ -204,12 +211,12 @@ class _ActionButtonState extends State<_ActionButton> {
       button = Tooltip(message: tooltip, child: button);
     }
     // The row keeps the design's 20px frames on a 4px pitch; a finger
-    // gets the pitch sideways and the design's 44 vertically, mostly
-    // downward into the gap between turns, off the text above.
+    // gets the pitch sideways and the footer gap above, the frame seated
+    // at the bottom so it draws where it did.
     return FlowTouchTarget(
-      minWidth: _frameSize + 4,
-      minHeight: 44,
-      topShare: 0.2,
+      minWidth: _frameSize + FlowMessageActions._gap,
+      minHeight: _frameSize + FlowMessageActions.touchReach,
+      topShare: 1,
       child: button,
     );
   }

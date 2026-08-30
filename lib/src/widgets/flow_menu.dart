@@ -129,6 +129,9 @@ class _FlowMenuState extends State<FlowMenu> {
   static const double _triggerIconSize = 18;
   static const double _triggerPadding = 7;
 
+  /// The trigger's reach on touch platforms: the composer row's 40.
+  static const double _triggerTouch = 40;
+
   bool _hovered = false;
 
   bool get _hasOptions => widget.entries.whereType<FlowMenuOption>().isNotEmpty;
@@ -279,7 +282,11 @@ class _FlowMenuState extends State<FlowMenu> {
         if (tooltip != null) {
           trigger = Tooltip(message: tooltip, child: trigger);
         }
-        return FlowTouchTarget(child: trigger);
+        return FlowTouchTarget(
+          minWidth: _triggerTouch,
+          minHeight: _triggerTouch,
+          child: trigger,
+        );
       },
     );
   }

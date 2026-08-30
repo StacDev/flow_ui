@@ -360,6 +360,15 @@ class _FlowComposerState extends State<FlowComposer> {
   );
   static const double _contentInset = 18;
   static const double _actionInset = 10;
+
+  /// The attach glyph's reach on touch platforms: the row's own 40, the
+  /// send disc's height, so it costs no height, and 4 a side in width,
+  /// taken from the row inset so the glyph draws where it did.
+  static const double _attachTouch = 40;
+  static const double _attachTouchSlack = 4;
+
+  /// The error tab's cross takes the tab's 30 on touch platforms.
+  static const double _errorDismissTouch = 30;
   static const double _attachmentGap = 12;
   static const double _fieldGap = 16;
   static const double _leadingGap = 4;
@@ -682,7 +691,11 @@ class _FlowComposerState extends State<FlowComposer> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return FlowTouchTarget(child: button);
+    return FlowTouchTarget(
+      minWidth: _attachTouch,
+      minHeight: _attachTouch,
+      child: button,
+    );
   }
 
   Widget _buildSendStopButton(BuildContext context) {
@@ -812,6 +825,7 @@ class _FlowComposerState extends State<FlowComposer> {
                       hoverColor: background,
                       iconSize: _errorDismissIconSize,
                       padding: _errorDismissPadding,
+                      touchMinSize: _errorDismissTouch,
                       tooltip: widget.errorDismissTooltip,
                       onTap: onDismiss,
                     ),
@@ -1028,8 +1042,10 @@ class _FlowComposerState extends State<FlowComposer> {
                     ),
                     const SizedBox(height: _fieldGap),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: _actionInset,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: FlowTouchTarget.isTouch(context)
+                            ? _actionInset - _attachTouchSlack
+                            : _actionInset,
                       ),
                       child: Row(
                         children: [

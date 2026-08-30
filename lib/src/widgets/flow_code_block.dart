@@ -107,6 +107,16 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
     vertical: 12,
   );
   static const double _headerHeight = 36;
+
+  /// On touch platforms the copy affordance takes the header's height as
+  /// its reach, 6 a side in width; the header's inset gives up those 6 so
+  /// the glyph draws where it did, and the label keeps its 10 from the top
+  /// on its own.
+  static const EdgeInsetsGeometry _headerPaddingTouch = EdgeInsets.only(
+    left: 16,
+    right: 6,
+  );
+  static const double _labelTop = 10;
   static const EdgeInsetsGeometry _headerPadding = EdgeInsets.only(
     left: 16,
     right: 12,
@@ -217,6 +227,7 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
     final hasHeader = label != null || widget.onCopy != null;
 
     final padding = widget.padding ?? _bodyPadding;
+    final touch = FlowTouchTarget.isTouch(context);
     final code = SelectableText.rich(span);
     final body = widget.wrap
         ? Padding(padding: padding, child: code)
@@ -256,19 +267,27 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
             if (hasHeader)
               Container(
                 height: _headerHeight,
-                padding: _headerPadding,
+                padding: touch ? _headerPaddingTouch : _headerPadding,
                 child: Row(
+                  crossAxisAlignment: touch
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: label == null
                           ? const SizedBox.shrink()
-                          : Text(
-                              label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: typography.labelMedium
-                                  .copyWith(color: colors.onSurfaceMuted)
-                                  .merge(style?.headerStyle),
+                          : Padding(
+                              padding: EdgeInsets.only(
+                                top: touch ? _labelTop : 0,
+                              ),
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: typography.labelMedium
+                                    .copyWith(color: colors.onSurfaceMuted)
+                                    .merge(style?.headerStyle),
+                              ),
                             ),
                     ),
                     if (showCopy)
@@ -344,6 +363,11 @@ class _CopyButtonState extends State<_CopyButton> {
   /// menu rows keep to their card.
   static const BorderRadius _frameRadius = BorderRadius.all(Radius.circular(6));
 
+  /// The header's height as the reach on touch platforms, the frame seated
+  /// where the header's 10 top inset and centring put it.
+  static const double _touch = 36;
+  static const double _touchTopShare = 11 / 12;
+
   bool _hovered = false;
 
   @override
@@ -384,6 +408,11 @@ class _CopyButtonState extends State<_CopyButton> {
     if (tooltip != null) {
       button = Tooltip(message: tooltip, child: button);
     }
-    return FlowTouchTarget(child: button);
+    return FlowTouchTarget(
+      minWidth: _touch,
+      minHeight: _touch,
+      topShare: _touchTopShare,
+      child: button,
+    );
   }
 }
