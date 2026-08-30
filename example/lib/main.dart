@@ -92,7 +92,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String _titleOf(String id) {
     for (final message in _threads[id] ?? const <FlowMessageData>[]) {
       if (message.role != FlowMessageRole.user) continue;
-      final text = message.plainText.trim();
+      final text = message.plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
       if (text.isEmpty) continue;
       return text.length > 40 ? '${text.substring(0, 40)}…' : text;
     }
@@ -256,6 +256,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _generate() {
     final id = 'a${_nextId++}';
+    // The turn stays with this conversation even if another is opened
+    // before its last delta or its picture's measurement lands.
+    final thread = _activeThread;
     final history = List.of(_messages);
     final generatesImages = _imageModels.contains(_model);
     setState(() {
@@ -328,12 +331,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       if (ratio == null || !identical(picture, bytes)) return;
                       aspectRatio = ratio;
                       if (_messages.any((m) => m.id == id)) {
-                        _update(id, parts: parts(settled: _reply == null));
+                        _update(
+                          id,
+                          thread: thread,
+                          parts: parts(settled: _reply == null),
+                        );
                       }
                     });
                 }
                 _update(
                   id,
+                  thread: thread,
                   parts: parts(settled: false),
                   status: FlowMessageStatus.streaming,
                 );
@@ -343,6 +351,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 failed = true;
                 _update(
                   id,
+                  thread: thread,
                   status: FlowMessageStatus.error,
                   parts: [
                     ...parts(settled: true),
@@ -373,6 +382,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   _update(
                     id,
+                    thread: thread,
                     parts: parts(settled: true),
                     status: FlowMessageStatus.complete,
                   );
@@ -582,15 +592,19 @@ class _ChatScreenState extends State<ChatScreen> {
     _generate();
   }
 
+  /// Rewrites one turn, in [thread] — the conversation it belongs to,
+  /// which a decode landing late may no longer be the one on screen.
   void _update(
     String id, {
     List<FlowMessagePart>? parts,
     FlowMessageStatus? status,
+    String? thread,
   }) {
     if (!mounted) return;
+    final target = thread ?? _activeThread;
     setState(() {
-      _messages = [
-        for (final m in _messages)
+      _threads[target] = [
+        for (final m in _threads[target] ?? const <FlowMessageData>[])
           if (m.id == id) m.copyWith(parts: parts, status: status) else m,
       ];
     });
@@ -616,6 +630,7 @@ class _ChatScreenState extends State<ChatScreen> {
           style: typography.labelLargeEmphasised.copyWith(
             color: colors.onSurface,
           ),
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         leading: Builder(
@@ -705,6 +720,8 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Good afternoon',
         ),
         thread: FlowThread(
+          // A fresh list per conversation: its own offset and fit state.
+          key: ValueKey(_activeThread),
           messages: _messages,
           controller: _scroll,
           thinkingLabel: 'Thinking…',
