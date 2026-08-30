@@ -4,6 +4,7 @@ import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_circle_button.dart';
+import '../utils/flow_selection_theme.dart';
 import 'flow_code_block.dart';
 import 'flow_markdown.dart';
 
@@ -78,55 +79,59 @@ class FlowTextSelectionPage extends StatelessWidget {
         },
     ].nonNulls.toList();
 
-    return Material(
-      color: colors.surfaceBright,
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: _barPadding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FlowCircleButton(
-                    icon: Icons.close,
-                    background: colors.surfaceContainerLow,
-                    foreground: colors.onSurfaceVariant,
-                    iconSize: _closeIconSize,
-                    padding: _closePadding,
-                    touchMinSize: _closeTouch,
-                    tooltip:
-                        closeTooltip ??
-                        // Not MaterialLocalizations.of: a missing tooltip
-                        // must not be the one thing that throws under a
-                        // plain WidgetsApp.
-                        Localizations.of<MaterialLocalizations>(
-                          context,
-                          MaterialLocalizations,
-                        )?.closeButtonTooltip,
-                    onTap: () => Navigator.of(context).maybePop(),
-                  ),
-                ],
+    // Its own route, so outside the chat view's selection theme: the
+    // handles and wash take the Flow accent here too.
+    return FlowSelectionTheme(
+      child: Material(
+        color: colors.surfaceBright,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: _barPadding,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FlowCircleButton(
+                      icon: Icons.close,
+                      background: colors.surfaceContainerLow,
+                      foreground: colors.onSurfaceVariant,
+                      iconSize: _closeIconSize,
+                      padding: _closePadding,
+                      touchMinSize: _closeTouch,
+                      tooltip:
+                          closeTooltip ??
+                          // Not MaterialLocalizations.of: a missing tooltip
+                          // must not be the one thing that throws under a
+                          // plain WidgetsApp.
+                          Localizations.of<MaterialLocalizations>(
+                            context,
+                            MaterialLocalizations,
+                          )?.closeButtonTooltip,
+                      onTap: () => Navigator.of(context).maybePop(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: SelectionArea(
-                child: SingleChildScrollView(
-                  padding: _bodyPadding,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (var i = 0; i < parts.length; i++) ...[
-                        if (i > 0) const SizedBox(height: _partGap),
-                        parts[i],
+              Expanded(
+                child: SelectionArea(
+                  child: SingleChildScrollView(
+                    padding: _bodyPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var i = 0; i < parts.length; i++) ...[
+                          if (i > 0) const SizedBox(height: _partGap),
+                          parts[i],
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -224,7 +224,10 @@ class FlowMessage extends StatelessWidget {
   /// the design put them.
   Widget _footer(BuildContext context, Widget footer, double gap) {
     if (footer is! FlowMessageActions || !FlowTouchTarget.isTouch(context)) {
-      return Padding(padding: EdgeInsets.only(top: gap), child: footer);
+      return Padding(
+        padding: EdgeInsets.only(top: gap),
+        child: footer,
+      );
     }
     final reach = math.min(gap, FlowMessageActions.touchReach);
     return Padding(
