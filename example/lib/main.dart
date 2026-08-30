@@ -96,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _openThread(String id) {
     if (id == _activeThread) return;
-    _stop();
+    if (_generating) _stop();
     setState(() {
       _activeThread = id;
       _pending.clear();
@@ -107,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _newThread() {
     // An untouched thread is already the new chat.
     if (_messages.isEmpty) return;
-    _stop();
+    if (_generating) _stop();
     setState(() {
       _activeThread = 't${_nextThread++}';
       _threads[_activeThread] = const [];
@@ -389,6 +389,9 @@ class _ChatScreenState extends State<ChatScreen> {
   /// arrived yet, where completing would leave an empty turn: the still
   /// pending reply is removed instead.
   void _stop() {
+    // Only a turn in flight has anything to stop: the composer calls this
+    // while streaming, and a thread switch may not be.
+    if (!_generating) return;
     _reply?.cancel();
     _reply = null;
     final last = _messages.last;
