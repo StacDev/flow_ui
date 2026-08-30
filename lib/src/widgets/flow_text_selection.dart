@@ -48,8 +48,12 @@ class FlowTextSelectionPage extends StatelessWidget {
   final String? closeTooltip;
 
   /// The design's page: the reading inset, the close disc's 32 frame on
-  /// the top bar's 12 inset, the body line, 16 between parts.
-  static const EdgeInsets _bodyPadding = EdgeInsets.fromLTRB(20, 8, 20, 40);
+  /// the top bar's 12 inset, the body line, 16 between parts. The bottom
+  /// inset measures from the safe area's edge and absorbs the home
+  /// indicator rather than stacking on it, the chat view's rule.
+  static const double _sideInset = 20;
+  static const double _bodyTop = 8;
+  static const double _bodyBottom = 40;
   static const EdgeInsets _barPadding = EdgeInsets.fromLTRB(12, 8, 12, 0);
   static const double _closeIconSize = 20;
   static const double _closePadding = 6;
@@ -62,6 +66,14 @@ class FlowTextSelectionPage extends StatelessWidget {
     final typography = context.flowTypography;
     final body = typography.bodyLarge.copyWith(color: colors.onSurface);
     final markdown = message.role == FlowMessageRole.assistant;
+    // Read above the SafeArea, which consumes it: inside, it reads zero.
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final bodyPadding = EdgeInsets.fromLTRB(
+      _sideInset,
+      _bodyTop,
+      _sideInset,
+      (_bodyBottom - safeBottom).clamp(0.0, _bodyBottom),
+    );
 
     final parts = <Widget?>[
       for (final part in message.parts)
@@ -117,7 +129,7 @@ class FlowTextSelectionPage extends StatelessWidget {
               Expanded(
                 child: SelectionArea(
                   child: SingleChildScrollView(
-                    padding: _bodyPadding,
+                    padding: bodyPadding,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
