@@ -195,6 +195,14 @@
   body and the inline span, drop from 14 to 13 on their 1.6 and 1.5
   lines.
 
+- **Selecting text** — `FlowThread.selectable` (on by default) makes the
+  conversation a `SelectionArea` on pointer platforms: drag across turns,
+  copy with the shortcut, the messages' own gestures still winning
+  beneath. Phones select through `showFlowTextSelection` instead, pushed
+  from a control of the host's: a full-screen page of a message, typeset
+  as it was in the thread, for the platform's handles;
+  `FlowMessageData.plainText` joins its text for a copy.
+
 ## 0.2.0
 
 - **Typography** — title and label roles now carry an emphasised cut

@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../utils/flow_selection_theme.dart';
 import 'flow_message.dart';
 
 /// The scrollable conversation, a list of [FlowMessageData]s.
@@ -36,6 +37,7 @@ class FlowThread extends StatefulWidget {
     this.itemSpacing,
     this.messageBuilder,
     this.messageFooter,
+    this.selectable = true,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
   });
@@ -115,6 +117,15 @@ class FlowThread extends StatefulWidget {
   /// for no footer on that turn. Ignored when [messageBuilder] is set:
   /// the builder owns the whole message.
   final Widget? Function(FlowMessageData message)? messageFooter;
+
+  /// Whether prose can be drag-selected across the conversation on
+  /// pointer platforms — the web's reading convention, copied with the
+  /// platform shortcut. The messages' own gestures sit below the
+  /// selection and keep winning. Touch platforms select through
+  /// `showFlowTextSelection` instead, pushed from a control of the
+  /// host's, since there a drag scrolls and the long-press is spoken
+  /// for.
+  final bool selectable;
 
   /// Forwarded to [FlowMessage] for streaming text parts.
   final double charactersPerSecond;
@@ -255,7 +266,11 @@ class _FlowThreadState extends State<FlowThread> {
     final messages = widget.messages;
     _syncStreaming(messages);
 
-    return NotificationListener<ScrollMetricsNotification>(
+    final platform = Theme.of(context).platform;
+    final pointer =
+        platform != TargetPlatform.iOS && platform != TargetPlatform.android;
+
+    Widget list = NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) {
         // Depth 0 is the thread's own list — scrollers nested inside
         // messages (attachment strips, code blocks) report deeper and
@@ -309,5 +324,9 @@ class _FlowThreadState extends State<FlowThread> {
         ),
       ),
     );
+    if (!widget.selectable || !pointer) return list;
+    // In the Flow accent wherever the thread is mounted, not only under
+    // the chat view's own selection theme.
+    return FlowSelectionTheme(child: SelectionArea(child: list));
   }
 }

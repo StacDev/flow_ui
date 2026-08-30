@@ -93,6 +93,27 @@ FlowMessage(
 )
 ```
 
+## Selecting text
+
+On pointer platforms the thread is a `SelectionArea` by default
+(`selectable`): drag across turns, copy with the platform shortcut. The
+messages' own gestures sit below it and keep winning. Phones select from
+a control of yours instead — there a drag scrolls and the long-press is
+spoken for — through `showFlowTextSelection`: it pushes a full-screen
+page of the message, typeset as it was in the thread, where a long-press
+selects a word and the platform's handles take over.
+
+```dart title="Select text from your own control"
+showFlowTextSelection(
+  context: context,
+  message: message,
+  closeTooltip: 'Close',
+);
+```
+
+`FlowMessageData.plainText` is the same content as text — the text and
+code parts in order — for a copy action beside it.
+
 ## Message parts
 
 Message content is typed parts, not strings: a sealed `FlowMessagePart`
