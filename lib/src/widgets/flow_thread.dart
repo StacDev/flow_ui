@@ -159,12 +159,6 @@ class _FlowThreadState extends State<FlowThread> {
   bool _fits = false;
   Timer? _fitsHold;
 
-  /// The list's controller when the host passes none: the settle below
-  /// needs a position to correct, and the notification alone offers none.
-  ScrollController? _internalController;
-  ScrollController get _controller =>
-      widget.controller ?? (_internalController ??= ScrollController());
-
   /// Whether a settle is already queued for the frame's end.
   bool _settling = false;
 
@@ -184,7 +178,6 @@ class _FlowThreadState extends State<FlowThread> {
   @override
   void dispose() {
     _fitsHold?.cancel();
-    _internalController?.dispose();
     super.dispose();
   }
 
@@ -214,22 +207,24 @@ class _FlowThreadState extends State<FlowThread> {
   /// Runs on every metrics change and on every scroll end: the range
   /// collapses mid-gesture, when a jump would fight the physics, and a
   /// gesture merely ending changes no metrics — so each covers the other.
-  /// The correction goes through the controller, which needs a single
-  /// position; a host sharing one across lists opts out of the settle.
-  void _settleIfOff(ScrollMetrics metrics) {
-    if (_settling || _inRange(metrics)) return;
+  /// The correction goes through the position that fired the
+  /// notification, found from its context, so the list needs no
+  /// controller of its own and keeps the primary one a host relies on for
+  /// the chat view's scrollbar and the status-bar tap.
+  void _settleIfOff(ScrollMetrics metrics, BuildContext? context) {
+    if (context == null || _settling || _inRange(metrics)) return;
+    final scrollable = context.findAncestorStateOfType<ScrollableState>();
+    if (scrollable == null) return;
     _settling = true;
     // Metrics arrive during layout; the jump waits for the frame's end.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _settling = false;
-      if (!mounted) return;
-      final controller = _controller;
-      if (!controller.hasClients || controller.positions.length != 1) return;
-      final position = controller.position;
+      if (!mounted || !scrollable.mounted) return;
+      final position = scrollable.position;
       // Re-read live: the offset the notification reported may have moved
       // on, and a gesture or its ballistic in progress settles on its own.
       if (position.isScrollingNotifier.value || _inRange(position)) return;
-      controller.jumpTo(
+      position.jumpTo(
         clampDouble(
           position.pixels,
           position.minScrollExtent,
@@ -239,8 +234,8 @@ class _FlowThreadState extends State<FlowThread> {
     });
   }
 
-  void _handleMetrics(ScrollMetrics metrics) {
-    _settleIfOff(metrics);
+  void _handleMetrics(ScrollMetrics metrics, BuildContext context) {
+    _settleIfOff(metrics, context);
     final fits = metrics.maxScrollExtent <= 0;
     final first = _metricsFits == null;
     _metricsFits = fits;
@@ -320,7 +315,9 @@ class _FlowThreadState extends State<FlowThread> {
 
     return NotificationListener<ScrollEndNotification>(
       onNotification: (notification) {
-        if (notification.depth == 0) _settleIfOff(notification.metrics);
+        if (notification.depth == 0) {
+          _settleIfOff(notification.metrics, notification.context);
+        }
         return false;
       },
       child: NotificationListener<ScrollMetricsNotification>(
@@ -328,13 +325,15 @@ class _FlowThreadState extends State<FlowThread> {
           // Depth 0 is the thread's own list — scrollers nested inside
           // messages (attachment strips, code blocks) report deeper and
           // must not steer the fit.
-          if (notification.depth == 0) _handleMetrics(notification.metrics);
+          if (notification.depth == 0) {
+            _handleMetrics(notification.metrics, notification.context);
+          }
           return false;
         },
         child: Align(
           alignment: AlignmentDirectional.topCenter,
           child: ListView.builder(
-            controller: _controller,
+            controller: widget.controller,
             reverse: true,
             shrinkWrap: _fits,
             scrollCacheExtent: _cacheExtent,
