@@ -625,6 +625,7 @@ class _FlowComposerState extends State<FlowComposer> {
     BuildContext context, {
     required bool active,
     required Widget disc,
+    required VoidCallback? onTap,
   }) {
     final colors = context.flowColors;
     final style = _styleOf(context);
@@ -632,21 +633,27 @@ class _FlowComposerState extends State<FlowComposer> {
     return FlowTouchTarget(
       minWidth: _buttonFrame,
       minHeight: _rowTouch,
-      child: Container(
-        width: _buttonFrame,
-        height: _buttonFrame,
-        alignment: Alignment.center,
-        decoration: ShapeDecoration(
-          color: style?.backgroundColor ?? colors.surfaceBright,
-          shape: CircleBorder(
-            side: BorderSide(
-              color: active
-                  ? (style?.sendBackgroundColor ?? colors.primary)
-                  : colors.outlineVariant,
+      child: GestureDetector(
+        // The ring around the disc is the button too: a tap on it, or
+        // one the reach lands on the frame, fires without the ink.
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: _buttonFrame,
+          height: _buttonFrame,
+          alignment: Alignment.center,
+          decoration: ShapeDecoration(
+            color: style?.backgroundColor ?? colors.surfaceBright,
+            shape: CircleBorder(
+              side: BorderSide(
+                color: active
+                    ? (style?.sendBackgroundColor ?? colors.primary)
+                    : colors.outlineVariant,
+              ),
             ),
           ),
+          child: SizedBox.square(dimension: _buttonDisc, child: disc),
         ),
-        child: SizedBox.square(dimension: _buttonDisc, child: disc),
       ),
     );
   }
@@ -715,6 +722,7 @@ class _FlowComposerState extends State<FlowComposer> {
       return _ringed(
         context,
         active: true,
+        onTap: widget.onStop,
         disc: FlowCircleButton(
           icon: Icons.stop_rounded,
           background: discColor,
@@ -751,7 +759,12 @@ class _FlowComposerState extends State<FlowComposer> {
         if (sendTooltip != null) {
           disc = Tooltip(message: sendTooltip, child: disc);
         }
-        return _ringed(context, active: canSend, disc: disc);
+        return _ringed(
+          context,
+          active: canSend,
+          onTap: canSend ? _send : null,
+          disc: disc,
+        );
       },
     );
   }

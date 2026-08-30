@@ -10,7 +10,7 @@ import 'package:material_ui/material_ui.dart';
 /// its children are asked, so the reach has to exist in layout: this lays
 /// out at least [minWidth] by [minHeight], seats the child with [topShare]
 /// of the spare height above it, and routes a hit anywhere in the box to
-/// the child's nearest edge — Material's own tap-target padding.
+/// the child's centre — Material's own tap-target padding.
 ///
 /// Sized per site rather than a flat 44, and absorbed from the gap beside
 /// the control where one exists — the message strip grows up into the
@@ -156,18 +156,14 @@ class RenderFlowTouchTarget extends RenderShiftedBox {
     if (super.hitTest(result, position: position)) return true;
     final child = this.child;
     if (child == null || !size.contains(position)) return false;
-    // In the reach but off the child: the hit lands on the child's
-    // nearest edge, so its gesture and ink both accept it.
-    final offset = (child.parentData! as BoxParentData).offset;
-    final local = position - offset;
-    final nearest = Offset(
-      local.dx.clamp(0.0, child.size.width - 0.01),
-      local.dy.clamp(0.0, child.size.height - 0.01),
-    );
+    // In the reach but off the control: the hit lands on the child's
+    // centre, Material's own rule, so the control's gesture and ink take
+    // it whatever frame or ring sits around them.
+    final center = child.size.center(Offset.zero);
     return result.addWithRawTransform(
-      transform: MatrixUtils.forceToPoint(nearest),
-      position: nearest,
-      hitTest: (result, position) => child.hitTest(result, position: nearest),
+      transform: MatrixUtils.forceToPoint(center),
+      position: center,
+      hitTest: (result, position) => child.hitTest(result, position: center),
     );
   }
 }

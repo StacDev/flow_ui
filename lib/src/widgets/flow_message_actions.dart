@@ -132,7 +132,16 @@ class FlowMessageActions extends StatelessWidget {
           (i == 0 || i == last ? _gap / 2 : _gap);
     }
 
-    double leftShare(int i) => i == 0 ? 0 : (i == last ? 1 : 0.5);
+    // Shares are physical, and a Row mirrors under RTL: the first action
+    // keeps its frame at the strip's start and the last at its end,
+    // whichever side those are.
+    final ltr = Directionality.of(context) == TextDirection.ltr;
+    double leftShare(int i) {
+      if (i == 0) return ltr ? 0 : 1;
+      if (i == last) return ltr ? 1 : 0;
+      return 0.5;
+    }
+
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
