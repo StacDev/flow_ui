@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../utils/flow_selection_theme.dart';
 import 'flow_menu.dart' show FlowMenuEntry;
 import 'flow_message.dart';
 
@@ -409,6 +410,8 @@ class _FlowThreadState extends State<FlowThread> {
       ),
     );
     if (!widget.selectable || !pointer) return list;
-    return SelectionArea(child: list);
+    // In the Flow accent wherever the thread is mounted, not only under
+    // the chat view's own selection theme.
+    return FlowSelectionTheme(child: SelectionArea(child: list));
   }
 }
