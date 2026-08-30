@@ -635,8 +635,11 @@ class _FlowComposerState extends State<FlowComposer> {
       minHeight: _rowTouch,
       child: GestureDetector(
         // The ring around the disc is the button too: a tap on it, or
-        // one the reach lands on the frame, fires without the ink.
+        // one the reach lands on the frame, fires without the ink. Out of
+        // the semantics tree: the disc's own button node carries the
+        // name, and a second tap node beside it would announce unnamed.
         behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
         onTap: onTap,
         child: Container(
           width: _buttonFrame,
