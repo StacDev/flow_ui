@@ -4,6 +4,7 @@ import 'demos/add_to_chat_demo.dart';
 import 'demos/attachments_demo.dart';
 import 'demos/code_block_demo.dart';
 import 'demos/composer_demo.dart';
+import 'demos/confirmation_demo.dart';
 import 'demos/error_state_demo.dart';
 import 'demos/full_chat_demo.dart';
 import 'demos/greeting_demo.dart';
@@ -38,6 +39,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.codeBlock => CodeBlockDemo(key: key, variant: variant),
     PlaygroundItem.markdown => MarkdownDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
+    PlaygroundItem.confirmation => ConfirmationDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.pill => PillDemo(key: key, variant: variant),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
@@ -97,6 +99,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('card', 'Card'),
       ('minimal', 'Minimal'),
       ('thread', 'Failed turn'),
+    ],
+    PlaygroundItem.confirmation => const [
+      ('pending', 'Pending'),
+      ('approved', 'Approved'),
+      ('rejected', 'Rejected'),
+      ('thread', 'In a thread'),
     ],
     PlaygroundItem.pill => const [
       ('default', 'Default'),
@@ -165,6 +173,7 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.codeBlock => codeBlockSnippet(variant),
     PlaygroundItem.markdown => markdownSnippet(variant),
     PlaygroundItem.errorState => errorStateSnippet(variant),
+    PlaygroundItem.confirmation => confirmationSnippet(variant),
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.pill => pillSnippet(variant),
     PlaygroundItem.attachments => attachmentsSnippet(variant),

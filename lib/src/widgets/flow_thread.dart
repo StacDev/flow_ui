@@ -30,6 +30,11 @@ class FlowThread extends StatefulWidget {
     this.onRetry,
     this.errorTitle,
     this.retryLabel,
+    this.onConfirmationRespond,
+    this.approveLabel,
+    this.rejectLabel,
+    this.approvedLabel,
+    this.rejectedLabel,
     this.controller,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.onDrag,
     this.padding,
@@ -89,6 +94,26 @@ class FlowThread extends StatefulWidget {
   /// Host-localized label for the error cards' retry pill; null renders
   /// the pill glyph-only.
   final String? retryLabel;
+
+  /// Approve/reject intent from a [FlowConfirmationPart]'s card, handed
+  /// the message, the part and the decision so the host can find the
+  /// request it belongs to and re-render the part settled. Forwarded to
+  /// each [FlowMessage]; null renders every pending card without buttons.
+  final void Function(
+    FlowMessageData message,
+    FlowConfirmationPart part,
+    bool approved,
+  )?
+  onConfirmationRespond;
+
+  /// Host-localized labels for the thread's confirmation cards — the
+  /// approve and reject buttons, and the settled row's approved and
+  /// rejected text. A null button label hides that button; a null settled
+  /// label leaves the outcome glyph alone.
+  final String? approveLabel;
+  final String? rejectLabel;
+  final String? approvedLabel;
+  final String? rejectedLabel;
 
   /// Optional external scroll controller.
   final ScrollController? controller;
@@ -251,6 +276,7 @@ class _FlowThreadState extends State<FlowThread> {
     final gap = widget.itemSpacing ?? _defaultGap;
     final onAttachmentTap = widget.onAttachmentTap;
     final onRetry = widget.onRetry;
+    final onConfirmationRespond = widget.onConfirmationRespond;
     final onLinkTap = widget.onLinkTap;
     final messages = widget.messages;
     _syncStreaming(messages);
@@ -300,6 +326,14 @@ class _FlowThreadState extends State<FlowThread> {
                     onRetry: onRetry == null ? null : () => onRetry(message),
                     errorTitle: widget.errorTitle,
                     retryLabel: widget.retryLabel,
+                    onConfirmationRespond: onConfirmationRespond == null
+                        ? null
+                        : (part, approved) =>
+                              onConfirmationRespond(message, part, approved),
+                    approveLabel: widget.approveLabel,
+                    rejectLabel: widget.rejectLabel,
+                    approvedLabel: widget.approvedLabel,
+                    rejectedLabel: widget.rejectedLabel,
                     charactersPerSecond: widget.charactersPerSecond,
                     thinkingLabel: widget.thinkingLabel,
                     footer: widget.messageFooter?.call(message),

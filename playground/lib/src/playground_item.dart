@@ -35,6 +35,11 @@ enum PlaygroundItem {
     PhosphorIconsRegular.warningCircle,
     'flow_error_state.dart',
   ),
+  confirmation(
+    'Confirmation',
+    PhosphorIconsRegular.shieldCheck,
+    'flow_confirmation.dart',
+  ),
   addToChat(
     'Add to Chat',
     PhosphorIconsRegular.plus,

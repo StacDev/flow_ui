@@ -2,6 +2,12 @@
 
 ## 0.3.0 (unreleased)
 
+- **Confirmation** — `FlowConfirmation`, the approval card: an
+  asterisk-marked request with approve and reject buttons that settle
+  into the outcome, every label host-localized. `FlowConfirmationPart`
+  renders it in a thread, reporting through
+  `FlowThread.onConfirmationRespond`; `FlowConfirmationStyle` joins the
+  component styles with a `FlowTheme.confirmationStyle` default.
 - **Thread list** — `FlowThreadList`, the side panel's conversation
   history: host-labeled sections of title-only rows, single selection by
   id, an unread dot and pinned glyph, and a leading icon slot. Metrics
