@@ -30,6 +30,8 @@ export 'src/widgets/flow_code_block.dart';
 export 'src/styles/flow_code_block_style.dart';
 export 'src/widgets/flow_composer.dart';
 export 'src/styles/flow_composer_style.dart';
+export 'src/widgets/flow_confirmation.dart';
+export 'src/styles/flow_confirmation_style.dart';
 export 'src/widgets/flow_drop_target.dart';
 export 'src/widgets/flow_error_state.dart';
 export 'src/styles/flow_error_state_style.dart';

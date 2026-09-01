@@ -38,7 +38,7 @@ elements and the remaining AI states are on the way.
 | Attachment preview | <span class="badge-done">Shipped</span> |
 | Tool | <span class="badge-todo">Planned</span> |
 | Suggestions | <span class="badge-done">Shipped</span> |
-| Confirmation | <span class="badge-todo">Planned</span> |
+| Confirmation | <span class="badge-done">Shipped</span> |
 | Error state | <span class="badge-done">Shipped</span> |
 | Code block | <span class="badge-done">Shipped</span> |
 | Markdown | <span class="badge-done">Shipped</span> |

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../styles/flow_chat_view_style.dart';
 import '../styles/flow_code_block_style.dart';
 import '../styles/flow_composer_style.dart';
+import '../styles/flow_confirmation_style.dart';
 import '../styles/flow_error_state_style.dart';
 import '../styles/flow_markdown_style.dart';
 import '../styles/flow_menu_style.dart';
@@ -51,6 +52,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     this.menuStyle,
     this.markdownStyle,
     this.codeBlockStyle,
+    this.confirmationStyle,
     this.errorStateStyle,
     this.messageActionsStyle,
     this.pillStyle,
@@ -96,6 +98,10 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   /// code parts included.
   final FlowCodeBlockStyle? codeBlockStyle;
 
+  /// App-wide default for every `FlowConfirmation` — confirmation parts
+  /// in a thread included.
+  final FlowConfirmationStyle? confirmationStyle;
+
   /// App-wide default for every `FlowErrorState` — failed turns included.
   final FlowErrorStateStyle? errorStateStyle;
 
@@ -125,6 +131,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     FlowMenuStyle? menuStyle,
     FlowMarkdownStyle? markdownStyle,
     FlowCodeBlockStyle? codeBlockStyle,
+    FlowConfirmationStyle? confirmationStyle,
     FlowErrorStateStyle? errorStateStyle,
     FlowMessageActionsStyle? messageActionsStyle,
     FlowPillStyle? pillStyle,
@@ -141,6 +148,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       menuStyle: menuStyle ?? this.menuStyle,
       markdownStyle: markdownStyle ?? this.markdownStyle,
       codeBlockStyle: codeBlockStyle ?? this.codeBlockStyle,
+      confirmationStyle: confirmationStyle ?? this.confirmationStyle,
       errorStateStyle: errorStateStyle ?? this.errorStateStyle,
       messageActionsStyle: messageActionsStyle ?? this.messageActionsStyle,
       pillStyle: pillStyle ?? this.pillStyle,
@@ -172,6 +180,9 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       codeBlockStyle: codeBlockStyle == null
           ? other.codeBlockStyle
           : codeBlockStyle!.lerp(other.codeBlockStyle, t),
+      confirmationStyle: confirmationStyle == null
+          ? other.confirmationStyle
+          : confirmationStyle!.lerp(other.confirmationStyle, t),
       errorStateStyle: errorStateStyle == null
           ? other.errorStateStyle
           : errorStateStyle!.lerp(other.errorStateStyle, t),

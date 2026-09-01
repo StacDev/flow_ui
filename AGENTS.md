@@ -83,7 +83,7 @@ Status legend: ⬜ Todo · ✅ Done
 | 16 | Preview | full-screen image viewer: zoom, paging | ✅ |
 | 17 | Tool | TBD | ⬜ |
 | 18 | Suggestion & Suggestion Group | plain & outlined rows; scroll, wrap, column | ✅ |
-| 19 | Confirmation | default, approved, rejected | ⬜ |
+| 19 | Confirmation | pending, approved, rejected; approve/reject buttons; parts render in a thread | ✅ |
 | 20 | Error state | failure card + retry pill; failed assistant turns render it automatically | ✅ |
 | 21 | Code block | built-in synchronous highlighter; languages host-extensible | ✅ |
 | 22 | Thinking indicator | turning, breathing asterisk + shimmer label; active & settled | ✅ |

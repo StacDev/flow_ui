@@ -110,6 +110,42 @@ class FlowErrorPart extends FlowMessagePart {
   final bool retryable;
 }
 
+/// Where a confirmation request stands.
+///
+/// The host owns the transition: a tap on the card reports intent, and the
+/// card renders settled only when the host passes the new status back.
+enum FlowConfirmationStatus { pending, approved, rejected }
+
+/// A request for the user's go-ahead, rendered by a `FlowConfirmation`.
+///
+/// Runtime chrome, not model content: the host — a tool gate, a
+/// destructive-action guard — constructs it from facts it resolved itself,
+/// and flips [status] when the user answers. The buttons' labels are
+/// thread-level (`FlowThread.approveLabel` and friends), since they are
+/// the same words on every card.
+class FlowConfirmationPart extends FlowMessagePart {
+  const FlowConfirmationPart({
+    this.title,
+    this.message,
+    this.status = FlowConfirmationStatus.pending,
+  });
+
+  /// Host-localized header label, e.g. 'Approval required'. Null renders
+  /// the asterisk alone.
+  final String? title;
+
+  /// What is being asked, host-written and sentence-case. Announced as a
+  /// live region, since requests arrive unprompted.
+  final String? message;
+
+  /// Pending shows the buttons; approved and rejected settle the card.
+  ///
+  /// Keep the message's own status `complete` while the confirmation is
+  /// pending — the wait belongs to this part, and a `pending` message
+  /// renders the thinking indicator instead of its parts.
+  final FlowConfirmationStatus status;
+}
+
 /// Host-defined content, rendered through a `FlowCustomPartBuilder`.
 class FlowCustomPart extends FlowMessagePart {
   const FlowCustomPart({required this.type, this.data});

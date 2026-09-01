@@ -10,6 +10,7 @@ import '../utils/flow_shimmer_sweep.dart';
 import 'flow_attachment_group.dart';
 import 'flow_attachment_preview.dart';
 import 'flow_code_block.dart';
+import 'flow_confirmation.dart';
 import 'flow_error_state.dart';
 import 'flow_markdown.dart';
 import 'flow_streaming_text.dart';
@@ -38,6 +39,8 @@ typedef FlowCustomPartBuilder =
 /// turn keeps its parts in normal ink and closes with a [FlowErrorState]
 /// card — the message's own [FlowErrorPart], or a default one when the host
 /// supplies none; an error user bubble recolors to the error container.
+/// A [FlowConfirmationPart] renders a [FlowConfirmation] card, its buttons
+/// reporting through [onConfirmationRespond].
 class FlowMessage extends StatelessWidget {
   const FlowMessage(
     this.message, {
@@ -53,6 +56,11 @@ class FlowMessage extends StatelessWidget {
     this.onRetry,
     this.errorTitle,
     this.retryLabel,
+    this.onConfirmationRespond,
+    this.approveLabel,
+    this.rejectLabel,
+    this.approvedLabel,
+    this.rejectedLabel,
     this.leading,
     this.footer,
     this.maxBubbleWidthFraction = 0.75,
@@ -118,6 +126,21 @@ class FlowMessage extends StatelessWidget {
   /// Host-localized label for the error cards' retry pill; null renders
   /// the pill glyph-only.
   final String? retryLabel;
+
+  /// Approve/reject intent from a [FlowConfirmationPart]'s card, handed
+  /// the part and the decision. Null renders every pending card without
+  /// buttons — a read-only notice.
+  final void Function(FlowConfirmationPart part, bool approved)?
+  onConfirmationRespond;
+
+  /// Host-localized labels for the confirmation cards — the approve and
+  /// reject buttons, and the settled row's approved and rejected text. A
+  /// null button label hides that button; a null settled label leaves the
+  /// outcome glyph alone.
+  final String? approveLabel;
+  final String? rejectLabel;
+  final String? approvedLabel;
+  final String? rejectedLabel;
 
   /// Slot beside the content, e.g. an avatar.
   final Widget? leading;
@@ -354,11 +377,13 @@ class FlowMessage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               // System messages are centered notices; attachments, images,
-              // code and failures belong to user and assistant turns.
+              // code, failures and confirmations belong to user and
+              // assistant turns.
               FlowAttachmentPart() ||
               FlowImagePart() ||
               FlowCodePart() ||
-              FlowErrorPart() => const SizedBox.shrink(),
+              FlowErrorPart() ||
+              FlowConfirmationPart() => const SizedBox.shrink(),
               FlowCustomPart() =>
                 customPartBuilder?.call(context, message, part) ??
                     const SizedBox.shrink(),
@@ -523,6 +548,7 @@ class FlowMessage extends StatelessWidget {
         .copyWith(color: foreground)
         .merge(textStyle);
     final onCodeCopy = this.onCodeCopy;
+    final onConfirmationRespond = this.onConfirmationRespond;
 
     // Only text parts get the streaming reveal; a message that ends in a
     // code part streams its code without one (FlowCodeBlock renders each
@@ -599,6 +625,23 @@ class FlowMessage extends StatelessWidget {
             retryLabel: retryLabel,
             onRetry: retryable ? onRetry : null,
           ),
+        // Bound whole rather than destructured: the closures hand the
+        // part back so the host can find the request it belongs to.
+        FlowConfirmationPart confirmation => FlowConfirmation(
+          title: confirmation.title,
+          message: confirmation.message,
+          status: confirmation.status,
+          approveLabel: approveLabel,
+          rejectLabel: rejectLabel,
+          approvedLabel: approvedLabel,
+          rejectedLabel: rejectedLabel,
+          onApprove: onConfirmationRespond == null
+              ? null
+              : () => onConfirmationRespond(confirmation, true),
+          onReject: onConfirmationRespond == null
+              ? null
+              : () => onConfirmationRespond(confirmation, false),
+        ),
         FlowCustomPart() => customPartBuilder?.call(context, message, part),
       };
       if (child == null) continue;
