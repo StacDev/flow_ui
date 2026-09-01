@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/flow_message_data.dart';
 import '../models/flow_message_part.dart';
+import '../utils/flow_selection.dart';
 import 'flow_message.dart';
 
 /// The scrollable conversation, a list of [FlowMessageData]s.
@@ -15,6 +16,12 @@ import 'flow_message.dart';
 /// naturally sticks to the newest message while a reply streams in, and
 /// holds position when the user scrolls up to read history. Needs a
 /// bounded height (an [Expanded] in a column, or a sized parent).
+///
+/// Text in the thread is selectable, the way a chat in a browser is: drag
+/// across turns with a mouse, long-press on touch, then copy with the
+/// platform's shortcut or menu. Paragraphs copy on their own lines and
+/// turns a blank line apart; button labels, code headers and the thinking
+/// line stay out of it. [selectable] false leaves selection to the host.
 class FlowThread extends StatefulWidget {
   const FlowThread({
     super.key,
@@ -43,6 +50,7 @@ class FlowThread extends StatefulWidget {
     this.messageFooter,
     this.charactersPerSecond = 300,
     this.thinkingLabel,
+    this.selectable = true,
   });
 
   /// Oldest → newest; once the conversation outgrows the viewport, the
@@ -147,6 +155,15 @@ class FlowThread extends StatefulWidget {
   /// Forwarded to each [FlowMessage]: the label beside the thinking glyph
   /// on a pending message.
   final String? thinkingLabel;
+
+  /// Whether the thread hosts its own selection area — one region across
+  /// every turn, so a drag or a long-press selects prose, code and tables
+  /// alike, and a copy joins paragraphs with line breaks and turns with a
+  /// blank line, in the theme's selection colours. False renders the
+  /// content selection-ready but unselectable, for a host that installs
+  /// its own [SelectionArea] around a larger surface or needs long-press
+  /// for something else.
+  final bool selectable;
 
   @override
   State<FlowThread> createState() => _FlowThreadState();
@@ -281,31 +298,27 @@ class _FlowThreadState extends State<FlowThread> {
     final messages = widget.messages;
     _syncStreaming(messages);
 
-    return NotificationListener<ScrollMetricsNotification>(
-      onNotification: (notification) {
-        // Depth 0 is the thread's own list — scrollers nested inside
-        // messages (attachment strips, code blocks) report deeper and
-        // must not steer the fit.
-        if (notification.depth == 0) _handleMetrics(notification.metrics);
-        return false;
-      },
-      child: Align(
-        alignment: AlignmentDirectional.topCenter,
-        child: ListView.builder(
-          controller: widget.controller,
-          reverse: true,
-          shrinkWrap: _fits,
-          scrollCacheExtent: _cacheExtent,
-          keyboardDismissBehavior: widget.keyboardDismissBehavior,
-          padding: widget.padding ?? _defaultPadding,
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            // Reversed list: index 0 is the newest (bottom) message.
-            final message = messages[messages.length - 1 - index];
-            final isOldest = index == messages.length - 1;
-            return Padding(
-              key: ValueKey(message.id),
-              padding: EdgeInsets.only(top: isOldest ? 0 : gap),
+    final list = Align(
+      alignment: AlignmentDirectional.topCenter,
+      child: ListView.builder(
+        controller: widget.controller,
+        reverse: true,
+        shrinkWrap: _fits,
+        scrollCacheExtent: _cacheExtent,
+        keyboardDismissBehavior: widget.keyboardDismissBehavior,
+        padding: widget.padding ?? _defaultPadding,
+        itemCount: messages.length,
+        itemBuilder: (context, index) {
+          // Reversed list: index 0 is the newest (bottom) message.
+          final message = messages[messages.length - 1 - index];
+          final isOldest = index == messages.length - 1;
+          return Padding(
+            key: ValueKey(message.id),
+            padding: EdgeInsets.only(top: isOldest ? 0 : gap),
+            // A block per turn, so a copy spanning turns puts a blank line
+            // between them — the paragraphs inside supply their own line
+            // breaks. Host-built messages get the same.
+            child: FlowSelectionBlock(
               child:
                   widget.messageBuilder?.call(context, message) ??
                   FlowMessage(
@@ -338,10 +351,26 @@ class _FlowThreadState extends State<FlowThread> {
                     thinkingLabel: widget.thinkingLabel,
                     footer: widget.messageFooter?.call(message),
                   ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
+    );
+
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (notification) {
+        // Depth 0 is the thread's own list — scrollers nested inside
+        // messages (attachment strips, code blocks) report deeper and
+        // must not steer the fit.
+        if (notification.depth == 0) _handleMetrics(notification.metrics);
+        return false;
+      },
+      // The area wraps the whole bounded box, not just the list, so a
+      // drag that starts in the empty space under a short thread still
+      // selects. The scrollable joins it on its own — edge autoscroll and
+      // select-all come with it — and the metrics filter above is
+      // unaffected: the area is not a viewport.
+      child: widget.selectable ? FlowSelectionArea(child: list) : list,
     );
   }
 }

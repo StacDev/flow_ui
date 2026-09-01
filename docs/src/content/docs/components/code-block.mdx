@@ -165,7 +165,10 @@ field.
   `filename` (header label; falls back to `language`), `onCopy` /
   `copied` / `copyTooltip` (intent out, host-owned confirmation),
   `isStreaming`, `wrap`, plus `padding` and `borderRadius` over the
-  design's 16/12 inset and 12px corner.
+  design's 16/12 inset and 12px corner. The code is selectable: on its
+  own the block hosts its own selection, in a thread it joins the
+  thread's, so a drag from the prose above runs straight through it, and
+  the header label never selects.
 - `FlowCodePart` — `code`, `language`, `filename`; rendered by
   `FlowMessage`, skipped in system messages.
 - `FlowThread` / `FlowMessage` — `onCodeCopy` (handed the tapped part),

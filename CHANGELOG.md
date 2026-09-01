@@ -2,6 +2,19 @@
 
 ## 0.3.0 (unreleased)
 
+- **Selectable text** — text in a `FlowThread` is selectable, the way a
+  chat in a browser is: drag across turns with a mouse, long-press on
+  touch, copy with the platform's shortcut or menu. A copy keeps its line
+  breaks (paragraphs on their own lines, a blank line between turns);
+  chrome (button labels, the code block's header, the attachment type
+  pill, the thinking line) and list markers stay out of it. The highlight,
+  handles and toolbar take `primary`, and the composer's caret and
+  highlight now match; an explicit `ThemeData.textSelectionTheme` wins
+  field by field. `FlowThread.selectable` (default true) turns the
+  thread's own selection area off for a host that installs one around a
+  larger surface. `FlowCodeBlock` renders its code as one paragraph that
+  joins a thread's selection, and hosts its own selection area on its
+  own. Select-all covers the turns the lazy list has built.
 - **Confirmation** — `FlowConfirmation`, the approval card: an
   asterisk-marked request with approve and reject buttons that settle
   into the outcome, every label host-localized. `FlowConfirmationPart`
