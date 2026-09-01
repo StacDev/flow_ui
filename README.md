@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/flow_ui_logo.svg" width="76" alt="Flow UI logo">
+  <img src="assets/flow_ui_logo.svg" width="76" alt="Flow UI logo">
 </p>
 
 <h1 align="center">flow_ui</h1>
@@ -22,7 +22,7 @@
 <a href="https://flowui.stac.dev/">Flow UI</a> is an open-source Flutter UI library to build production-grade Chat &amp; AI assistant interfaces.
 </p>
 
-![The flow_ui chat surface](doc/chat_zero_light.png)
+![The flow_ui chat surface](assets/chat_zero_light.png)
 
 > [!IMPORTANT]
 > flow_ui is pre-1.0. The API is still settling, and minor releases may

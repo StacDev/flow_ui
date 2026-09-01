@@ -1,6 +1,6 @@
 ---
 title: Confirmation
-description: The approval card — an asterisk-marked request with approve and reject buttons that settle into the outcome.
+description: "The approval card for gated actions: a host-written request with approve and reject buttons that report intent, then settle into the outcome."
 sidebar:
   order: 18
 ---
@@ -9,7 +9,7 @@ import FlowDemo from '../../../components/FlowDemo.astro';
 
 `FlowConfirmation` is the approval card: an asterisk-marked request on a
 raised card, with approve and reject buttons that settle into the
-outcome. It renders state and reports intent — recording the decision,
+outcome. It renders state and reports intent; recording the decision,
 and re-rendering the card settled, is the host's business. The package
 ships no strings, so the title, the request and every button label are
 host-localized; the request announces to assistive tech as a live
@@ -17,18 +17,18 @@ region, since it arrives unprompted.
 
 The card is *runtime chrome*, not content: the asterisk header and the
 raised, hairline-and-shadow surface are its identity, the mark that
-distinguishes the host's own gate — a destructive tool call, a guarded
-action — from anything composed into the conversation. That is why the
+distinguishes the host's own gate (a destructive tool call, a guarded
+action) from anything composed into the conversation. That is why the
 glyphs are fixed and only their colors restyle.
 
 ## Pending
 
 The default state, straight from the design: the warning accent, the
 request, and the two buttons. A button renders only when both its label
-and its callback are set — a pending card with neither pair is a
+and its callback are set; a pending card with neither pair is a
 read-only notice, for chrome staged before the request is answerable.
 
-<FlowDemo demo="confirmation" variant="pending" height={220} title="The pending card — the buttons settle it" />
+<FlowDemo demo="confirmation" variant="pending" height={220} title="The pending card: the buttons settle it" />
 
 ```dart title="The full anatomy"
 FlowConfirmation(
@@ -45,7 +45,7 @@ FlowConfirmation(
 
 The widget holds no state: a tap reports intent, and the card settles
 only when the host passes the new status back. The buttons collapse into
-one row of the same footprint — so the card's height holds — and the
+one row of the same footprint (so the card's height holds) and the
 accent flips to success:
 
 <FlowDemo demo="confirmation" variant="approved" height={220} title="Settled, approved" />
@@ -81,7 +81,7 @@ the message, the part and the decision back through
 `FlowThread.onConfirmationRespond`, so the host can find the request
 they belong to and re-render the part settled; the labels are
 thread-level, since they are the same words on every card. Keep the
-message's own status `complete` while the confirmation is pending — the
+message's own status `complete` while the confirmation is pending; the
 wait belongs to the part:
 
 <FlowDemo demo="confirmation" variant="thread" height={480} title="A gated action in a turn" />
@@ -114,11 +114,11 @@ FlowMessageData(
 
 ## Restyling
 
-`FlowConfirmationStyle` carries the card's overrides — install one on
+`FlowConfirmationStyle` carries the card's overrides. Install one on
 `FlowTheme.confirmationStyle` for every card, or pass `style:` to one
 widget; a widget's own style wins field by field, and nulls fall through
-to the tokens. The three accents color a state's marks — the asterisk,
-the settled glyph and its wash — so one override recolors it coherently.
+to the tokens. The three accents color a state's marks (the asterisk,
+the settled glyph and its wash) so one override recolors it coherently.
 The title and the settled label stay in the ink ramp: the light accents
 fall short of WCAG AA for text on the card, so the words keep their
 contrast and the accent signals beside them:
@@ -140,7 +140,7 @@ card's own metrics, the per-component convention.
 |---|---|
 | `title` / `message` | Host-localized header and request; the message is a live region |
 | `status` | `FlowConfirmationStatus.pending` shows the buttons; `approved` / `rejected` settle the card |
-| `approveLabel` / `onApprove` | The filled button — renders only when both are set |
-| `rejectLabel` / `onReject` | The outlined button — same rule |
+| `approveLabel` / `onApprove` | The filled button; renders only when both are set |
+| `rejectLabel` / `onReject` | The outlined button; same rule |
 | `approvedLabel` / `rejectedLabel` | The settled row's text; null leaves the outcome glyph alone |
 | `style` | `FlowConfirmationStyle` overrides, merged over `FlowTheme.confirmationStyle` |
