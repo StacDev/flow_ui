@@ -2,6 +2,18 @@
 
 ## 0.3.0 (unreleased)
 
+- **Toast** — `FlowToast`, the floating notice: a host-supplied glyph,
+  one line that wraps and a cross on the raised card at 80%, the line
+  and the cross's label host-localized. `showFlowToast` floats it in
+  the nearest `Overlay` with no setup: 358 wide in the top end corner
+  on wide layouts, the full width inside 16 on compact ones, over a 3px
+  frost of the page; toasts stack three deep, newest nearest the edge,
+  leave on their own after four seconds (or never, with
+  `duration: null`), pause under the pointer, and hand back a
+  `FlowToastHandle` to dismiss one early or await its closing.
+  `FlowToastStyle` joins the component styles with a
+  `FlowTheme.toastStyle` default; the example shows one for a copied
+  message.
 - **Confirmation** — `FlowConfirmation`, the approval card: an
   asterisk-marked request with approve and reject buttons that settle
   into the outcome, every label host-localized. `FlowConfirmationPart`

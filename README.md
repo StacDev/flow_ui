@@ -44,6 +44,7 @@
 | [`FlowMarkdown`](https://flowui.stac.dev/components/markdown) | Assistant prose typeset from a built-in parser — headings, emphasis, lists, quotes, tables, links, and fences composing the code block; assistant turns render it by default and it streams gracefully |
 | [`FlowErrorState`](https://flowui.stac.dev/components/error-state) | Failure card with a host-written message and retry pill — failed turns render it automatically |
 | [`FlowConfirmation`](https://flowui.stac.dev/components/confirmation) | Approval card — an asterisk-marked request with approve and reject buttons that settles into the outcome; confirmation parts render it in a thread |
+| [`FlowToast`](https://flowui.stac.dev/components/toast) | Floating notice: a glyph, one wrapping line and a cross on a frosted card; `showFlowToast` floats it in the nearest Overlay, stacked and auto-dismissing, with a handle to dismiss it early |
 | [`FlowMessageActions`](https://flowui.stac.dev/components/message-actions) | Copy / regenerate / edit / feedback row under a message |
 | [`FlowComposer`](https://flowui.stac.dev/components/composer) | Multiline input with send/stop, attachments strip, the platform's file dialog (`showFlowAttachmentPicker` from your own menu, or a built-in attach button), image paste and card-scoped drop (web), and leading/trailing action slots |
 | [`FlowMenu`](https://flowui.stac.dev/components/menu) | Icon-triggered menu with groups, submenus, and toggles — anchored card on desktop, bottom sheet on phones |

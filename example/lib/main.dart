@@ -381,9 +381,12 @@ class _ChatScreenState extends State<ChatScreen> {
         if (part is FlowTextPart) part.text,
     ].join('\n');
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Copied')));
+    showFlowToast(
+      context: context,
+      icon: Icons.copy_outlined,
+      message: 'Message copied to clipboard',
+      dismissTooltip: 'Dismiss',
+    );
   }
 
   /// The actions row under a settled assistant reply: copy, feedback, and

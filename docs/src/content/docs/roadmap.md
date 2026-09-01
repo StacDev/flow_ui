@@ -53,3 +53,4 @@ elements and the remaining AI states are on the way.
 | Chat view | <span class="badge-done">Shipped</span> |
 | Side panel | <span class="badge-todo">Planned</span> |
 | Modal | <span class="badge-todo">Planned</span> |
+| Toast | <span class="badge-done">Shipped</span> |
