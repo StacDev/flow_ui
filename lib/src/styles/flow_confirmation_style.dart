@@ -15,8 +15,11 @@ import 'package:material_ui/material_ui.dart';
 /// )
 /// ```
 ///
-/// The three accents color the whole state — header asterisk, title and
-/// the settled row alike — so one override recolors a state coherently.
+/// The three accents color a state's marks — the header asterisk, the
+/// settled glyph and its wash — so one override recolors a state
+/// coherently. The title and the settled label read in the ink ramp, not
+/// the accent: the light accents fall short of WCAG AA for text on the
+/// card, so the words stay legible and the accent signals beside them.
 @immutable
 class FlowConfirmationStyle {
   const FlowConfirmationStyle({
@@ -49,8 +52,8 @@ class FlowConfirmationStyle {
   /// The rejected accent. Defaults to `error`.
   final Color? rejectedColor;
 
-  /// Merged over the title's default `labelSmallEmphasised` + accent
-  /// style.
+  /// Merged over the title's default `labelSmallEmphasised` +
+  /// `onSurfaceVariant` style.
   final TextStyle? titleStyle;
 
   /// Merged over the message's default `bodyMedium` + `onSurface` style.

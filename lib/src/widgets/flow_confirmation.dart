@@ -144,7 +144,10 @@ class FlowConfirmation extends StatelessWidget {
         context.flowTheme.confirmationStyle?.merge(style) ?? style;
 
     // One accent per state: the pending warning, then success or error.
-    // It colors the asterisk, the title and the settled row alike.
+    // It colors the marks — the asterisk, the settled glyph and its wash —
+    // never the words: the light accents sit at 2.5–4.5:1 on the card,
+    // under WCAG AA for text, so the title and the settled label read in
+    // the ink ramp and the accent carries the state beside them.
     final accent = switch (status) {
       FlowConfirmationStatus.pending =>
         effective?.pendingColor ?? colors.warning,
@@ -155,7 +158,7 @@ class FlowConfirmation extends StatelessWidget {
     };
 
     final titleStyle = typography.labelSmallEmphasised
-        .copyWith(color: accent)
+        .copyWith(color: colors.onSurfaceVariant)
         .merge(effective?.titleStyle);
 
     Widget? titleLabel;
@@ -290,6 +293,7 @@ class FlowConfirmation extends StatelessWidget {
           approved: approved,
           label: approved ? approvedLabel : rejectedLabel,
           accent: accent,
+          foreground: colors.onSurface,
           textStyle: typography.labelMediumEmphasised,
         ),
       );
@@ -396,18 +400,26 @@ class _ConfirmationButtonState extends State<_ConfirmationButton> {
 }
 
 /// The settled outcome: the pressed button's footprint, kept — a check or
-/// cross with its label on the accent's wash, non-interactive.
+/// cross in the accent beside the label in the ink, on the accent's wash,
+/// non-interactive.
 class _SettledRow extends StatelessWidget {
   const _SettledRow({
     required this.approved,
     required this.label,
     required this.accent,
+    required this.foreground,
     required this.textStyle,
   });
 
   final bool approved;
   final String? label;
+
+  /// The glyph and the wash.
   final Color accent;
+
+  /// The label's ink — the full-strength `onSurface`, since the light
+  /// accents fall short of AA on their own wash.
+  final Color foreground;
   final TextStyle textStyle;
 
   /// The button's frame, and the accent at the status containers' 6% —
@@ -447,7 +459,7 @@ class _SettledRow extends StatelessWidget {
             // The outcome lands unprompted too — announce the flip.
             Semantics(
               liveRegion: true,
-              child: Text(label, style: textStyle.copyWith(color: accent)),
+              child: Text(label, style: textStyle.copyWith(color: foreground)),
             ),
           ],
         ],

@@ -117,8 +117,11 @@ FlowMessageData(
 `FlowConfirmationStyle` carries the card's overrides — install one on
 `FlowTheme.confirmationStyle` for every card, or pass `style:` to one
 widget; a widget's own style wins field by field, and nulls fall through
-to the tokens. The three accents color a whole state — asterisk, title
-and settled row alike — so one override recolors it coherently:
+to the tokens. The three accents color a state's marks — the asterisk,
+the settled glyph and its wash — so one override recolors it coherently.
+The title and the settled label stay in the ink ramp: the light accents
+fall short of WCAG AA for text on the card, so the words keep their
+contrast and the accent signals beside them:
 
 ```dart title="A different pending accent"
 FlowConfirmation(
