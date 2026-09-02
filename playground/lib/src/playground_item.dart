@@ -40,6 +40,7 @@ enum PlaygroundItem {
     PhosphorIconsRegular.shieldCheck,
     'flow_confirmation.dart',
   ),
+  tool('Tool', PhosphorIconsRegular.wrench, 'flow_tool.dart'),
   addToChat(
     'Add to Chat',
     PhosphorIconsRegular.plus,

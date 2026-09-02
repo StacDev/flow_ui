@@ -20,6 +20,7 @@ import 'demos/suggestions_demo.dart';
 import 'demos/thinking_indicator_demo.dart';
 import 'demos/thread_demo.dart';
 import 'demos/thread_list_demo.dart';
+import 'demos/tool_demo.dart';
 import 'playground_item.dart';
 
 /// The stage's demo for [item]. Keyed on the variant so switching pills
@@ -40,6 +41,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.markdown => MarkdownDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.confirmation => ConfirmationDemo(key: key, variant: variant),
+    PlaygroundItem.tool => ToolDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.pill => PillDemo(key: key, variant: variant),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
@@ -104,6 +106,13 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('pending', 'Pending'),
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
+      ('thread', 'In a thread'),
+    ],
+    PlaygroundItem.tool => const [
+      ('live', 'Live run'),
+      ('complete', 'Complete'),
+      ('running', 'Running'),
+      ('error', 'Error'),
       ('thread', 'In a thread'),
     ],
     PlaygroundItem.pill => const [
@@ -174,6 +183,7 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.markdown => markdownSnippet(variant),
     PlaygroundItem.errorState => errorStateSnippet(variant),
     PlaygroundItem.confirmation => confirmationSnippet(variant),
+    PlaygroundItem.tool => toolSnippet(variant),
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.pill => pillSnippet(variant),
     PlaygroundItem.attachments => attachmentsSnippet(variant),
