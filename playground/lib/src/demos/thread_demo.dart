@@ -38,7 +38,8 @@ SizedBox(
 const String _default = '''
 // A scrollable conversation — reads from the top, anchoring to the
 // newest message once it outgrows the viewport. Give it
-// bounded height; inside FlowChatView that comes for free.
+// bounded height; inside FlowChatView that comes for free. Text selects
+// across turns; selectable: false leaves that to the host.
 SizedBox(
   height: 480,
   child: FlowThread(

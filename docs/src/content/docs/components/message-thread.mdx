@@ -111,6 +111,29 @@ extension seam — it carries a `type` your builder switches on and an
 arbitrary `data` payload, so the host injects its own content (a tool
 card, a chart) without the library knowing what it is.
 
+## Selecting text
+
+Text in a thread is selectable, the way a chat in a browser is: drag
+across turns with a mouse, long-press a word on touch, then copy with the
+platform's shortcut or menu. The highlight, the handles and the toolbar
+take the theme's `primary`; an explicit `ThemeData.textSelectionTheme`
+wins field by field.
+
+A copy reads the way the thread does: paragraphs on their own lines, a
+blank line between turns, code and table cells included. Chrome stays out
+of it (button labels, the code block's header, the type pill on an
+attachment, the thinking line), and so do list markers, as in a browser.
+Content a host renders (a custom part, a footer, a `leading` slot) is
+selectable by default; wrap a widget in `SelectionContainer.disabled` to
+keep it out.
+
+`selectable: false` leaves selection to the host: inside a host
+`SelectionArea` the content joins it, code blocks included; with no area
+above, nothing in the thread selects, so a long-press is the host's. A `FlowMessage`, `FlowMarkdown` or `FlowStreamingText` on its own
+selects inside a host `SelectionArea`, like a plain `Text`; `FlowCodeBlock`
+on its own keeps its own selection. Select-all covers the turns the lazy
+list has built.
+
 ## Restyling
 
 `FlowMessageStyle` overrides the user bubble without touching the global
@@ -133,7 +156,8 @@ Assistant prose is restyled through `FlowMarkdownStyle`, code through
   (default on-drag) dismisses the keyboard as the thread scrolls;
   `messageFooter` builds each message's footer slot (an actions row, a
   timestamp) without replacing the default message the way
-  `messageBuilder` does.
+  `messageBuilder` does; `selectable` (default true) hosts the thread's
+  selection area.
 - `FlowMessage` — one turn; accepts a `FlowCustomPartBuilder`, an
   `onAttachmentTap` override, `leading` and `footer` slots (an avatar,
   the action row), a `textStyle`, the same `markdown` gate and a

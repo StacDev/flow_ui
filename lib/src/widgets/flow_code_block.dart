@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../styles/flow_code_block_style.dart';
 import '../theme/flow_syntax_colors.dart';
 import '../theme/flow_theme.dart';
+import '../utils/flow_selection.dart';
 import '../utils/flow_syntax_highlighter.dart';
 
 export '../utils/flow_syntax_highlighter.dart'
@@ -32,6 +33,12 @@ export '../utils/flow_syntax_highlighter.dart'
 /// confirmation lasts — the affordance swaps to a check, tinted primary
 /// like a selected message action. The package touches no clipboard and
 /// ships no strings; [copyTooltip] is the affordance's accessible name.
+///
+/// The code is selectable: in a thread it joins the thread's selection,
+/// so a drag from the prose above runs straight through it; on its own it
+/// hosts its own selection area, with the platform's handles and menu.
+/// Inside a `FlowThread` that opted out of selection, or under a
+/// `SelectionContainer.disabled`, it does neither.
 ///
 /// Fills the width it's given, so it needs a bounded width — any column,
 /// list or message slot provides one.
@@ -216,8 +223,19 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
     final hasHeader = label != null || widget.onCopy != null;
 
     final padding = widget.padding ?? _bodyPadding;
-    final code = SelectableText.rich(span);
-    final body = widget.wrap
+    // In a thread the code joins the thread's selection as one block, so
+    // a drag runs straight through it; on its own the block hosts its own
+    // area, which keeps a standalone snippet selectable and gives it a
+    // toolbar. Under a disabled scope — a host's
+    // SelectionContainer.disabled, or a thread that opted out of
+    // selection — it does neither. One paragraph either way.
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<SelectionRegistrarScope>();
+    final inArea = scope?.registrar != null;
+    final code = inArea
+        ? FlowSelectionBlock(child: Text.rich(span))
+        : Text.rich(span);
+    Widget body = widget.wrap
         ? Padding(padding: padding, child: code)
         // Padding inside the scroll view, so the last column of a long
         // line clears the edge instead of sitting against the clip.
@@ -226,6 +244,7 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
             padding: padding,
             child: code,
           );
+    if (scope == null) body = FlowSelectionArea(child: body);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -261,13 +280,17 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
                     Expanded(
                       child: label == null
                           ? const SizedBox.shrink()
-                          : Text(
-                              label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: typography.labelMedium
-                                  .copyWith(color: colors.onSurfaceMuted)
-                                  .merge(style?.headerStyle),
+                          // The header is chrome: a selection sweeping
+                          // the block takes the code, never the label.
+                          : SelectionContainer.disabled(
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: typography.labelMedium
+                                    .copyWith(color: colors.onSurfaceMuted)
+                                    .merge(style?.headerStyle),
+                              ),
                             ),
                     ),
                     if (showCopy)
