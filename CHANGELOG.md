@@ -7,7 +7,7 @@
   and the cross's label host-localized. `showFlowToast` floats it in
   the nearest `Overlay` with no setup: 358 wide in the top end corner
   on wide layouts, the full width inside 16 on compact ones, over a 3px
-  frost of the page; toasts stack three deep, newest nearest the edge,
+  frost of the page; toasts stack three deep as a deck, the newest in front and the rest peeking out behind it, fanning out under the pointer,
   leave on their own after four seconds (or never, with
   `duration: null`), pause under the pointer, and hand back a
   `FlowToastHandle` to dismiss one early or await its closing.

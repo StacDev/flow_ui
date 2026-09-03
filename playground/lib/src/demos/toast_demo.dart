@@ -54,9 +54,9 @@ showFlowToast(
 )''';
 
 const String _stackedSnip = '''
-// Toasts stack, newest nearest the edge, three at most: a fourth
-// dismisses the oldest. Each keeps its own clock, paused under the
-// pointer.
+// Toasts stack as a deck: the newest in front, the rest peeking out
+// behind it, three at most. Hovering fans the deck out and pauses
+// every clock.
 for (final notice in notices) {
   showFlowToast(
     context: context,

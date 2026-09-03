@@ -60,8 +60,8 @@ showFlowToast(
 dismissed, for a notice that tracks work in progress. Every call hands
 back a `FlowToastHandle`: `dismiss()` takes the toast down early,
 `closed` completes once it has left, and `isShowing` says whether it is
-still up. Hovering a toast pauses its clock, so a line that is being read
-does not vanish mid-sentence.
+still up. Hovering the deck pauses every clock, so a line that is being
+read does not vanish mid-sentence.
 
 <FlowDemo demo="toast" variant="sticky" height={380} title="Up until the upload finishes" />
 
@@ -79,8 +79,13 @@ handle.dismiss();
 
 ## Several at once
 
-Toasts stack, newest nearest the edge and 8 apart, three at most: a
-fourth dismisses the oldest. Each keeps its own clock.
+Toasts stack as a deck: the newest in front, the ones behind it peeking
+out above, each a step smaller, three at most. A fourth dismisses the
+oldest. Hovering the deck fans it out, so every line can be read and
+every cross reached, and pauses every clock while the pointer stays;
+under assistive navigation it stays fanned out. Touch has no hover, so
+there the front card is the one to dismiss, and the next surfaces as it
+leaves.
 
 <FlowDemo demo="toast" variant="stacked" height={380} title="Three up; the next three push them off" />
 

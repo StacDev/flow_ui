@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show ImageFilter, lerpDouble;
 
+import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:material_ui/material_ui.dart';
 
 import '../styles/flow_toast_style.dart';
@@ -39,11 +40,16 @@ final ImageFilter _blurFilter = ImageFilter.blur(sigmaX: 3, sigmaY: 3);
 /// 16 from the top edge below that. Both distances measure from the
 /// display's edge and absorb its own insets — a notch pushes the card only
 /// as far as it exceeds them.
-/// Newer toasts stack above older ones, 8 apart, three at most; a fourth
-/// dismisses the oldest.
+///
+/// Toasts stack as a deck: the newest in front, the ones behind it peeking
+/// out above, each a step smaller, three at most; a fourth dismisses the
+/// oldest. Under the pointer the deck fans out, so every line can be read
+/// and every cross reached, and it stays fanned out under assistive
+/// navigation.
 ///
 /// A toast leaves on its own after [duration] — four seconds unless told
-/// otherwise, the clock paused while the pointer is over it — or at once
+/// otherwise, every clock paused while the pointer is over the deck — or
+/// at once
 /// from its cross or [FlowToastHandle.dismiss]. Null keeps it up until
 /// dismissed, for a notice that tracks work in progress. Under assistive
 /// navigation no toast leaves on its own, the snack bar's rule: a notice
@@ -114,6 +120,10 @@ class _FlowToastRecord {
   VoidCallback? leave;
   bool dismissed = false;
 
+  /// Its exit is running: it holds its place in the deck and counts for
+  /// no card behind it.
+  bool leaving = false;
+
   void dismiss() {
     if (dismissed || closed.isCompleted) return;
     dismissed = true;
@@ -160,6 +170,13 @@ class _FlowToastStack extends ChangeNotifier {
     }
     notifyListeners();
     return FlowToastHandle._(record);
+  }
+
+  /// From an item as its exit begins: the deck moves the cards behind
+  /// up at once, not once the card has gone.
+  void leaving(_FlowToastRecord record) {
+    record.leaving = true;
+    notifyListeners();
   }
 
   /// From an item, once its exit has run.
@@ -210,8 +227,8 @@ class _FlowToastStack extends ChangeNotifier {
   }
 }
 
-/// The entry's widget: the stack's toasts in a column at the overlay's
-/// top edge, placed by the overlay's own width.
+/// The entry's widget: the stack's toasts as a deck at the overlay's top
+/// edge, placed by the overlay's own width.
 class _FlowToastLayer extends StatefulWidget {
   const _FlowToastLayer({required this.stack});
 
@@ -221,17 +238,99 @@ class _FlowToastLayer extends StatefulWidget {
   State<_FlowToastLayer> createState() => _FlowToastLayerState();
 }
 
+/// Room kept around a card's clip for its shadow: the 24 blur reaches a
+/// little past its own radius.
+const double _shadowSlack = 36;
+
+/// Taller than any card: an uncovered card whose height is not yet known
+/// is clipped this far down, and the clipper stops at the card's own edge
+/// anyway.
+const double _anyCard = 400;
+
+/// Where a card sits in the deck: how far down from the deck's top, how
+/// much smaller than the front card, and where its clip ends — the foot
+/// of the strip that peeks out above the card in front, or the shadow's
+/// slack below an uncovered card.
+@immutable
+class _Pose {
+  const _Pose({
+    required this.dy,
+    required this.scale,
+    required this.clipBottom,
+  });
+
+  /// Where a card starts before the deck has placed it.
+  static const _Pose open = _Pose(
+    dy: 0,
+    scale: 1,
+    clipBottom: _anyCard + _shadowSlack,
+  );
+
+  final double dy;
+  final double scale;
+  final double clipBottom;
+
+  static _Pose lerp(_Pose a, _Pose b, double t) => _Pose(
+    dy: lerpDouble(a.dy, b.dy, t)!,
+    scale: lerpDouble(a.scale, b.scale, t)!,
+    clipBottom: lerpDouble(a.clipBottom, b.clipBottom, t)!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is _Pose &&
+      other.dy == dy &&
+      other.scale == scale &&
+      other.clipBottom == clipBottom;
+
+  @override
+  int get hashCode => Object.hash(dy, scale, clipBottom);
+}
+
+class _PoseTween extends Tween<_Pose> {
+  _PoseTween({super.end});
+
+  @override
+  _Pose lerp(double t) => _Pose.lerp(begin!, end!, t);
+}
+
 class _FlowToastLayerState extends State<_FlowToastLayer> {
   /// Compact begins below 600 — the chat view's boundary, read from the
   /// overlay's own constraints so a pane or a phone frame counts. Compact
   /// spans the width inside 16 from the top edge; wide sits 358 across,
-  /// 24 in from the top end corner. Toasts stack 8 apart, newest nearest
-  /// the edge.
+  /// 24 in from the top end corner.
   static const double _compactBreakpoint = 600;
   static const double _compactInset = 16;
   static const double _wideInset = 24;
   static const double _wideWidth = 358;
+
+  /// The deck: the oldest card at the top edge, every newer one 10 lower
+  /// and in front of it, so the cards behind the newest peek out above
+  /// it, each 5% smaller a step back — a hand of cards. Under the pointer
+  /// the deck fans out, 8 between the cards, so every line can be read
+  /// and every cross reached; it stays fanned out under assistive
+  /// navigation, where nothing may hide behind anything.
+  static const double _peek = 10;
+  static const double _scaleStep = 0.05;
   static const double _gap = 8;
+
+  /// A card moving up the deck, the fan opening or closing: the
+  /// jump-to-latest's 240ms.
+  static const Duration _shuffle = Duration(milliseconds: 240);
+
+  /// Each card's height, reported after its first layout; the deck is
+  /// laid out from them a frame later, the way the web's toasts measure
+  /// themselves before they stack. A card the deck cannot place yet holds
+  /// where it is.
+  final Map<_FlowToastRecord, double> _heights = {};
+  bool _hovered = false;
+  double? _deckHeight;
+  bool _sized = false;
+
+  void _measured(_FlowToastRecord record, double height) {
+    if (!mounted || _heights[record] == height) return;
+    setState(() => _heights[record] = height);
+  }
 
   @override
   void dispose() {
@@ -248,6 +347,10 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
     // status bar, a gap the design never drew. Simulated phone frames
     // report no inset and keep the full distance. The chat view's rule.
     final safe = MediaQuery.paddingOf(context);
+    final expanded = _hovered || MediaQuery.accessibleNavigationOf(context);
+    final motion = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _shuffle;
 
     // No Scaffold up here — the overlay sits above every route — and text
     // with no Material ancestor takes the framework's fallback style, the
@@ -277,21 +380,7 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
                   width: compact ? double.infinity : _wideWidth,
                   child: ListenableBuilder(
                     listenable: widget.stack,
-                    builder: (context, _) => Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final (i, record)
-                            in widget.stack.toasts.indexed) ...[
-                          if (i > 0) const SizedBox(height: _gap),
-                          _FlowToastItem(
-                            key: ObjectKey(record),
-                            stack: widget.stack,
-                            record: record,
-                          ),
-                        ],
-                      ],
-                    ),
+                    builder: (context, _) => _deck(expanded, motion),
                   ),
                 ),
               ),
@@ -301,15 +390,141 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
       ),
     );
   }
+
+  Widget _deck(bool expanded, Duration motion) {
+    final toasts = widget.stack.toasts;
+    _heights.removeWhere((record, _) => !toasts.contains(record));
+
+    // Each card's place, oldest to newest. A leaving card holds its place
+    // while it fades and counts for no one: the card it covered is
+    // already growing back. Closed, every place follows from the count
+    // alone; fanned out, from the heights of the cards above, and null
+    // holds a card where it is until those are measured.
+    final live = [
+      for (final record in toasts)
+        if (!record.leaving) record,
+    ];
+    final count = live.length;
+    final poses = <_FlowToastRecord, _Pose?>{};
+    final covered = <_FlowToastRecord>{};
+    var offset = 0.0;
+    var measured = true;
+    for (var depth = count - 1; depth >= 0; depth--) {
+      final record = live[depth];
+      final height = _heights[record];
+      if (expanded) {
+        poses[record] = measured
+            ? _Pose(
+                dy: offset,
+                scale: 1,
+                clipBottom: (height ?? _anyCard) + _shadowSlack,
+              )
+            : null;
+      } else if (depth == 0) {
+        poses[record] = _Pose(
+          dy: _peek * (count - 1),
+          scale: 1,
+          clipBottom: (height ?? _anyCard) + _shadowSlack,
+        );
+      } else {
+        // Scaled about its top edge, which stays put; only the strip
+        // above the card in front is drawn.
+        covered.add(record);
+        final scale = 1 - _scaleStep * depth;
+        poses[record] = _Pose(
+          dy: _peek * (count - 1 - depth),
+          scale: scale,
+          clipBottom: _peek / scale,
+        );
+      }
+      if (height == null) {
+        measured = false;
+      } else {
+        offset += height + _gap;
+      }
+    }
+    if (count > 0) {
+      final frontHeight = _heights[live.first];
+      if (expanded) {
+        if (measured) _deckHeight = offset - _gap;
+      } else if (frontHeight != null) {
+        _deckHeight = _peek * (count - 1) + frontHeight;
+      }
+    }
+
+    // The deck's box is the pointer's target — a hover over the strips
+    // opens the fan too — and it grows with the fan, so the pointer never
+    // leaves it crossing a gap. The first size is taken as is; the ones
+    // after move with the cards.
+    final grow = _sized ? motion : Duration.zero;
+    if (_deckHeight != null) _sized = true;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: _deckHeight ?? 0),
+      duration: grow,
+      curve: Curves.easeOut,
+      builder: (context, height, child) =>
+          SizedBox(height: height, child: child),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Deepest first: the front card paints last and takes the
+            // pointer first.
+            for (final record in toasts.reversed)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _FlowToastItem(
+                  key: ObjectKey(record),
+                  stack: widget.stack,
+                  record: record,
+                  pose: poses[record],
+                  covered: covered.contains(record),
+                  paused: expanded,
+                  motion: motion,
+                  onHeight: (height) => _measured(record, height),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-/// One toast in the layer: its entrance and exit, its clock, and the frost
-/// beneath it.
+/// One card in the deck: its entrance and exit, its clock, the frost
+/// beneath it, and the place the deck hands it.
 class _FlowToastItem extends StatefulWidget {
-  const _FlowToastItem({super.key, required this.stack, required this.record});
+  const _FlowToastItem({
+    super.key,
+    required this.stack,
+    required this.record,
+    required this.pose,
+    required this.covered,
+    required this.paused,
+    required this.motion,
+    required this.onHeight,
+  });
 
   final _FlowToastStack stack;
   final _FlowToastRecord record;
+
+  /// Where the deck puts the card; null holds it where it is.
+  final _Pose? pose;
+
+  /// Behind the front card with the deck closed: only its strip shows,
+  /// so it says nothing to assistive tech.
+  final bool covered;
+
+  /// The deck is fanned out: every clock waits.
+  final bool paused;
+
+  final Duration motion;
+  final ValueChanged<double> onHeight;
 
   @override
   State<_FlowToastItem> createState() => _FlowToastItemState();
@@ -339,6 +554,7 @@ class _FlowToastItemState extends State<_FlowToastItem>
   Timer? _timer;
   Duration? _remaining;
   final Stopwatch _elapsed = Stopwatch();
+  late _Pose _pose = widget.pose ?? _Pose.open;
 
   @override
   void initState() {
@@ -361,11 +577,26 @@ class _FlowToastItemState extends State<_FlowToastItem>
     if (widget.record.dismissed) {
       // Dismissed before it was drawn: no entrance, straight out.
       _leaving = true;
+      widget.record.leaving = true;
       _exit();
       return;
     }
     _controller.forward();
     _arm();
+  }
+
+  @override
+  void didUpdateWidget(_FlowToastItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final pose = widget.pose;
+    if (pose != null) _pose = pose;
+    if (widget.paused != oldWidget.paused) {
+      if (widget.paused) {
+        _pause();
+      } else {
+        _arm();
+      }
+    }
   }
 
   @override
@@ -379,13 +610,13 @@ class _FlowToastItemState extends State<_FlowToastItem>
     super.dispose();
   }
 
-  /// Armed on show, paused under the pointer, resumed with what was left.
-  /// Never for a sticky toast, nor under assistive navigation, where a
-  /// notice that leaves on its own may leave before it was reached — the
-  /// snack bar's rule.
+  /// Armed on show, paused while the deck is fanned out under the
+  /// pointer, resumed with what was left. Never for a sticky toast, nor
+  /// under assistive navigation, where a notice that leaves on its own
+  /// may leave before it was reached — the snack bar's rule.
   void _arm() {
     final left = _remaining;
-    if (left == null || _leaving || _timer != null) return;
+    if (left == null || _leaving || _timer != null || widget.paused) return;
     if (MediaQuery.accessibleNavigationOf(context)) return;
     _elapsed
       ..reset()
@@ -411,6 +642,8 @@ class _FlowToastItemState extends State<_FlowToastItem>
     _timer?.cancel();
     _timer = null;
     setState(() => _leaving = true);
+    // The card behind moves up as this one fades, not after.
+    widget.stack.leaving(widget.record);
     _exit();
   }
 
@@ -435,48 +668,123 @@ class _FlowToastItemState extends State<_FlowToastItem>
       onDismiss: _leave,
     );
 
-    return IgnorePointer(
-      ignoring: _leaving,
-      child: ExcludeSemantics(
-        excluding: _leaving,
-        child: MouseRegion(
-          onEnter: (_) => _pause(),
-          onExit: (_) => _arm(),
-          child: AnimatedBuilder(
-            animation: _curve,
-            child: card,
-            builder: (context, child) {
-              final t = _curve.value;
-              // A canvas transform, not an offscreen layer, so the frost
-              // below still samples the page through it.
-              return Transform.translate(
-                offset: Offset(0, -_settle * (1 - t)),
-                child: Stack(
-                  fit: StackFit.passthrough,
-                  children: [
-                    // The frost is a sibling *behind* the card, never an
-                    // ancestor of its fade: anything inside an Opacity
-                    // joins that layer, and a BackdropFilter in there
-                    // samples the layer, not the page — the preview's
-                    // rule. Opacity skips its layer at 1, so a settled
-                    // toast costs one filter and nothing else.
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: _radius,
-                        child: BackdropFilter(
-                          filter: _blurFilter,
-                          child: const SizedBox.expand(),
+    // The transforms sit outermost: RenderTransform is the one box that
+    // hit-tests outside its own bounds, and a card behind the front one is
+    // drawn well outside the box it was laid out in. Everything that
+    // checks its size — the pointer and semantics gates, the clip — comes
+    // after them, in the card's own space.
+    return TweenAnimationBuilder<_Pose>(
+      tween: _PoseTween(end: _pose),
+      duration: widget.motion,
+      curve: Curves.easeOut,
+      child: _ReportHeight(onHeight: widget.onHeight, child: card),
+      builder: (context, pose, child) => AnimatedBuilder(
+        animation: _curve,
+        child: child,
+        builder: (context, child) {
+          final t = _curve.value;
+          // Canvas transforms, not offscreen layers, so the frost below
+          // still samples the page through them.
+          return Transform.translate(
+            offset: Offset(0, pose.dy - _settle * (1 - t)),
+            child: Transform.scale(
+              scale: pose.scale,
+              alignment: Alignment.topCenter,
+              child: IgnorePointer(
+                ignoring: _leaving,
+                child: ExcludeSemantics(
+                  excluding: _leaving || widget.covered,
+                  // Behind the front card only the strip is drawn: what
+                  // the card in front covers never paints, so nothing
+                  // ghosts through its frost.
+                  child: ClipRect(
+                    clipper: _DeckClipper(pose.clipBottom),
+                    child: Stack(
+                      fit: StackFit.passthrough,
+                      children: [
+                        // The frost is a sibling *behind* the card, never
+                        // an ancestor of its fade: anything inside an
+                        // Opacity joins that layer, and a BackdropFilter
+                        // in there samples the layer, not the page — the
+                        // preview's rule. Opacity skips its layer at 1, so
+                        // a settled toast costs one filter and nothing
+                        // else.
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: _radius,
+                            child: BackdropFilter(
+                              filter: _blurFilter,
+                              child: const SizedBox.expand(),
+                            ),
+                          ),
                         ),
-                      ),
+                        Opacity(opacity: t, child: child),
+                      ],
                     ),
-                    Opacity(opacity: t, child: child),
-                  ],
+                  ),
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
+  }
+}
+
+/// The card's clip: down to [bottom] — the strip's foot, or past the
+/// card's own edge — with the slack kept above and at the sides for the
+/// shadow. Hit tests follow the clip, so a covered card takes the pointer
+/// on its strip alone.
+class _DeckClipper extends CustomClipper<Rect> {
+  const _DeckClipper(this.bottom);
+
+  final double bottom;
+
+  @override
+  Rect getClip(Size size) => Rect.fromLTRB(
+    -_shadowSlack,
+    -_shadowSlack,
+    size.width + _shadowSlack,
+    math.min(bottom, size.height + _shadowSlack),
+  );
+
+  @override
+  bool shouldReclip(_DeckClipper oldClipper) => oldClipper.bottom != bottom;
+}
+
+/// Reports the card's laid-out height to the deck once the frame is done;
+/// the deck places the cards from it on the next.
+class _ReportHeight extends SingleChildRenderObjectWidget {
+  const _ReportHeight({required this.onHeight, required super.child});
+
+  final ValueChanged<double> onHeight;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderReportHeight(onHeight);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderReportHeight renderObject,
+  ) {
+    renderObject.onHeight = onHeight;
+  }
+}
+
+class _RenderReportHeight extends RenderProxyBox {
+  _RenderReportHeight(this.onHeight);
+
+  ValueChanged<double> onHeight;
+  double? _reported;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final height = size.height;
+    if (height == _reported) return;
+    _reported = height;
+    WidgetsBinding.instance.addPostFrameCallback((_) => onHeight(height));
   }
 }
