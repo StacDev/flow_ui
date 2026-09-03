@@ -89,7 +89,8 @@ fourth dismisses the oldest. Each keeps its own clock.
 Placement is read from the overlay's own width, at the chat view's
 compact boundary. From 600 wide the card sits 358 across, 24 in from the
 top end corner; below that it spans the width inside 16 from the top
-edge. Both keep clear of the display's safe area.
+edge. Both measure from the display's edge and absorb its own insets, so
+a notch or home indicator adds nothing on top of them.
 
 The overlay is the nearest one above the `context`, so a toast raised
 inside a nested `Navigator` stays inside it, and an `Overlay.wrap` around

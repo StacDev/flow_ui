@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
 import 'package:material_ui/material_ui.dart';
@@ -35,7 +36,9 @@ final ImageFilter _blurFilter = ImageFilter.blur(sigmaX: 3, sigmaY: 3);
 ///
 /// Where it floats is read from the overlay's own width: 358 wide, 24 in
 /// from the top end corner, on layouts 600 and wider; the full width inside
-/// 16 from the top edge below that — both inside the display's safe area.
+/// 16 from the top edge below that. Both distances measure from the
+/// display's edge and absorb its own insets — a notch pushes the card only
+/// as far as it exceeds them.
 /// Newer toasts stack above older ones, 8 apart, three at most; a fourth
 /// dismisses the oldest.
 ///
@@ -238,6 +241,14 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
 
   @override
   Widget build(BuildContext context) {
+    // Read above the SafeArea below, which consumes this padding: inside
+    // it the value always reads zero. The design's distances measure from
+    // the display's edge, so they absorb its insets rather than stacking
+    // on them — a notch would otherwise stand the card 24 below a 47pt
+    // status bar, a gap the design never drew. Simulated phone frames
+    // report no inset and keep the full distance. The chat view's rule.
+    final safe = MediaQuery.paddingOf(context);
+
     // No Scaffold up here — the overlay sits above every route — and text
     // with no Material ancestor takes the framework's fallback style, the
     // preview's note.
@@ -250,12 +261,18 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxWidth < _compactBreakpoint;
+            final inset = compact ? _compactInset : _wideInset;
             return Align(
               alignment: compact
                   ? Alignment.topCenter
                   : AlignmentDirectional.topEnd,
               child: Padding(
-                padding: EdgeInsets.all(compact ? _compactInset : _wideInset),
+                padding: EdgeInsets.fromLTRB(
+                  math.max(0, inset - safe.left),
+                  math.max(0, inset - safe.top),
+                  math.max(0, inset - safe.right),
+                  math.max(0, inset - safe.bottom),
+                ),
                 child: SizedBox(
                   width: compact ? double.infinity : _wideWidth,
                   child: ListenableBuilder(
