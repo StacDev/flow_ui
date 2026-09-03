@@ -13,6 +13,7 @@ import '../utils/flow_circle_button.dart';
 import '../utils/flow_clipboard_paste.dart';
 import '../utils/flow_file_picker.dart';
 import '../utils/flow_gradient_outline.dart';
+import '../utils/flow_selection.dart';
 import 'flow_attachment_group.dart';
 import 'flow_drop_target.dart';
 import 'flow_pill.dart';
@@ -971,38 +972,47 @@ class _FlowComposerState extends State<FlowComposer> {
                         alignment: AlignmentDirectional.topStart,
                         child: Focus(
                           onKeyEvent: _handleKeyEvent,
-                          child: TextField(
-                            controller: _controller,
-                            focusNode: _focusNode,
-                            enabled: widget.enabled,
-                            minLines: 1,
-                            maxLines: widget.maxLines,
-                            // The design's compressed composer: body face on
-                            // the 1.3 control line, so the empty card stands
-                            // at 116.
-                            style: typography.bodyLarge
-                                .copyWith(height: 1.3, color: colors.onSurface)
-                                .merge(style?.textStyle),
-                            // Android's IME rich-content path, the one media
-                            // input the SDK covers without a plugin.
-                            contentInsertionConfiguration:
-                                widget.onContentInserted == null ||
-                                    !widget.attachmentsEnabled
-                                ? null
-                                : ContentInsertionConfiguration(
-                                    onContentInserted:
-                                        widget.onContentInserted!,
-                                  ),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              hintText: widget.placeholder,
-                              hintStyle: typography.bodyLarge.copyWith(
-                                height: 1.3,
-                                color:
-                                    style?.hintColor ?? colors.onSurfaceMuted,
+                          // The caret and the highlight in the theme's
+                          // selection colours, matching the thread's; a
+                          // host's own textSelectionTheme still wins.
+                          child: TextSelectionTheme(
+                            data: flowTextSelectionTheme(context),
+                            child: TextField(
+                              controller: _controller,
+                              focusNode: _focusNode,
+                              enabled: widget.enabled,
+                              minLines: 1,
+                              maxLines: widget.maxLines,
+                              // The design's compressed composer: body face on
+                              // the 1.3 control line, so the empty card stands
+                              // at 116.
+                              style: typography.bodyLarge
+                                  .copyWith(
+                                    height: 1.3,
+                                    color: colors.onSurface,
+                                  )
+                                  .merge(style?.textStyle),
+                              // Android's IME rich-content path, the one media
+                              // input the SDK covers without a plugin.
+                              contentInsertionConfiguration:
+                                  widget.onContentInserted == null ||
+                                      !widget.attachmentsEnabled
+                                  ? null
+                                  : ContentInsertionConfiguration(
+                                      onContentInserted:
+                                          widget.onContentInserted!,
+                                    ),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                hintText: widget.placeholder,
+                                hintStyle: typography.bodyLarge.copyWith(
+                                  height: 1.3,
+                                  color:
+                                      style?.hintColor ?? colors.onSurfaceMuted,
+                                ),
+                                contentPadding: EdgeInsets.zero,
                               ),
-                              contentPadding: EdgeInsets.zero,
                             ),
                           ),
                         ),

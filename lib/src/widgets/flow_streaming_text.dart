@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/flow_theme.dart';
 import '../utils/flow_reveal_engine.dart';
+import '../utils/flow_selection.dart';
 
 /// Animated reveal for text that arrives incrementally.
 ///
@@ -18,6 +19,9 @@ import '../utils/flow_reveal_engine.dart';
 /// whenever it would fall more than a beat behind the incoming text, so fast
 /// streams never leave the animation lagging. If a new [text] does not extend
 /// the previous one (a regenerate or branch switch), the reveal restarts.
+///
+/// Inside a selection area (a `FlowThread`'s, or a host's) the text is one
+/// selectable block, so a copy across paragraphs keeps its line breaks.
 class FlowStreamingText extends StatefulWidget {
   const FlowStreamingText({
     super.key,
@@ -142,7 +146,9 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
 
     // Settled: history messages and completed streams render statically.
     if (!_ticker.isActive && _engine.revealed >= widget.text.length) {
-      return Text(widget.text, style: style, textAlign: widget.textAlign);
+      return FlowSelectionBlock(
+        child: Text(widget.text, style: style, textAlign: widget.textAlign),
+      );
     }
 
     final text = widget.text;
@@ -188,12 +194,14 @@ class _FlowStreamingTextState extends State<FlowStreamingText>
 
     // Expose the full text once so screen readers aren't re-announced
     // on every animation frame.
-    return Semantics(
-      label: widget.text,
-      child: ExcludeSemantics(
-        child: Text.rich(
-          TextSpan(style: style, children: spans),
-          textAlign: widget.textAlign,
+    return FlowSelectionBlock(
+      child: Semantics(
+        label: widget.text,
+        child: ExcludeSemantics(
+          child: Text.rich(
+            TextSpan(style: style, children: spans),
+            textAlign: widget.textAlign,
+          ),
         ),
       ),
     );
