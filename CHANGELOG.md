@@ -11,6 +11,31 @@
   through `FlowThread.onCodeCopy`; `FlowToolStyle` joins the component
   styles with a `FlowTheme.toolStyle` default. Metrics are provisional
   pending a design frame.
+- **Toast** — `FlowToast`, the floating notice: a host-supplied glyph,
+  one line that wraps and a cross on the raised card at 80%, the line
+  and the cross's label host-localized. `showFlowToast` floats it in
+  the nearest `Overlay` with no setup: 358 wide in the top end corner
+  on wide layouts, the full width inside 16 on compact ones, over a 3px
+  frost of the page; toasts stack three deep as a deck, the newest in front and the rest peeking out behind it, fanning out under the pointer,
+  leave on their own after four seconds (or never, with
+  `duration: null`), pause under the pointer, and hand back a
+  `FlowToastHandle` to dismiss one early or await its closing.
+  `FlowToastStyle` joins the component styles with a
+  `FlowTheme.toastStyle` default; the example shows one for a copied
+  message.
+- **Selectable text** — text in a `FlowThread` is selectable, the way a
+  chat in a browser is: drag across turns with a mouse, long-press on
+  touch, copy with the platform's shortcut or menu. A copy keeps its line
+  breaks (paragraphs on their own lines, a blank line between turns);
+  chrome (button labels, the code block's header, the attachment type
+  pill, the thinking line) and list markers stay out of it. The highlight,
+  handles and toolbar take `primary`, and the composer's caret and
+  highlight now match; an explicit `ThemeData.textSelectionTheme` wins
+  field by field. `FlowThread.selectable` (default true) turns the
+  thread's own selection area off: the content joins a host's area above,
+  or stays unselectable, code blocks included, when there is none. `FlowCodeBlock` renders its code as one paragraph that
+  joins a thread's selection, and hosts its own selection area on its
+  own. Select-all covers the turns the lazy list has built.
 - **Confirmation** — `FlowConfirmation`, the approval card: an
   asterisk-marked request with approve and reject buttons that settle
   into the outcome, every label host-localized. `FlowConfirmationPart`

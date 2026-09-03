@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../styles/flow_error_state_style.dart';
 import '../theme/flow_theme.dart';
 import '../theme/flow_typography.dart';
+import '../utils/flow_selection.dart';
 
 /// A failure surface: an error glyph and a host-written explanation on a
 /// hairline card, with an optional retry pill.
@@ -115,7 +116,7 @@ class FlowErrorState extends StatelessWidget {
 
     Widget? rowLabel;
     if (rowText != null) {
-      rowLabel = Text(rowText, style: rowStyle);
+      rowLabel = FlowSelectionBlock(child: Text(rowText, style: rowStyle));
       if (below == null) {
         // The row text is all the card says — a lone title as much as a
         // lone message — and failures arrive unprompted: announce it.
@@ -169,11 +170,13 @@ class FlowErrorState extends StatelessWidget {
               padding: const EdgeInsets.only(top: _messageGap),
               child: Semantics(
                 liveRegion: true,
-                child: Text(
-                  below,
-                  style: typography.bodyMedium
-                      .copyWith(color: colors.onSurfaceVariant)
-                      .merge(effective?.messageStyle),
+                child: FlowSelectionBlock(
+                  child: Text(
+                    below,
+                    style: typography.bodyMedium
+                        .copyWith(color: colors.onSurfaceVariant)
+                        .merge(effective?.messageStyle),
+                  ),
                 ),
               ),
             ),
@@ -247,12 +250,16 @@ class _RetryButtonState extends State<_RetryButton> {
                 Icon(Icons.refresh, size: _glyphSize, color: foreground),
                 if (label != null) ...[
                   const SizedBox(width: _glyphGap),
-                  Text(
-                    label,
-                    style: FlowTypography.recut(
-                      typography.labelMedium,
-                      fontWeight: FontWeight.w600,
-                    ).copyWith(color: foreground),
+                  // A button's label is chrome, not content: never part
+                  // of a selection sweeping the card.
+                  SelectionContainer.disabled(
+                    child: Text(
+                      label,
+                      style: FlowTypography.recut(
+                        typography.labelMedium,
+                        fontWeight: FontWeight.w600,
+                      ).copyWith(color: foreground),
+                    ),
                   ),
                 ],
               ],

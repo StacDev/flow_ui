@@ -568,7 +568,11 @@ class _FlowMarkdownState extends State<FlowMarkdown> {
               children: [
                 SizedBox(
                   width: _listIndent,
-                  child: Text(marker, style: base),
+                  // Markers stay out of a selection, as a browser's do: a
+                  // copied list is its items, not `•item` run together.
+                  child: SelectionContainer.disabled(
+                    child: Text(marker, style: base),
+                  ),
                 ),
                 Expanded(
                   child: Column(

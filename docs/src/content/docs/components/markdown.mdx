@@ -110,6 +110,7 @@ Fences restyle through `FlowCodeBlockStyle`.
   assistant-text rendering; `onLinkTap` threads through with the
   message-arity shape on the thread.
 
-Prose renders non-selectable `Text.rich`, matching plain assistant text —
-wrap the thread in a `SelectionArea` for selection. Fenced code keeps
-`FlowCodeBlock`'s own selectable body.
+Selection is built into `FlowThread`: prose, tables and fences all join
+the thread's selection, and a copy keeps a line break between paragraphs.
+A `FlowMarkdown` on its own selects inside a host `SelectionArea`, the way
+a plain `Text` does; list markers stay out of it, as in a browser.

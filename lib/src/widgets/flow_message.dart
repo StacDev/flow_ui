@@ -6,6 +6,7 @@ import '../models/flow_message_part.dart';
 import '../styles/flow_message_style.dart';
 import '../theme/flow_theme.dart';
 import '../utils/flow_attachment_error.dart';
+import '../utils/flow_selection.dart';
 import '../utils/flow_shimmer_sweep.dart';
 import 'flow_attachment_group.dart';
 import 'flow_attachment_preview.dart';
@@ -382,10 +383,8 @@ class FlowMessage extends StatelessWidget {
         children: [
           for (final part in message.parts)
             switch (part) {
-              FlowTextPart(:final text) => Text(
-                text,
-                style: style,
-                textAlign: TextAlign.center,
+              FlowTextPart(:final text) => FlowSelectionBlock(
+                child: Text(text, style: style, textAlign: TextAlign.center),
               ),
               // System messages are centered notices; attachments, images,
               // code, failures, confirmations and tool calls belong to

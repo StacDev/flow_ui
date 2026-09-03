@@ -471,12 +471,16 @@ class _TypePill extends StatelessWidget {
             color: colors.onSurfaceVariant,
             child: Padding(
               padding: _pillPadding,
-              child: Text(
-                kind,
-                style: FlowTypography.recut(
-                  context.flowTypography.labelSmall,
-                  fontWeight: FontWeight.w600,
-                ).copyWith(color: colors.surfaceBright),
+              // Chrome over the tile, not content: never part of a
+              // selection sweeping the message.
+              child: SelectionContainer.disabled(
+                child: Text(
+                  kind,
+                  style: FlowTypography.recut(
+                    context.flowTypography.labelSmall,
+                    fontWeight: FontWeight.w600,
+                  ).copyWith(color: colors.surfaceBright),
+                ),
               ),
             ),
           ),

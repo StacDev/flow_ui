@@ -389,6 +389,9 @@ class _FlowToolState extends State<FlowTool>
       ),
     );
 
+    // The header is chrome, like the code block's: the title already
+    // stays out of a thread's selection (the shimmer text always does),
+    // and the chip follows it.
     Widget? chip;
     if (detail != null) {
       chip = Container(
@@ -397,13 +400,15 @@ class _FlowToolState extends State<FlowTool>
           color: style?.detailChipColor ?? colors.surfaceContainer,
           borderRadius: _chipRadius,
         ),
-        child: Text(
-          detail,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: typography.codeInline
-              .copyWith(color: colors.onSurfaceVariant, height: 1.3)
-              .merge(style?.detailStyle),
+        child: SelectionContainer.disabled(
+          child: Text(
+            detail,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: typography.codeInline
+                .copyWith(color: colors.onSurfaceVariant, height: 1.3)
+                .merge(style?.detailStyle),
+          ),
         ),
       );
     }

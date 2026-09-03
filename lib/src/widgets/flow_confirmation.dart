@@ -6,6 +6,7 @@ import '../theme/flow_colors.dart';
 import '../theme/flow_theme.dart';
 import '../theme/flow_typography.dart';
 import '../utils/flow_asterisk_painter.dart';
+import '../utils/flow_selection.dart';
 
 /// The approval card: an asterisk-marked request on a raised card, with
 /// approve and reject buttons that settle into the outcome.
@@ -163,7 +164,7 @@ class FlowConfirmation extends StatelessWidget {
 
     Widget? titleLabel;
     if (title != null) {
-      titleLabel = Text(title, style: titleStyle);
+      titleLabel = FlowSelectionBlock(child: Text(title, style: titleStyle));
       if (message == null) {
         // The title is all the card says, and requests arrive unprompted:
         // announce it.
@@ -215,11 +216,13 @@ class FlowConfirmation extends StatelessWidget {
               padding: const EdgeInsets.only(top: _messageGap),
               child: Semantics(
                 liveRegion: true,
-                child: Text(
-                  message,
-                  style: typography.bodyMedium
-                      .copyWith(color: colors.onSurface)
-                      .merge(effective?.messageStyle),
+                child: FlowSelectionBlock(
+                  child: Text(
+                    message,
+                    style: typography.bodyMedium
+                        .copyWith(color: colors.onSurface)
+                        .merge(effective?.messageStyle),
+                  ),
                 ),
               ),
             ),
@@ -373,10 +376,16 @@ class _ConfirmationButtonState extends State<_ConfirmationButton> {
             padding: _padding,
             child: Center(
               widthFactor: 1,
-              child: Text(
-                widget.label,
-                style: widget.textStyle.copyWith(
-                  color: _hovered ? widget.hoverForeground : widget.foreground,
+              // A button's label is chrome, not content: never part of a
+              // selection sweeping the card.
+              child: SelectionContainer.disabled(
+                child: Text(
+                  widget.label,
+                  style: widget.textStyle.copyWith(
+                    color: _hovered
+                        ? widget.hoverForeground
+                        : widget.foreground,
+                  ),
                 ),
               ),
             ),
@@ -459,7 +468,13 @@ class _SettledRow extends StatelessWidget {
             // The outcome lands unprompted too — announce the flip.
             Semantics(
               liveRegion: true,
-              child: Text(label, style: textStyle.copyWith(color: foreground)),
+              // The outcome chip is chrome, like the buttons it replaces.
+              child: SelectionContainer.disabled(
+                child: Text(
+                  label,
+                  style: textStyle.copyWith(color: foreground),
+                ),
+              ),
             ),
           ],
         ],

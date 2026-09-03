@@ -29,6 +29,13 @@ class Stage extends StatelessWidget {
   final String? variant;
   final ValueChanged<String>? onVariantChanged;
 
+  /// The object rail's top padding, which clears the pill switcher. A
+  /// full-surface demo with variants learns of the pills the same way,
+  /// as a top inset its SafeArea clears — the way a screen learns of its
+  /// status bar — so anything it anchors to the top edge (a toast) lands
+  /// below them.
+  static const double _chromeInset = 56;
+
   @override
   Widget build(BuildContext context) {
     final demo = demoFor(item, variant: variant);
@@ -38,17 +45,32 @@ class Stage extends StatelessWidget {
     if (device == StageDevice.web) {
       // A full-surface demo (the chat) owns the whole pane; object demos
       // sit centred on the canvas.
-      content = demoFillsStage(item, variant: variant)
-          ? demo
-          : Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(28, 56, 28, 52),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 860),
-                  child: demo,
+      if (demoFillsStage(item, variant: variant)) {
+        // Only the top changes: the display's own insets stay, so a
+        // surface below still absorbs a home indicator the way it does
+        // outside the stage.
+        final padding = MediaQuery.paddingOf(context);
+        content = variants.isEmpty
+            ? demo
+            : MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  padding: padding.copyWith(
+                    top: math.max(padding.top, _chromeInset),
+                  ),
                 ),
-              ),
-            );
+                child: demo,
+              );
+      } else {
+        content = Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(28, _chromeInset, 28, 52),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 860),
+              child: demo,
+            ),
+          ),
+        );
+      }
     } else {
       content = LayoutBuilder(
         builder: (context, constraints) => Center(

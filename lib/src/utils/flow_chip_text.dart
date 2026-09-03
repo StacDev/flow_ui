@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/flow_typography.dart';
+import 'flow_selection.dart';
 
 /// Internal — not exported from the package barrel.
 ///
@@ -56,9 +57,24 @@ class FlowChipSpan extends TextSpan {
 /// `Text.rich`, chip-aware: renders [span] through a paragraph that
 /// paints [FlowChipSpan] chips before the glyphs. Mirrors `Text.rich`'s
 /// ambient wiring — default style, bold text, text scaling, selection
-/// registration — so it is a drop-in swap.
+/// registration — so it is a drop-in swap. Inside a selection area the
+/// paragraph is a [FlowSelectionBlock], so a copy across paragraphs keeps
+/// its line breaks.
 class FlowChipText extends StatelessWidget {
   const FlowChipText(this.span, {super.key});
+
+  final InlineSpan span;
+
+  @override
+  Widget build(BuildContext context) {
+    // The block is the registrar the paragraph must see, so the ambient
+    // reads happen a level down.
+    return FlowSelectionBlock(child: _ChipParagraph(span));
+  }
+}
+
+class _ChipParagraph extends StatelessWidget {
+  const _ChipParagraph(this.span);
 
   final InlineSpan span;
 

@@ -15,6 +15,9 @@ import '../utils/flow_shimmer_sweep.dart';
 /// across; with [enabled] false — or reduced motion on — the text renders
 /// statically in the base ink, so the same widget can stay in place once
 /// the work settles.
+///
+/// Never part of a selection around it: a waiting line is status, not
+/// content.
 class FlowShimmerText extends StatelessWidget {
   const FlowShimmerText({
     super.key,
@@ -63,21 +66,28 @@ class FlowShimmerText extends StatelessWidget {
     // is right for a shape but wrong for a label: it would discard a
     // caller's [style] colour, and cost a saveLayer, for the readers
     // least able to spare either.
+    // Status, not content: the line stays out of any selection around it
+    // — and the sweep's mask would tint a highlight painted under the
+    // glyphs, so the static form opts out too, for one behaviour.
     if (!enabled || MediaQuery.disableAnimationsOf(context)) {
-      return Text(text, style: resolvedStyle, textAlign: textAlign);
+      return SelectionContainer.disabled(
+        child: Text(text, style: resolvedStyle, textAlign: textAlign),
+      );
     }
 
     // The sweep masks the glyphs, so they paint opaque: a translucent ink
     // there would dim the whole line a second time on top of the mask's
     // own alpha.
-    return FlowShimmerSweep(
-      baseColor: resolvedBase,
-      highlightColor: highlightColor ?? colors.onSurface,
-      duration: duration,
-      child: Text(
-        text,
-        style: resolvedStyle.copyWith(color: const Color(0xFFFFFFFF)),
-        textAlign: textAlign,
+    return SelectionContainer.disabled(
+      child: FlowShimmerSweep(
+        baseColor: resolvedBase,
+        highlightColor: highlightColor ?? colors.onSurface,
+        duration: duration,
+        child: Text(
+          text,
+          style: resolvedStyle.copyWith(color: const Color(0xFFFFFFFF)),
+          textAlign: textAlign,
+        ),
       ),
     );
   }
