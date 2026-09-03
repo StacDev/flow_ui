@@ -327,6 +327,13 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
   double? _deckHeight;
   bool _sized = false;
 
+  /// The tallest the box has been under the pointer. A card dismissed
+  /// from the fan leaves a gap the pointer is still in, and a box that
+  /// closed up around the survivors would fire an exit the pointer never
+  /// made — closing the fan and restarting every clock mid-read. The room
+  /// is given back once the pointer truly leaves.
+  double? _hoverHeight;
+
   void _measured(_FlowToastRecord record, double height) {
     if (!mounted || _heights[record] == height) return;
     setState(() => _heights[record] = height);
@@ -454,20 +461,27 @@ class _FlowToastLayerState extends State<_FlowToastLayer> {
 
     // The deck's box is the pointer's target — a hover over the strips
     // opens the fan too — and it grows with the fan, so the pointer never
-    // leaves it crossing a gap. The first size is taken as is; the ones
-    // after move with the cards.
+    // leaves it crossing a gap; under the pointer it never shrinks. The
+    // first size is taken as is; the ones after move with the cards.
     final grow = _sized ? motion : Duration.zero;
     if (_deckHeight != null) _sized = true;
+    if (_hovered) {
+      _hoverHeight = math.max(_hoverHeight ?? 0, _deckHeight ?? 0);
+    }
+    final boxHeight = math.max(_deckHeight ?? 0, _hoverHeight ?? 0);
 
     return TweenAnimationBuilder<double>(
-      tween: Tween<double>(end: _deckHeight ?? 0),
+      tween: Tween<double>(end: boxHeight),
       duration: grow,
       curve: Curves.easeOut,
       builder: (context, height, child) =>
           SizedBox(height: height, child: child),
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        onExit: (_) => setState(() {
+          _hovered = false;
+          _hoverHeight = null;
+        }),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
