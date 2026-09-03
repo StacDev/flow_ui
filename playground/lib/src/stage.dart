@@ -46,12 +46,18 @@ class Stage extends StatelessWidget {
       // A full-surface demo (the chat) owns the whole pane; object demos
       // sit centred on the canvas.
       if (demoFillsStage(item, variant: variant)) {
+        // Only the top changes: the display's own insets stay, so a
+        // surface below still absorbs a home indicator the way it does
+        // outside the stage.
+        final padding = MediaQuery.paddingOf(context);
         content = variants.isEmpty
             ? demo
             : MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(padding: const EdgeInsets.only(top: _chromeInset)),
+                data: MediaQuery.of(context).copyWith(
+                  padding: padding.copyWith(
+                    top: math.max(padding.top, _chromeInset),
+                  ),
+                ),
                 child: demo,
               );
       } else {
