@@ -37,6 +37,8 @@ export '../utils/flow_syntax_highlighter.dart'
 /// The code is selectable: in a thread it joins the thread's selection,
 /// so a drag from the prose above runs straight through it; on its own it
 /// hosts its own selection area, with the platform's handles and menu.
+/// Inside a `FlowThread` that opted out of selection, or under a
+/// `SelectionContainer.disabled`, it does neither.
 ///
 /// Fills the width it's given, so it needs a bounded width — any column,
 /// list or message slot provides one.
@@ -224,8 +226,9 @@ class _FlowCodeBlockState extends State<FlowCodeBlock> {
     // In a thread the code joins the thread's selection as one block, so
     // a drag runs straight through it; on its own the block hosts its own
     // area, which keeps a standalone snippet selectable and gives it a
-    // toolbar. Under a host's SelectionContainer.disabled it does neither.
-    // One paragraph either way.
+    // toolbar. Under a disabled scope — a host's
+    // SelectionContainer.disabled, or a thread that opted out of
+    // selection — it does neither. One paragraph either way.
     final scope = context
         .dependOnInheritedWidgetOfExactType<SelectionRegistrarScope>();
     final inArea = scope?.registrar != null;

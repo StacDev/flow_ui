@@ -11,8 +11,8 @@
   handles and toolbar take `primary`, and the composer's caret and
   highlight now match; an explicit `ThemeData.textSelectionTheme` wins
   field by field. `FlowThread.selectable` (default true) turns the
-  thread's own selection area off for a host that installs one around a
-  larger surface. `FlowCodeBlock` renders its code as one paragraph that
+  thread's own selection area off: the content joins a host's area above,
+  or stays unselectable, code blocks included, when there is none. `FlowCodeBlock` renders its code as one paragraph that
   joins a thread's selection, and hosts its own selection area on its
   own. Select-all covers the turns the lazy list has built.
 - **Confirmation** — `FlowConfirmation`, the approval card: an

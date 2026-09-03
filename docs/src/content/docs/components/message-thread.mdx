@@ -127,9 +127,9 @@ Content a host renders (a custom part, a footer, a `leading` slot) is
 selectable by default; wrap a widget in `SelectionContainer.disabled` to
 keep it out.
 
-`selectable: false` leaves selection to the host, for a `SelectionArea`
-around a larger surface or a long-press the host needs for something
-else. A `FlowMessage`, `FlowMarkdown` or `FlowStreamingText` on its own
+`selectable: false` leaves selection to the host: inside a host
+`SelectionArea` the content joins it, code blocks included; with no area
+above, nothing in the thread selects, so a long-press is the host's. A `FlowMessage`, `FlowMarkdown` or `FlowStreamingText` on its own
 selects inside a host `SelectionArea`, like a plain `Text`; `FlowCodeBlock`
 on its own keeps its own selection. Select-all covers the turns the lazy
 list has built.

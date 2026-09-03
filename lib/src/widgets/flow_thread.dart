@@ -159,10 +159,10 @@ class FlowThread extends StatefulWidget {
   /// Whether the thread hosts its own selection area — one region across
   /// every turn, so a drag or a long-press selects prose, code and tables
   /// alike, and a copy joins paragraphs with line breaks and turns with a
-  /// blank line, in the theme's selection colours. False renders the
-  /// content selection-ready but unselectable, for a host that installs
-  /// its own [SelectionArea] around a larger surface or needs long-press
-  /// for something else.
+  /// blank line, in the theme's selection colours. False leaves selection
+  /// to the host: inside a host's [SelectionArea] the content joins it,
+  /// code blocks included; with no area above, nothing in the thread
+  /// selects, so long-press stays the host's.
   final bool selectable;
 
   @override
@@ -357,6 +357,24 @@ class _FlowThreadState extends State<FlowThread> {
       ),
     );
 
+    final Widget content;
+    if (widget.selectable) {
+      // The area wraps the whole bounded box, not just the list, so a
+      // drag that starts in the empty space under a short thread still
+      // selects. The scrollable joins it on its own — edge autoscroll and
+      // select-all come with it — and the metrics filter below is
+      // unaffected: the area is not a viewport.
+      content = FlowSelectionArea(child: list);
+    } else if (SelectionContainer.maybeOf(context) != null) {
+      // A host area above: the content joins it, code blocks included.
+      content = list;
+    } else {
+      // No area anywhere: nothing in the thread selects. A code block
+      // hosts its own area only outside every scope, and a disabled one
+      // is a scope — so long-press stays the host's, fences included.
+      content = SelectionContainer.disabled(child: list);
+    }
+
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) {
         // Depth 0 is the thread's own list — scrollers nested inside
@@ -365,12 +383,7 @@ class _FlowThreadState extends State<FlowThread> {
         if (notification.depth == 0) _handleMetrics(notification.metrics);
         return false;
       },
-      // The area wraps the whole bounded box, not just the list, so a
-      // drag that starts in the empty space under a short thread still
-      // selects. The scrollable joins it on its own — edge autoscroll and
-      // select-all come with it — and the metrics filter above is
-      // unaffected: the area is not a viewport.
-      child: widget.selectable ? FlowSelectionArea(child: list) : list,
+      child: content,
     );
   }
 }
