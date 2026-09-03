@@ -2,6 +2,15 @@
 
 ## 0.3.0 (unreleased)
 
+- **Tool**: `FlowTool`, the tool-call card. One mark morphs with the
+  call's status (a still asterisk while staged, turning while it runs, a
+  check or an error glyph once settled) beside the host's title and
+  primary argument, with the raw input and output as code blocks behind
+  a disclosure and a failure readable without a tap. `FlowToolPart`
+  renders it in a thread, keyed by the provider's call id and copying
+  through `FlowThread.onCodeCopy`; `FlowToolStyle` joins the component
+  styles with a `FlowTheme.toolStyle` default. Metrics are provisional
+  pending a design frame.
 - **Toast** — `FlowToast`, the floating notice: a host-supplied glyph,
   one line that wraps and a cross on the raised card at 80%, the line
   and the cross's label host-localized. `showFlowToast` floats it in
