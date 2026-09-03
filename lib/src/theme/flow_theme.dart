@@ -12,6 +12,7 @@ import '../styles/flow_message_style.dart';
 import '../styles/flow_pill_style.dart';
 import '../styles/flow_suggestion_style.dart';
 import '../styles/flow_thread_list_style.dart';
+import '../styles/flow_toast_style.dart';
 import 'flow_colors.dart';
 import 'flow_syntax_colors.dart';
 import 'flow_typography.dart';
@@ -58,6 +59,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     this.pillStyle,
     this.suggestionStyle,
     this.threadListStyle,
+    this.toastStyle,
     this.chatViewStyle,
   });
 
@@ -117,6 +119,10 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
   /// App-wide default for every `FlowThreadList`.
   final FlowThreadListStyle? threadListStyle;
 
+  /// App-wide default for every `FlowToast` — the ones `showFlowToast`
+  /// floats included.
+  final FlowToastStyle? toastStyle;
+
   /// App-wide default for `FlowChatView.style` — the drop treatment's
   /// gradient, glyph and label.
   final FlowChatViewStyle? chatViewStyle;
@@ -137,6 +143,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     FlowPillStyle? pillStyle,
     FlowSuggestionStyle? suggestionStyle,
     FlowThreadListStyle? threadListStyle,
+    FlowToastStyle? toastStyle,
     FlowChatViewStyle? chatViewStyle,
   }) {
     return FlowTheme(
@@ -154,6 +161,7 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       pillStyle: pillStyle ?? this.pillStyle,
       suggestionStyle: suggestionStyle ?? this.suggestionStyle,
       threadListStyle: threadListStyle ?? this.threadListStyle,
+      toastStyle: toastStyle ?? this.toastStyle,
       chatViewStyle: chatViewStyle ?? this.chatViewStyle,
     );
   }
@@ -198,6 +206,9 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
       threadListStyle: threadListStyle == null
           ? other.threadListStyle
           : threadListStyle!.lerp(other.threadListStyle, t),
+      toastStyle: toastStyle == null
+          ? other.toastStyle
+          : toastStyle!.lerp(other.toastStyle, t),
       chatViewStyle: chatViewStyle == null
           ? other.chatViewStyle
           : chatViewStyle!.lerp(other.chatViewStyle, t),

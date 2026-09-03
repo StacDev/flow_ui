@@ -20,6 +20,7 @@ import 'demos/suggestions_demo.dart';
 import 'demos/thinking_indicator_demo.dart';
 import 'demos/thread_demo.dart';
 import 'demos/thread_list_demo.dart';
+import 'demos/toast_demo.dart';
 import 'playground_item.dart';
 
 /// The stage's demo for [item]. Keyed on the variant so switching pills
@@ -40,6 +41,7 @@ Widget demoFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.markdown => MarkdownDemo(key: key, variant: variant),
     PlaygroundItem.errorState => ErrorStateDemo(key: key, variant: variant),
     PlaygroundItem.confirmation => ConfirmationDemo(key: key, variant: variant),
+    PlaygroundItem.toast => ToastDemo(key: key, variant: variant),
     PlaygroundItem.addToChat => AddToChatDemo(key: key),
     PlaygroundItem.pill => PillDemo(key: key, variant: variant),
     PlaygroundItem.attachments => AttachmentsDemo(key: key, variant: variant),
@@ -106,6 +108,13 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
       ('rejected', 'Rejected'),
       ('thread', 'In a thread'),
     ],
+    PlaygroundItem.toast => const [
+      ('default', 'Neutral'),
+      ('error', 'Error'),
+      ('sticky', 'Sticky'),
+      ('stacked', 'Stacked'),
+      ('card', 'Card'),
+    ],
     PlaygroundItem.pill => const [
       ('default', 'Default'),
       ('icon', 'Icon only'),
@@ -155,10 +164,12 @@ List<(String, String)> variantsFor(PlaygroundItem item) {
 /// Whether the demo takes the whole stage pane (a full surface) rather
 /// than sitting as an object on the canvas. The chat always does; the
 /// attachments stage does for its drop variant, which is a chat surface
-/// with the treatment pinned up.
+/// with the treatment pinned up; the toast does for every variant but the
+/// bare card, since a toast floats over a surface's edge.
 bool demoFillsStage(PlaygroundItem item, {String? variant}) =>
     item == PlaygroundItem.fullChat ||
-    (item == PlaygroundItem.attachments && variant == 'drop');
+    (item == PlaygroundItem.attachments && variant == 'drop') ||
+    (item == PlaygroundItem.toast && variant != 'card');
 
 /// The code panel's snippet for [item] — the real flow_ui usage, not the
 /// demo's plumbing. [variant] is the stage's active pill, so the code
@@ -174,6 +185,7 @@ String snippetFor(PlaygroundItem item, {String? variant}) {
     PlaygroundItem.markdown => markdownSnippet(variant),
     PlaygroundItem.errorState => errorStateSnippet(variant),
     PlaygroundItem.confirmation => confirmationSnippet(variant),
+    PlaygroundItem.toast => toastSnippet(variant),
     PlaygroundItem.addToChat => addToChatSnippet,
     PlaygroundItem.pill => pillSnippet(variant),
     PlaygroundItem.attachments => attachmentsSnippet(variant),

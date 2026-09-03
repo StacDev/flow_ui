@@ -1,0 +1,163 @@
+---
+title: Toast
+description: "The floating notice: a glyph, one line and a cross on a frosted card. showFlowToast floats it in the nearest Overlay, stacks it, and takes it down on its own."
+sidebar:
+  order: 19
+---
+
+import FlowDemo from '../../../components/FlowDemo.astro';
+
+`FlowToast` is the floating notice: a glyph, one line that wraps, and a
+cross on the raised card. "Message copied to clipboard." "Image upload
+failed. Try again." The card renders state and reports one intent,
+dismiss. The package ships no strings, so the line and the cross's label
+are host-localized, and the line announces to assistive tech as a live
+region, since notices arrive unprompted.
+
+What a *toast* adds to the card is a lifecycle: where it floats, how long
+it stays, what happens when three arrive at once. Nobody wants to own
+that for a two-line notice, so `showFlowToast` owns it, the way
+`showFlowAttachmentPreview` owns its route: no setup, one call, and a
+handle to take it back. Hosts that want the lifecycle keep the card and
+place it themselves.
+
+## Showing one
+
+One call floats the card in the nearest `Overlay` (a `MaterialApp` or a
+`Navigator` has one) and it leaves on its own after four seconds, or at
+once from its cross. The glyph is the host's, and carries the meaning:
+
+<FlowDemo demo="toast" variant="default" height={380} title="A copied message" />
+
+```dart title="The whole of it"
+showFlowToast(
+  context: context,
+  icon: Icons.copy_outlined,
+  message: 'Message copied to clipboard',
+  dismissTooltip: 'Dismiss',
+)
+```
+
+A failure is the same call with a different glyph, in the error accent.
+The line stays in the ink ramp whatever the glyph says: the light accents
+fall short of WCAG AA for text on the card, the confirmation card's rule.
+
+<FlowDemo demo="toast" variant="error" height={380} title="A failed upload" />
+
+```dart title="The failure form"
+showFlowToast(
+  context: context,
+  icon: Icons.error_outline,
+  message: 'Image upload failed. Try again',
+  dismissTooltip: 'Dismiss',
+  style: FlowToastStyle(iconColor: context.flowColors.error),
+)
+```
+
+## Staying, and the handle
+
+`duration` is how long the toast stays; null keeps it up until it is
+dismissed, for a notice that tracks work in progress. Every call hands
+back a `FlowToastHandle`: `dismiss()` takes the toast down early,
+`closed` completes once it has left, and `isShowing` says whether it is
+still up. Hovering the deck pauses every clock, so a line that is being
+read does not vanish mid-sentence.
+
+<FlowDemo demo="toast" variant="sticky" height={380} title="Up until the upload finishes" />
+
+```dart title="Holding a toast through the work"
+final handle = showFlowToast(
+  context: context,
+  icon: Icons.upload_outlined,
+  message: 'Uploading 3 files…',
+  duration: null,
+  dismissTooltip: 'Dismiss',
+);
+await upload(files);
+handle.dismiss();
+```
+
+## Several at once
+
+Toasts stack as a deck: the newest in front, the ones behind it peeking
+out above, each a step smaller, three at most. A fourth dismisses the
+oldest. Hovering the deck fans it out, so every line can be read and
+every cross reached, and pauses every clock while the pointer stays;
+under assistive navigation it stays fanned out. Touch has no hover, so
+there the front card is the one to dismiss, and the next surfaces as it
+leaves.
+
+<FlowDemo demo="toast" variant="stacked" height={380} title="Three up; the next three push them off" />
+
+## Where it floats
+
+Placement is read from the overlay's own width, at the chat view's
+compact boundary. From 600 wide the card sits 358 across, 24 in from the
+top end corner; below that it spans the width inside 16 from the top
+edge. Both measure from the display's edge and absorb its own insets, so
+a notch or home indicator adds nothing on top of them.
+
+The overlay is the nearest one above the `context`, so a toast raised
+inside a nested `Navigator` stays inside it, and an `Overlay.wrap` around
+a pane keeps its toasts in the pane (the demos on this page do exactly
+that); `rootOverlay: true` reaches the app's overlay instead, as
+`Overlay.of` does. Toasts float above every route, dialogs and sheets
+included. Call it from a handler, not from a build: raising the layer
+rebuilds the overlay, the same rule as pushing a route.
+
+Under assistive navigation no toast leaves on its own, the snack bar's
+rule: a notice gone before it was reached was never shown. Keyboard focus
+stays where it was (a toast never steals it), so bind Escape to the
+handle's `dismiss()` where a keyboard should clear one.
+
+## The card on its own
+
+`FlowToast` is the card alone, for hosts that own the lifecycle: state
+in, one intent out. It carries no frost of its own. The 3px blur of the
+page belongs to the layer that floats it, because a blur inside the card
+would sit inside its fade, and a `BackdropFilter` under an `Opacity`
+samples the fade's own layer rather than the page.
+
+<FlowDemo demo="toast" variant="card" height={200} title="The card alone, in both drawn forms" />
+
+```dart title="Placing the card yourself"
+FlowToast(
+  icon: Icons.copy_outlined,
+  message: 'Message copied to clipboard',
+  dismissTooltip: 'Dismiss',
+  onDismiss: hide,
+)
+```
+
+## Restyling
+
+`FlowToastStyle` carries the card's overrides. Install one on
+`FlowTheme.toastStyle` for every toast, the floated ones included, or
+pass `style:` to one call or one widget; a widget's own style wins field
+by field, and nulls fall through to the tokens. The fill defaults to
+`surfaceBright` at 80%, the hairline to `outlineVariant`, the glyph to
+`onSurface` and the cross to `onSurfaceVariant`; `messageStyle` merges
+over the line's `labelMediumEmphasised`:
+
+```dart title="A success glyph"
+showFlowToast(
+  context: context,
+  icon: Icons.check_circle_outline,
+  message: '3 files uploaded',
+  style: FlowToastStyle(iconColor: context.flowColors.success),
+)
+```
+
+Beyond the style class, `padding:` and `borderRadius:` override the
+card's own metrics, the per-component convention.
+
+## Key API
+
+| Member | What it does |
+|---|---|
+| `message` | Host-localized line; wraps when long, announced as a live region |
+| `icon` | The leading glyph; null draws none |
+| `onDismiss` / `dismissTooltip` | The cross's intent and label; the card draws no cross without a callback |
+| `showFlowToast` | Floats the card in the nearest `Overlay`: `duration` (4s; null stays), `rootOverlay`, and a `FlowToastHandle` back |
+| `FlowToastHandle` | `dismiss()`, `closed`, `isShowing` |
+| `style` | `FlowToastStyle` overrides, merged over `FlowTheme.toastStyle` |

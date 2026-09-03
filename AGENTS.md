@@ -98,3 +98,4 @@ Status legend: ⬜ Todo · ✅ Done
 | 26 | Chat View | centred 760 rail; zero state (greeting, lifted composer, starters); jump to latest | ✅ |
 | 27 | SidePanel | | ⬜ |
 | 28 | Modal | | ⬜ |
+| 29 | Toast | floating notice: icon, message, cross on a frosted card; showFlowToast floats it in the nearest Overlay, stacked, auto-dismissing, hover-paused, with a handle to dismiss | ✅ |
